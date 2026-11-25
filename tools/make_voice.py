@@ -23,7 +23,7 @@ names = re.findall(r"id: '\w+', name: '([^']+)', short:", src)
 lines = FIXED + [n.lower() for n in names] + [n.lower() + ' wins' for n in names]
 
 os.makedirs(OUT, exist_ok=True)
-FILTER = 'asetrate=22050*0.88,aresample=44100,highpass=f=250,lowpass=f=3200,acompressor=threshold=-18dB:ratio=4,volume=2,aecho=0.8:0.6:40:0.25,apad=pad_dur=0.15'
+FILTER = 'asetrate=22050*0.88,aresample=44100,atempo=1.5,highpass=f=250,lowpass=f=3200,acompressor=threshold=-18dB:ratio=4,volume=2,aecho=0.8:0.6:40:0.25,apad=pad_dur=0.15'
 done = []
 with tempfile.TemporaryDirectory() as tmp:
     for line in lines:
