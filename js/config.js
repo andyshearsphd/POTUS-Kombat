@@ -173,7 +173,7 @@ window.GAME = {
         } },
       // the Big Stick thrust skyward, spectacles glinting: "Bully!"
       teddy: { fp: t => ({ aR: [2.98, 0.05], aL: [0.6, -1.5], jaw: 0.3 }),
-        fx(f, t) { if (once(f, 'b', t, 0.25)) { bubble(f, 'BULLY!'); SFX.say('bully'); } },
+        fx(f, t) { if (once(f, 'b', t, 0.25)) { bubble(f, 'BULLY!'); } },
         draw(g, f) { const h = fj(f, 'handR'); R.line(g, h[0], h[1] + 6, h[0], h[1] - 38, '#5a3a1a', 3.6); R.ball(g, h[0], h[1] - 40, 3.6, '#4a2e14'); for (let i = 0; i < 4; i++) R.ball(g, h[0] + (i % 2 ? 1.6 : -1.6), h[1] - 6 - i * 8, 1.4, '#4a2e12'); } },
       // chin up, cigarette holder high, the big grin
       fdr: { fp: t => ({ aR: [2.0, 1.4], aL: [0.4, 0.6], head: -0.12, jaw: 0.2 }),

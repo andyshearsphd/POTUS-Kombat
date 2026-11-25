@@ -11,12 +11,12 @@ OUT = os.path.join(ROOT, 'voice')
 
 def slug(t): return re.sub(r'^-+|-+$', '', re.sub(r'[^a-z0-9]+', '-', t.lower()))
 
-# every line the announcer speaks, as the engine passes it to say() (fighter names are added below)
+# every line the announcer speaks, as the engine passes it to say() (fighter names are added below).
+# Only the announcer talks: the presidents' own lines stay as text bubbles.
 FIXED = ['fight', 'fatality', 'landslide victory', 'choose your president', 'finish him', 'finish it',
-         'round one', 'round two', 'round three', 'round four', 'round five',
-         'valley forge', 'fore', 'bully']
+         'round one', 'round two', 'round three', 'round four', 'round five']
 # shouted lines are slower and deeper
-SHOUT = {'fight': (100, 12), 'fatality': (88, 8), 'finish him': (98, 10), 'finish it': (98, 10), 'fore': (95, 30), 'bully': (100, 40)}
+SHOUT = {'fight': (100, 12), 'fatality': (88, 8), 'finish him': (98, 10), 'finish it': (98, 10)}
 
 src = open(os.path.join(ROOT, 'js', 'fighters.js')).read()
 names = re.findall(r"id: '\w+', name: '([^']+)', short:", src)

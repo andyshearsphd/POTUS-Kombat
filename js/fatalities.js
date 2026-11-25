@@ -19,7 +19,7 @@ FATAL.add(K => {
       g.fillStyle = `rgba(220,230,255,${0.12 * snow})`; g.fillRect(x0, -200, w, F + 220);
       for (const fl of flakes) { const x = x0 + ((fl.x * w + s.t * 120 * fl.v * snow) % w), y = ((fl.y * 260 + s.t * 90 * fl.v) % 260) - 20; g.fillStyle = `rgba(245,248,255,${0.85 * snow})`; g.fillRect(x, y, fl.s, fl.s); }
     } });
-    s.at(0.55, () => { api.say('valley forge'); api.bubble('WINTER QUARTERS.', A.x, F - 160, { size: 12, fill: 'white' }); });
+    s.at(0.55, () => { api.bubble('WINTER QUARTERS.', A.x, F - 160, { size: 12, fill: 'white' }); });
     s.at(0.9, () => {
       iceProp = prop({ layer: 'front', x: V.x, draw(g, p) {
         if (gone || ice <= 0) return;
@@ -346,7 +346,7 @@ FATAL.add(K => {
     });
     s.at(2.6, () => { head.st = 'tee'; api.sfx('thud'); });
     s.at(T0 + 0.79, () => { head.st = 'fly'; head.vx = fc * 600; head.vy = -440; api.sfx('big'); api.sfx('clang'); api.shake(6); FX.blood(head.x, head.y - 10, 20, fc, 1.2); });
-    s.at(T0 + 0.95, () => { api.bubble('FORE!', A.x, F - 185, { size: 24, life: 1.6, fill: 'gold' }); api.say('fore'); });
+    s.at(T0 + 0.95, () => { api.bubble('FORE!', A.x, F - 185, { size: 24, life: 1.6, fill: 'gold' }); });
     // he admires the shot, then flips the driver away; it clatters down and stays on the floor
     s.at(4.9, () => { const [gx, gy] = gripW; club.st = 'free'; club.x = gx; club.y = gy; club.rot = club.ang; club.vx = -fc * 150; club.vy = -280; club.spin = -fc * 10; api.sfx('whoosh'); });
     s.at(5.75, () => { golf = false; A.hidden = false; A.scriptPose = PS.stance(A.t); head.draw = () => {}; });
@@ -908,7 +908,7 @@ FATAL.add(K => {
       api.sfx('thud');
     });
     s.at(3.0, () => { plaque.on = true; head.mounted = true; api.sfx('clang'); api.shake(4); FX.blood(plaque.x, plaque.y + 14, 6, 0, 0.4); });
-    s.at(3.4, () => { api.bubble('BULLY!', A.x, F - 170, { size: 16, fill: 'gold' }); api.say('bully'); });
+    s.at(3.4, () => { api.bubble('BULLY!', A.x, F - 170, { size: 16, fill: 'gold' }); });
     s.at(4.8, () => { s.done = true; });
     s.tick = (t, dt) => {
       if (t < 0.7) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 30 * k, dt, api, 120); return; }
