@@ -287,6 +287,296 @@ FATAL.add(K => {
     };
   };
 
+  // ---------- WILLIAM HOWARD TAFT: Fore! ----------
+  // The first golfing president pops the head off, tees it up and drives it off the screen.
+  S.taft = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let head = null, tee = null, club = 0, clubA = 0, spurting = false;
+    const drawHead = (g, x, y, rot) => R.drawHeadAt(g, { def: V.def, d: V.d }, x, y, rot, 1, { dead: true, t: 0 });
+    s.at(0.6, () => api.bubble('HOLD STILL. I PLAY TO A TWENTY.', A.x, F - 165, { size: 10, life: 1.2, fill: 'white' }));
+    s.at(1.3, () => {
+      api.sfx('crunch'); api.sfx('scream'); api.shake(8); api.flash(); V.ro.noHead = true; spurting = true;
+      head = prop({ layer: 'front', x: 0, y: 0, rot: 0, vx: 0, vy: 0, st: 'hand', draw(g, p) { drawHead(g, p.x, p.y, p.rot); } });
+      FX.burst(J(V, 'neck')[0], J(V, 'neck')[1], 6, ['chunk', 'bone'], 1);
+    });
+    s.at(1.8, () => { V.x += A.face * 86; V.scriptPose = PS.down(V); V.snapPose = true; spurting = false; api.sfx('thud'); FX.blood(V.x, F - 6, 22, 0, 0.9); });
+    s.at(2.0, () => { tee = prop({ layer: 'back', x: A.x + A.face * 40 * k, draw(g, p) { g.fillStyle = '#f0ece0'; g.fillRect(p.x - 0.8, F - 8, 1.6, 8); g.fillRect(p.x - 3, F - 9, 6, 1.4); } }); });
+    s.at(2.5, () => { head.st = 'tee'; api.sfx('thud'); club = 1; });
+    s.at(3.5, () => { head.st = 'fly'; head.vx = A.face * 520; head.vy = -460; api.sfx('big'); api.sfx('clang'); api.shake(6); FX.blood(head.x, head.y - 10, 20, A.face, 1.2); });
+    s.at(3.7, () => { api.bubble('FORE!', A.x, F - 175, { size: 24, life: 1.6, fill: 'gold' }); api.say('fore'); });
+    s.at(5.2, () => { s.done = true; });
+    prop({ layer: 'front', draw(g) {
+      if (!club) return;
+      // the driver: shaft from the hands, the wooden head at the end
+      const h = J(A, 'handFx'), L = 46 * k, ex = h[0] + Math.cos(clubA) * L, ey = h[1] + Math.sin(clubA) * L;
+      R.line(g, h[0], h[1], ex, ey, '#b8bcc4', 1.4); g.save(); g.translate(ex, ey); g.rotate(clubA); g.fillStyle = '#5a3418'; g.beginPath(); g.ellipse(2, 2, 5, 3, 0.4, 0, PI * 2); g.fill(); g.restore();
+      R.line(g, h[0], h[1], h[0] - Math.cos(clubA) * 6, h[1] - Math.sin(clubA) * 6, '#1a1a1a', 2.6);
+    } });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 30 * k, dt, api, 110); return; }
+      if (t < 1.3) { A.scriptPose = P({ hy: 6, lean: 0.35, head: 0.1, aF: [1.75, 0.25], aB: [1.6, 0.3], fF: [15, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); V.ro.dx = t > 0.9 ? rnd(-2, 2) : 0; return; }
+      if (spurting) { const n = J(V, 'neck'); FX.spurt(n[0], n[1], -A.face * 0.3, 1.2); }
+      if (head.st === 'hand') { const h = J(A, 'handFx'); head.x = h[0]; head.y = h[1] + 10; head.rot = Math.sin(t * 16) * 0.1; A.scriptPose = P({ hy: 4, lean: -0.1, head: -0.15, aF: [2.4, 0.3], aB: [0.6, 1.8], fF: [13, 0], fB: [-14, 0] }); return; }
+      if (head.st === 'tee') {
+        head.x = tee.x; head.y = F - 4; head.rot = 0;
+        // address the ball, back swing, then the drive
+        const back = t < 2.9 ? 0 : t < 3.4 ? ease((t - 2.9) / 0.5) : Math.max(0, 1 - (t - 3.4) / 0.1);
+        clubA = A.face > 0 ? PI * 0.5 - back * 2.6 : PI * 0.5 + back * 2.6;
+        A.scriptPose = P({ hy: 10, lean: 0.35, head: 0.4, aF: [0.5 + back * 2.0, 0.2], aB: [0.6 + back * 1.9, 0.3], fF: [16, 0], fB: [-14, 0] });
+        return;
+      }
+      if (head.st === 'fly') {
+        head.vy += 600 * dt; head.x += head.vx * dt; head.y += head.vy * dt; head.rot += dt * 20;
+        if (Math.random() < 0.8) FX.blood(head.x, head.y, 1, 0, 0.2);
+        clubA = A.face > 0 ? -PI * 0.75 : PI * 1.75;
+        A.scriptPose = P({ hy: 6, lean: -0.1, head: -0.3, aF: [2.9, 0.3], aB: [2.7, 0.4], fF: [14, 0], fB: [-12, -2] });
+      }
+    };
+  };
+
+  // ---------- CALVIN COOLIDGE: Lamplight Oath ----------
+  // Sworn in by his father by kerosene lamp. The lamp does the rest. Then he blows it out and goes to bed.
+  S.coolidge = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let lamp = 1, flame = 1, burning = false, ash = 0, bed = 0, x0 = 0;
+    const zz = [];
+    prop({ layer: 'front', draw(g) {
+      if (lamp) {
+        const h = J(A, 'handFx'), x = h[0], y = h[1] - 2;
+        g.fillStyle = '#8a6a2a'; g.beginPath(); g.ellipse(x, y + 4, 5, 3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#c8a050'; g.fillRect(x - 2, y - 1, 4, 3);
+        g.fillStyle = 'rgba(220,235,240,0.45)'; g.beginPath(); g.moveTo(x - 2.4, y - 1); g.quadraticCurveTo(x - 4.4, y - 6, x - 1.6, y - 13); g.lineTo(x + 1.6, y - 13); g.quadraticCurveTo(x + 4.4, y - 6, x + 2.4, y - 1); g.fill();
+        if (flame > 0) { const f = flame * (1 + Math.sin(s.t * 40) * 0.15); g.fillStyle = '#ffb030'; g.beginPath(); g.ellipse(x, y - 6, 1.4 * f, 3 * f, 0, 0, PI * 2); g.fill(); g.fillStyle = '#fff0b0'; g.beginPath(); g.ellipse(x, y - 5.6, 0.6 * f, 1.4 * f, 0, 0, PI * 2); g.fill(); glowAt(g, x, y - 6, 26 * f, 'rgba(255,200,110,0.35)'); }
+      }
+      if (ash > 0) { g.fillStyle = '#4a4848'; g.beginPath(); g.ellipse(x0, F, 8 + ash * 26, 3 + ash * 9, 0, PI, PI * 2); g.fill(); if (ash > 0.8) { g.save(); g.filter = 'brightness(0.42)'; R.skull(g, x0 + 6, F - 7, 6 * V.d.k * (V.def.skullK || 1), 0.3, V.def.skull); g.restore(); } }
+      for (const z of zz) { g.globalAlpha = Math.max(0, 1 - z.t / 2); TXT.draw(g, 'Z', z.x + z.t * 10, z.y - z.t * 22, { size: 8 + z.t * 4, fill: 'white' }); g.globalAlpha = 1; }
+    } });
+    prop({ layer: 'back', draw(g) {
+      if (bed <= 0) return;
+      const bx = A.x, w = 104, a = bed, hd = -A.face;
+      g.globalAlpha = a; g.fillStyle = '#3a2410'; g.fillRect(bx + hd * (w / 2 + 2) - 2.5, F - 40, 5, 40); g.fillRect(bx - hd * (w / 2 + 2) - 2.5, F - 28, 5, 28);
+      g.fillStyle = '#e8e4d8'; g.fillRect(bx - w / 2, F - 24, w, 10); g.fillStyle = '#6a2a2a'; g.fillRect(hd > 0 ? bx - w / 2 : bx - w / 2 + 24, F - 25, w - 24, 11);
+      g.fillStyle = '#f4f0e6'; g.beginPath(); g.ellipse(bx + hd * (w / 2 - 11), F - 27, 11, 4.5, 0, 0, PI * 2); g.fill();
+      g.fillStyle = '#4a2e16'; g.fillRect(bx - w / 2 - 4, F - 14, w + 8, 4); g.globalAlpha = 1;
+    } });
+    s.at(0.6, () => api.bubble('I DO SOLEMNLY SWEAR...', A.x, F - 160, { size: 11, life: 1.4, fill: 'white' }));
+    s.at(1.4, () => {
+      burning = true; V.ro.char = true; api.sfx('fire'); api.sfx('big'); api.sfx('scream'); api.shake(10); api.flash();
+      const c = J(V, 'chest'), hh = api.hurtH(V); for (let i = 0; i < 140; i++) FX.fire(c[0] + rnd(-45, 45), V.y - rnd(0, hh * 1.4), 1, 2.2);
+      FX.puff(c[0], c[1], 'rgba(255,170,60,0.8)', 20, 6);
+    });
+    s.at(3.2, () => { burning = false; V.ro.skeleton = true; V.ro.ash = true; api.sfx('fire'); });
+    s.at(3.9, () => { V.hidden = true; x0 = V.x; api.sfx('crunch'); const hh = api.hurtH(V); for (let i = 0; i < 40; i++) FX.puff(V.x + rnd(-14, 14), F - rnd(0, hh), 'rgba(90,88,86,0.8)', 1, 2); });
+    s.at(4.4, () => { api.sfx('whoosh'); const h = J(A, 'handFx'); FX.puff(h[0], h[1] - 8, 'rgba(230,230,235,0.6)', 4, 2); });
+    s.at(4.9, () => { lamp = 0; api.sfx('thud'); });
+    s.at(5.3, () => api.bubble('GOOD NIGHT.', A.x, F - 120, { size: 12, life: 1.6, fill: 'gold' }));
+    s.at(7.1, () => { bed = -1; zz.length = 0; A.y = F; A.ro.noShadow = false; A.scriptPose = PS.stance(A.t); });
+    s.at(7.2, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      for (const z of zz) z.t += dt;
+      if (t >= 7.1) return;
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 44 * k, dt, api, 110); return; }
+      if (t < 1.4) { A.scriptPose = P({ hy: 4, lean: 0.15, head: 0, aF: [1.5 + (t > 1.1 ? 0.6 : 0), 0.3], aB: [0.3, 0.2], fF: [12, 0], fB: [-12, 0] }); V.scriptPose = PS.dizzy(V.t); return; }
+      if (t < 3.2) {
+        A.scriptPose = P({ hy: 4, lean: 0, head: 0, aF: [1.3, 0.6], aB: [0.2, 0.1], fF: [12, 0], fB: [-12, 0] });
+        V.scriptPose = P({ hy: 5, lean: Math.sin(t * 9) * 0.3, head: Math.sin(t * 13) * 0.5, aF: [2.6 + Math.sin(t * 17) * 0.5, 0.6], aB: [2.4 + Math.cos(t * 15) * 0.5, 0.6], fF: [8 + Math.sin(t * 11) * 5, 0], fB: [-10, 0] });
+        V.ro.dx = Math.sin(t * 7) * 4;
+        if (burning) for (const j of ['head', 'chest', 'belly', 'handF', 'kneeF', 'kneeB']) if (Math.random() < 0.7) { const p = J(V, j); FX.fire(p[0] + rnd(-4, 4), p[1], 1, 1.1); }
+        return;
+      }
+      if (t < 3.9) { V.scriptPose = PS.down(V); ash = 0; }
+      else ash = Math.min(1, (t - 3.9) / 0.4);
+      // lamp to the lips, one breath, out
+      if (t < 4.9) { A.scriptPose = P({ hy: 4, lean: 0, head: 0.1, aF: [1.9, 1.7], aB: [0.2, 0.1], fF: [12, 0], fB: [-12, 0] }); flame = t < 4.4 ? 1 : Math.max(0, 1 - (t - 4.4) / 0.12); return; }
+      bed = Math.min(1, (t - 4.9) / 0.4);
+      if (t > 5.3) { A.y = F - 30 + (A.d.thigh + A.d.shin) * 0.9; A.scriptPose = P({ rot: -PI / 2, hyA: 4, aF: [0.2, 1.6], aB: [0.1, 0.3], lF: [0.05, 0.05], lB: [0.0, 0.05], head: -0.2 }); A.ro.noShadow = true; if (Math.random() < dt * 1.4) zz.push({ x: A.x - A.face * 40, y: F - 44, t: 0 }); }
+    };
+  };
+  const glowAt = (g, x, y, r, c) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, c); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, PI * 2); g.fill(); };
+
+  // ---------- HARRY S. TRUMAN: Dewey Defeats Truman ----------
+  // Rolled up in the early edition, stomped flat, and held up high with that famous grin.
+  S.truman = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let paper = 0, roll = null, flat = null, hh = 0;
+    const page = (g, x, y, w, h, blood) => {
+      g.fillStyle = '#ece6d4'; g.fillRect(x - w / 2, y - h / 2, w, h); g.strokeStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 0.5; g.strokeRect(x - w / 2, y - h / 2, w, h);
+      g.fillStyle = '#141414'; g.font = `${Math.max(3, h * 0.09)}px Anton, Impact, sans-serif`; g.textAlign = 'center'; g.fillText('CHICAGO DAILY TRIBUNE', x, y - h * 0.36);
+      g.font = `${Math.max(4, h * 0.2)}px Anton, Impact, sans-serif`; g.fillText('DEWEY DEFEATS', x, y - h * 0.1); g.fillText('TRUMAN', x, y + h * 0.12); g.textAlign = 'left';
+      g.fillStyle = 'rgba(40,40,40,0.5)'; for (let i = 0; i < 5; i++) g.fillRect(x - w * 0.42, y + h * 0.2 + i * h * 0.05, w * 0.84, h * 0.02);
+      if (blood) { g.fillStyle = 'rgba(140,0,14,0.85)'; g.beginPath(); g.ellipse(x + w * 0.1, y + h * 0.15, w * 0.3, h * 0.2, 0.3, 0, PI * 2); g.fill(); g.fillRect(x - w / 2, y + h * 0.3, 3, 8); g.fillRect(x + w / 2 - 3, y - h * 0.2, 3, 10); }
+    };
+    s.at(0.6, () => { paper = 1; api.sfx('slash'); api.bubble('EXTRA! EXTRA!', A.x, F - 165, { size: 11, fill: 'white' }); });
+    s.at(1.4, () => {
+      paper = 0; hh = api.hurtH(V); V.hidden = true; api.sfx('slash'); api.sfx('crunch'); api.shake(5);
+      roll = prop({ layer: 'back', x: V.x, h: hh * 1.02, rot: 0, squash: 1, draw(g, p) {
+        g.save(); g.translate(p.x, F); g.rotate(p.rot); const H = p.h, w = 30 * V.d.k * (2 - p.squash);
+        const gr = g.createLinearGradient(-w / 2, 0, w / 2, 0); gr.addColorStop(0, '#a8a290'); gr.addColorStop(0.5, '#f0ead8'); gr.addColorStop(1, '#a09a88'); g.fillStyle = gr; g.fillRect(-w / 2, -H, w, H);
+        g.fillStyle = '#141414'; g.font = '7px Anton, Impact, sans-serif'; g.save(); g.translate(2, -H * 0.5); g.rotate(-PI / 2); g.textAlign = 'center'; g.fillText('DEWEY DEFEATS TRUMAN', 0, 0); g.restore();
+        g.fillStyle = 'rgba(40,40,40,0.35)'; for (let i = 0; i < 8; i++) g.fillRect(-w / 2 + 2, -H + 8 + i * H / 9, w - 4, 0.8);
+        if (p.squash < 0.9) { g.fillStyle = 'rgba(140,0,14,0.85)'; g.fillRect(-w / 2 - 3, -H, w + 6, 4); g.fillRect(-w / 2 - 3, -4, w + 6, 4); }
+        g.restore();
+      } });
+    });
+    s.at(1.9, () => { api.sfx('thud'); api.shake(4); });
+    for (const at of [2.5, 2.95, 3.4]) s.at(at, () => { api.sfx('splat'); api.sfx('crunch'); api.shake(8); roll.squash -= 0.28; FX.blood(roll.x - A.face * 4, F - 4, 14, -1, 1); FX.blood(roll.x + A.face * roll.h, F - 4, 14, 1, 1); FX.burst(roll.x + A.face * roll.h * 0.5, F - 6, 3, ['chunk', 'tooth'], 0.6); });
+    s.at(3.9, () => { roll.gone = true; roll.draw = () => {}; flat = 1; api.sfx('slash'); });
+    s.at(4.4, () => api.bubble("THAT AIN'T THE WAY I HEARD IT!", A.x, F - 175, { size: 10, life: 1.8, fill: 'gold' }));
+    s.at(6.1, () => { flat = 0; });
+    s.at(6.2, () => { s.done = true; });
+    prop({ layer: 'front', draw(g) {
+      if (!paper && !flat) return;
+      const a = J(A, 'handFx'), b = J(A, 'handBx'), x = (a[0] + b[0]) / 2, y = Math.min(a[1], b[1]) - (flat ? 18 : 0);
+      page(g, x, y, flat ? 52 : 40, flat ? 40 : 30, !!flat);
+    } });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 50 * k, dt, api, 110); return; }
+      if (t < 1.4) { V.scriptPose = PS.dizzy(V.t); A.scriptPose = P({ hy: 4, lean: 0.1, head: 0.05, aF: [1.6, 0.2], aB: [1.5, 0.3], fF: [12, 0], fB: [-12, 0] }); return; }
+      if (roll && !roll.gone) {
+        roll.rot = t < 1.9 ? A.face * ease((t - 1.4) / 0.5) * PI / 2 : A.face * PI / 2;
+        if (t > 1.9) { roll.squash = Math.max(0.2, roll.squash); }
+        // walk up onto it and stomp
+        if (t > 2.0) {
+          const ph = ((t - 2.05) % 0.45) / 0.45, up = Math.sin(ph * PI);
+          A.y = F - up * 26; A.scriptPose = P({ hy: 6, lean: 0.1, head: 0.2, aF: [1.2, 0.8], aB: [1.0, 0.8], fF: [10, -up * 8], fB: [-10, 0] });
+          A.x = lerp(A.x, roll.x + A.face * 26, dt * 4);
+        } else A.scriptPose = PS.stance(A.t);
+        return;
+      }
+      A.y = F;
+      A.scriptPose = P({ hy: 3, lean: -0.08, head: -0.2, aF: [2.75, 0.3], aB: [2.65, 0.35], fF: [12, 0], fB: [-12, 0], jaw: 0.3 });
+    };
+  };
+
+  // ---------- JOHN F. KENNEDY: Ask Not ----------
+  S.jfk_heart = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let heart = null, spurting = false;
+    s.at(0.6, () => api.bubble('ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU...', A.x, F - 165, { size: 9, life: 1.5, fill: 'white' }));
+    s.at(1.3, () => { api.sfx('punch'); api.sfx('crunch'); api.shake(9); api.flash(); FX.burst(J(V, 'chest')[0], J(V, 'chest')[1], 6, ['chunk', 'bone'], 0.9); });
+    s.at(1.7, () => { api.sfx('splat'); spurting = true; heart = prop({ layer: 'front', x: 0, y: 0, draw(g, p) { const b = 1 + Math.max(0, Math.sin(s.t * 14)) * 0.18; g.save(); g.translate(p.x, p.y); g.scale(b, b); g.fillStyle = '#8a0a14'; g.beginPath(); g.moveTo(0, 6); g.bezierCurveTo(-8, 0, -6, -7, -1.5, -5); g.bezierCurveTo(-0.5, -6, 0.5, -6, 1.5, -5); g.bezierCurveTo(6, -7, 8, 0, 0, 6); g.fill(); g.fillStyle = '#c8303a'; g.beginPath(); g.ellipse(-2.5, -2.5, 2, 1.4, -0.4, 0, PI * 2); g.fill(); R.line(g, 1, -5, 2.5, -9, '#6a0a10', 1.6); R.line(g, -1, -5, -2, -9, '#5a0a10', 1.4); g.restore(); } }); });
+    s.at(2.3, () => { api.bubble('...ASK WHAT YOU CAN DO FOR YOUR COUNTRY.', A.x, F - 175, { size: 9, life: 1.8, fill: 'gold' }); });
+    s.at(2.6, () => { V.scriptPose = PS.down(V); V.snapPose = true; spurting = false; api.sfx('thud'); FX.blood(V.x, F - 6, 24, 0, 1); });
+    s.at(3.4, () => { api.sfx('squish'); FX.blood(heart.x, heart.y, 12, 0, 0.8); });
+    s.at(4.6, () => { heart.draw = () => {}; });
+    s.at(4.8, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 30 * k, dt, api, 110); return; }
+      if (t < 1.7) { A.scriptPose = P({ hy: 6, lean: 0.35, head: 0.1, aF: [t > 1.2 ? 1.65 : 1.0, t > 1.2 ? 0.05 : 1.4], aB: [0.6, 1.6], fF: [15, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); if (t > 1.3) V.ro.dx = rnd(-2, 2); return; }
+      if (spurting) { const c = J(V, 'chest'); FX.spurt(c[0], c[1], A.face * -0.2, 1.2); V.scriptPose = PS.dizzy(V.t * 0.3); }
+      A.scriptPose = P({ hy: 3, lean: -0.15, head: -0.2, aF: [2.85, 0.15], aB: [0.5, 1.9], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
+      const h = J(A, 'handFx'); heart.x = h[0]; heart.y = h[1] - 4;
+      if (t > 3.4) { heart.y += 2; }
+      if (Math.random() < 0.3) FX.blood(heart.x, heart.y + 4, 1, 0, 0.2);
+    };
+  };
+
+  // ---------- JOHN F. KENNEDY: We Choose the Moon ----------
+  // Strapped to a rocket. Cut to the Moon. The flag goes in what's left.
+  const rocket = (g, x, y, s = 1, fire = 0, t = 0) => {
+    g.save(); g.translate(x, y); g.scale(s, s);
+    if (fire > 0) { for (let i = 0; i < 6; i++) { g.fillStyle = `rgba(255,${140 + i * 18},40,${0.75 - i * 0.1})`; g.beginPath(); g.ellipse(0, 10 + i * 9 * fire, 8 - i * 0.6 + Math.sin(t * 50 + i) * 1.4, 10 * fire, 0, 0, PI * 2); g.fill(); } }
+    g.fillStyle = '#2a2a2e'; g.beginPath(); g.moveTo(-10, 6); g.lineTo(10, 6); g.lineTo(7, 0); g.lineTo(-7, 0); g.fill();
+    for (const sd of [-1, 1]) { g.fillStyle = '#9a1a1a'; g.beginPath(); g.moveTo(sd * 8, -2); g.lineTo(sd * 15, 8); g.lineTo(sd * 8, 8); g.fill(); }
+    const gr = g.createLinearGradient(-8, 0, 8, 0); gr.addColorStop(0, '#9a9a9e'); gr.addColorStop(0.45, '#f4f4f2'); gr.addColorStop(1, '#8a8a8e'); g.fillStyle = gr; g.fillRect(-8, -120, 16, 120);
+    g.fillStyle = '#1a1a1e'; for (const y of [-30, -62, -92]) g.fillRect(-8, y, 16, 3);
+    g.fillStyle = '#e8e8e4'; g.beginPath(); g.moveTo(-8, -120); g.quadraticCurveTo(0, -150, 8, -120); g.fill(); R.line(g, 0, -146, 0, -160, '#c8c8c8', 1.2);
+    g.fillStyle = '#1a2a5a'; g.font = '6px Anton, Impact, sans-serif'; g.save(); g.translate(2, -60); g.rotate(-PI / 2); g.textAlign = 'center'; g.fillText('USA', 0, 0); g.restore();
+    g.restore();
+  };
+  S.jfk_moon = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let rx = 0, ry = F, fire = 0, up = false, vy = 0, crash = -1;
+    const stars = Array.from({ length: 90 }, () => [Math.random(), Math.random() * 0.7, Math.random()]);
+    s.at(0.6, () => api.bubble('WE CHOOSE TO GO TO THE MOON.', A.x, F - 165, { size: 11, life: 1.5, fill: 'white' }));
+    s.at(1.0, () => { rx = V.x + A.face * 18; prop({ layer: 'back', draw(g) { if (!up || ry > -200) rocket(g, rx, ry, 1, fire, s.t); } }); prop({ layer: 'front', draw(g) { if (ry < -200 || rx === 0) return; for (const rel of [0.3, 0.62]) { const y = V.y - api.hurtH(V) * rel; R.line(g, rx - A.face * 26, y, rx, y - 2, '#6a5a3a', 2); } } }); api.sfx('clang'); });
+    s.at(1.9, () => { fire = 0.4; api.sfx('fire'); api.sfx('hiss'); });
+    s.at(2.4, () => { api.bubble('NOT BECAUSE IT IS EASY...', A.x, F - 160, { size: 10, life: 1.2, fill: 'gold' }); });
+    s.at(2.6, () => { up = true; fire = 1; api.sfx('big'); api.sfx('horn'); api.shake(10); });
+    s.at(3.6, () => {
+      FX.reset();
+      api.scene((g, W, H) => {
+        const t = s.t;
+        g.fillStyle = '#020206'; g.fillRect(0, 0, W, H);
+        for (const [x, y, b] of stars) { g.fillStyle = `rgba(255,255,255,${0.4 + b * 0.6})`; g.fillRect(x * W, y * H, 1.2, 1.2); }
+        // Earth hanging in the black
+        const ex = W * 0.82, ey = H * 0.2; g.fillStyle = '#2a5aa8'; g.beginPath(); g.arc(ex, ey, 20, 0, PI * 2); g.fill(); g.fillStyle = '#3a8a3a'; g.beginPath(); g.ellipse(ex - 5, ey - 3, 7, 9, 0.4, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.ellipse(ex + 6, ey + 6, 8, 3, -0.3, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.arc(ex + 8, ey, 20, -PI / 2, PI / 2); g.fill();
+        // the Moon's surface
+        const sy = H * 0.72; g.fillStyle = '#8a8a8e'; g.beginPath(); g.moveTo(0, sy); for (let x = 0; x <= W; x += 20) g.lineTo(x, sy + Math.sin(x * 0.03) * 4); g.lineTo(W, H); g.lineTo(0, H); g.fill();
+        g.fillStyle = '#6a6a6e'; for (const [cx, w] of [[0.15, 30], [0.4, 18], [0.75, 40], [0.9, 14]]) { g.beginPath(); g.ellipse(cx * W, sy + 26, w, w * 0.22, 0, 0, PI * 2); g.fill(); }
+        const ix = W * 0.5, iy = sy + 6, ct = 4.6;
+        if (t < ct) { const u = (t - 3.6) / (ct - 3.6), x = lerp(W * 0.1, ix, u), y = lerp(-80, iy, u); g.save(); g.translate(x, y); g.rotate(PI * 0.75); rocket(g, 0, 0, 0.5, 1, t); g.restore(); }
+        else {
+          const u = t - ct;
+          g.fillStyle = '#4a4a4e'; g.beginPath(); g.ellipse(ix, iy + 4, 46, 9, 0, 0, PI * 2); g.fill();
+          if (u < 0.9) { for (let i = 0; i < 3; i++) { g.fillStyle = `rgba(255,${200 - i * 60},${80 - i * 30},${(1 - u / 0.9) * (0.9 - i * 0.2)})`; g.beginPath(); g.arc(ix, iy, 20 + u * 90 * (1 + i * 0.4), 0, PI * 2); g.fill(); } }
+          // bones and a bit of red in the crater
+          g.fillStyle = '#e8e0d0'; for (const [dx, dy, r] of [[-18, 2, 0.3], [12, 3, -0.4], [-4, 6, 1.2], [22, 1, 0.8]]) { g.save(); g.translate(ix + dx, iy + dy); g.rotate(r); g.fillRect(-5, -1, 10, 2); R.ball(g, -5, 0, 1.6, '#e8e0d0'); R.ball(g, 5, 0, 1.6, '#e8e0d0'); g.restore(); }
+          g.fillStyle = 'rgba(120,0,10,0.8)'; g.beginPath(); g.ellipse(ix + 4, iy + 5, 18, 3, 0, 0, PI * 2); g.fill();
+          R.skull(g, ix + 2, iy - 2, 6, 0.4, V.def.skull);
+          if (u > 1.0) {
+            const fu = Math.min(1, (u - 1.0) / 0.4), top = iy - 70 * fu;
+            g.fillStyle = '#c8c8cc'; g.fillRect(ix - 8, top, 1.6, iy - top);
+            if (fu >= 1) { for (let i = 0; i < 7; i++) { g.fillStyle = i % 2 ? '#f0eee8' : '#9a1420'; g.fillRect(ix - 6.4, top + 2 + i * 3, 30, 3); } g.fillStyle = '#1e2a5a'; g.fillRect(ix - 6.4, top + 2, 13, 12); g.fillStyle = '#f0eee8'; for (let i = 0; i < 9; i++) g.fillRect(ix - 5 + (i % 3) * 4, top + 4 + ((i / 3) | 0) * 3.6, 0.9, 0.9); R.line(g, ix - 8, top + 2, ix + 24, top + 2, '#c8c8cc', 1); }
+          }
+        }
+        FX.drawParts(g);
+      });
+    });
+    s.at(4.6, () => { api.sfx('big'); api.sfx('crunch'); api.shake(14); api.flash(); });
+    s.at(5.7, () => api.sfx('clang'));
+        s.at(7.2, () => { api.scene(null); FX.reset(); V.hidden = true; A.scriptPose = PS.win(A.t); api.bubble('...BUT BECAUSE IT IS HARD.', A.x, F - 165, { size: 11, life: 1.6, fill: 'gold' }); });
+    s.at(8.6, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 70 * k, dt, api, 120); return; }
+      A.scriptPose = t < 2.6 ? PS.stance(A.t) : P({ hy: 3, lean: -0.2, head: -0.5, aF: [2.6, 0.4], aB: [0.4, 0.3], fF: [12, 0], fB: [-12, 0] });
+      V.scriptPose = t < 1.0 ? PS.dizzy(V.t) : P({ hy: 0, lean: 0, head: 0.2 + Math.sin(t * 20) * 0.1, aF: [0.1, 0.1], aB: [0.05, 0.1], fF: [3, 0], fB: [-3, 0] });
+      if (rx) V.x = rx - A.face * 16;
+      if (fire && Math.random() < 0.7) FX.puff(rx + rnd(-14, 14), Math.min(F, ry + 8), 'rgba(220,220,225,0.6)', 1, 4);
+      if (up && t < 3.6) { vy -= 900 * dt; ry += vy * dt; V.y = ry; V.ro.noShadow = true; api.shake(4); FX.fire(rx + rnd(-5, 5), ry + 10, 2, 1.2); }
+    };
+  };
+
+  // ---------- JOHN F. KENNEDY: Bay of Pigs ----------
+  // A drove of pigs storms the beach and devours the loser. "Well, that one worked."
+  const pig = (g, x, y, dir, ph, bloody) => {
+    g.save(); g.translate(x, y); g.scale(dir, 1);
+    const leg = Math.sin(ph) * 3;
+    g.strokeStyle = '#c87878'; g.lineWidth = 2.4; for (const [lx, o] of [[-8, leg], [-4, -leg], [5, leg], [9, -leg]]) { g.beginPath(); g.moveTo(lx, -6); g.lineTo(lx + o, 0); g.stroke(); }
+    g.fillStyle = '#e8a0a0'; g.beginPath(); g.ellipse(0, -11, 14, 7.5, 0, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(255,230,230,0.4)'; g.beginPath(); g.ellipse(-1, -15, 10, 2.4, 0, 0, PI * 2); g.fill();
+    g.fillStyle = '#e8a0a0'; g.beginPath(); g.ellipse(14, -12, 6.5, 5.5, 0, 0, PI * 2); g.fill();
+    g.fillStyle = '#d88a8a'; g.beginPath(); g.ellipse(20, -11, 2.4, 3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#7a3a3a'; g.fillRect(20, -12.4, 0.9, 1.2); g.fillRect(20, -10.2, 0.9, 1.2);
+    g.fillStyle = '#d88a8a'; g.beginPath(); g.moveTo(11, -16); g.lineTo(12.5, -22); g.lineTo(15, -16.6); g.fill();
+    g.fillStyle = '#1a0a0a'; g.fillRect(16, -14.4, 1.2, 1.2);
+    g.strokeStyle = '#d88a8a'; g.lineWidth = 1; g.beginPath(); g.arc(-15, -13, 2, 0, PI * 1.6); g.stroke();
+    if (bloody) { g.fillStyle = 'rgba(140,0,14,0.85)'; g.beginPath(); g.ellipse(19, -9.6, 3.6, 2.4, 0, 0, PI * 2); g.fill(); g.fillRect(17, -8, 1, 3); }
+    g.restore();
+  };
+  S.jfk_pigs = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let pigs = [];
+    s.at(0.6, () => { api.bubble('OPERATION ZAPATA. GO.', A.x, F - 160, { size: 11, life: 1.3, fill: 'white' }); });
+    s.at(1.0, () => {
+      const L = api.cam - 30, Rr = api.cam + api.W + 30;
+      pigs = Array.from({ length: 7 }, (_, i) => { const fromL = i % 2 === 0; return { x: fromL ? L - i * 22 : Rr + i * 22, y: F, dir: fromL ? 1 : -1, ph: rnd(0, 6), tx: V.x + (fromL ? -1 : 1) * rnd(10, 34), st: 'run', bloody: false, off: rnd(-3, 3) }; });
+      prop({ layer: 'front', draw(g) { for (const p of pigs) pig(g, p.x, p.y + p.off, p.dir, p.ph, p.bloody); } });
+      for (let i = 0; i < 4; i++) setTimeout(() => api.sfx('honk'), i * 120);
+    });
+    s.at(1.9, () => { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); api.sfx('scream'); });
+    s.at(3.6, () => { V.ro.skeleton = true; V.ro.gore = true; api.sfx('crunch'); FX.burst(V.x, F - 10, 8, ['guts', 'chunk', 'bone'], 0.8); for (const p of pigs) { p.st = 'leave'; p.dir = p.x < V.x ? -1 : 1; } });
+    s.at(4.4, () => api.bubble('WELL, THAT ONE WORKED.', A.x, F - 160, { size: 12, life: 2.0, fill: 'gold' }));
+    s.at(6.4, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 80 * k, dt, api, 120); return; }
+      A.scriptPose = t < 4.4 ? P({ hy: 4, lean: 0, head: 0.1, aF: [0.6, 1.9], aB: [0.6, 1.9], fF: [12, 0], fB: [-12, 0] }) : P({ hy: 3, lean: -0.1, head: -0.2, aF: [1.3, 0.2], aB: [0.3, 0.2], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
+      if (t < 1.9) { V.scriptPose = PS.dizzy(V.t); V.ro.dx = t > 1.5 ? rnd(-2, 2) : 0; }
+      for (const p of pigs) {
+        if (p.st === 'run') { const dx = p.tx - p.x; p.x += Math.sign(dx) * Math.min(Math.abs(dx), 300 * dt); p.ph += dt * 26; if (Math.abs(dx) < 2) p.st = 'eat'; }
+        else if (p.st === 'eat') { p.y = F + Math.sin(t * 30 + p.off) * 1.5; p.ph += dt * 4; p.bloody = true; p.dir = p.x < V.x ? 1 : -1; if (Math.random() < 0.15) { FX.blood(p.x + p.dir * 18, F - 8, 3, p.dir, 0.6); api.sfx('gnaw'); } if (Math.random() < 0.03) FX.gib(pick(['chunk', 'bone', 'guts']), p.x + p.dir * 18, F - 10, rnd(-120, 120), rnd(-260, -100)); }
+        else { p.x += p.dir * 340 * dt; p.ph += dt * 26; p.y = F; }
+      }
+    };
+  };
+
   // ---------- ABRAHAM LINCOLN: House Divided ----------
   // One stroke of a rail-splitter's maul, straight down the middle. Neither half can stand.
   S.lincoln = (s, A, V, api) => {

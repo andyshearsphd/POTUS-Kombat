@@ -4,7 +4,7 @@ An early-90s arcade fighting game for phones in landscape, starring deceased US 
 
 ## Progress
 
-### Fighters (8 of 16 playable)
+### Fighters (12 of 16 playable)
 
 | President | Specials | Fatality | Status |
 | --- | --- | --- | --- |
@@ -16,10 +16,10 @@ An early-90s arcade fighting game for phones in landscape, starring deceased US 
 | Grover Cleveland | Gold Standard, Nonconsecutive | Sheriff's Drop | Done |
 | Teddy Roosevelt | Big Stick, Bull Moose Charge | Mounted Trophy | Done |
 | FDR | Alphabet Soup, Four Freedoms Spin, Cigarette Holder Ember | New Deal | Done |
-| William Howard Taft | Presidential Slam, Order in the Court | Fore! | To do |
-| Calvin Coolidge | Rebecca the Raccoon, Keep Cool | Lamplight Oath | To do |
-| Harry Truman | The Buck Stops Here, Give 'Em Hell | Dewey Defeats Truman | To do |
-| JFK | Hyannis Spiral, Moon Shot Uppercut | Ask Not, We Choose the Moon, Bay of Pigs | To do |
+| William Howard Taft | Presidential Slam, Order in the Court | Fore! | Done |
+| Calvin Coolidge | Rebecca the Raccoon, Keep Cool | Lamplight Oath | Done |
+| Harry Truman | The Buck Stops Here, Give 'Em Hell | Dewey Defeats Truman | Done |
+| JFK | Hyannis Spiral, Moon Shot Uppercut | Ask Not, We Choose the Moon, Bay of Pigs | Done |
 | LBJ | The Johnson Treatment, Beagle Lift | All the Way | To do |
 | Richard Nixon | Tape Reel Whip, White House Bowling | I Am Not a Crook | To do |
 | Ronald Reagan | Star Wars Laser, Jelly Bean Spray | Tear Down This Wall | To do |

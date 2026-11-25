@@ -46,6 +46,24 @@ window.GAME = {
     // Cleveland: heavy gold bars, lobbed so they bounce and knock you flat
     goldbar: { speed: 260, vy: -260, grav: 760, bounce: 0.45, dmg: 11, w: 12, h: 7, fx: 'knock', launch: [200, -300], life: 2.4, hitSfx: 'clang',
       draw(g, p, s, t) { g.rotate(t * 7 * s); g.fillStyle = '#b8901c'; g.beginPath(); g.moveTo(-8, 4); g.lineTo(8, 4); g.lineTo(6, -3); g.lineTo(-6, -3); g.closePath(); g.fill(); g.fillStyle = '#f0d060'; g.beginPath(); g.moveTo(-6, -3); g.lineTo(6, -3); g.lineTo(5, -4.5); g.lineTo(-5, -4.5); g.closePath(); g.fill(); g.fillStyle = 'rgba(255,255,230,0.7)'; g.fillRect(-4, -1, 6, 1); } },
+    // Taft: one bang of the Chief Justice's gavel sends a shockwave rolling across the floor
+    gavel: { speed: 300, y: 7, low: true, dmg: 8, w: 16, h: 12, fx: 'stun', cool: 1.5, sfx: 'thud', hitSfx: 'clang', word: 'ORDER!',
+      draw(g, p, s, t) { for (let i = 0; i < 3; i++) { g.strokeStyle = `rgba(240,220,160,${0.8 - i * 0.22})`; g.lineWidth = 1.8; g.beginPath(); g.ellipse(-s * i * 7, 4, 6 + i * 3, 9 + i * 3 + Math.sin(t * 30) * 1.5, 0, s > 0 ? -1.4 : Math.PI - 1.4, s > 0 ? 1.4 : Math.PI + 1.4); g.stroke(); } g.fillStyle = 'rgba(200,180,120,0.5)'; g.fillRect(-12 * s - 4, 8, 16, 2); } },
+    // Coolidge: Rebecca the raccoon springs out of his coat at your face
+    raccoon: { speed: 300, vy: -230, grav: 640, dmg: 7, w: 12, h: 10, blind: true, cool: 1.6, sfx: 'chirp', hitSfx: 'gnaw', word: 'RACCOONED',
+      draw(g, p, s, t) {
+        g.scale(s, 1); const run = Math.sin(t * 30);
+        for (let i = 0; i < 5; i++) RIG.ball(g, -9 - i * 2.4, -1 + i * 0.6, 2.2 - i * 0.1, i % 2 ? '#2a2420' : '#8a8078');
+        g.fillStyle = '#7a7068'; g.beginPath(); g.ellipse(0, 0, 8, 5, -0.1, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#6a6058'; for (const lx of [-5, 4]) { g.fillRect(lx, 3, 2, 3 + run); g.fillRect(lx + 2, 3, 2, 3 - run); }
+        g.fillStyle = '#8a8078'; g.beginPath(); g.ellipse(8, -2, 4.6, 3.8, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#1a1612'; g.beginPath(); g.ellipse(9, -2.4, 3.6, 1.4, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#f0d040'; g.fillRect(9.6, -3, 1, 1); g.fillStyle = '#e8e2d8'; g.beginPath(); g.moveTo(11, -1); g.lineTo(13.4, -0.6); g.lineTo(11, 1); g.fill(); RIG.ball(g, 13.4, -0.6, 0.8, '#141010');
+        g.fillStyle = '#5a5048'; g.beginPath(); g.moveTo(6, -5); g.lineTo(7, -8); g.lineTo(8.4, -5.2); g.fill();
+        g.strokeStyle = '#f0ece0'; g.lineWidth = 0.5; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(12, 1 + i); g.lineTo(14.6, 2 + i * 1.4); g.stroke(); }
+      } },
+    // JFK: a tight spiral off the Hyannis Port lawn
+    football: { speed: 420, vy: -50, grav: 70, dmg: 9, w: 11, h: 7, fx: 'knock', launch: [220, -300], hitSfx: 'punch', word: 'TOUCHDOWN',
+      draw(g, p, s, t) { g.scale(s, 1); g.fillStyle = '#7a3a18'; g.beginPath(); g.ellipse(0, 0, 8, 4.6, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,220,180,0.25)'; g.beginPath(); g.ellipse(-1, -1.6, 5, 1.6, 0, 0, Math.PI * 2); g.fill(); const r = Math.sin(t * 40); g.strokeStyle = '#f0ece0'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-3, r * 2); g.lineTo(3, r * 2); g.stroke(); for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 1.2, r * 2 - 1); g.lineTo(i * 1.2, r * 2 + 1); g.stroke(); } g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(-12, -0.5, 3, 1); g.fillRect(-16, 1, 2, 0.8); } },
     // FDR: New Deal agencies in steel letters, three at once
     letters: { speed: 300, spread: [-80, 0, 80], dmg: 5, w: 9, h: 6, fx: 'stun', hitSfx: 'clang',
       draw(g, p, s, t) { const word = p.vy < -20 ? 'WPA' : p.vy > 20 ? 'TVA' : 'CCC'; g.rotate(t * 14 * s); g.fillStyle = '#4a4e58'; g.fillRect(-10, -5, 20, 10); g.strokeStyle = '#c8ccd4'; g.lineWidth = 0.8; g.strokeRect(-10, -5, 20, 10); g.fillStyle = '#e8ecf2'; g.font = '7px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText(word, 0, 3); g.textAlign = 'left'; } },
@@ -96,6 +114,19 @@ window.GAME = {
       cleveland: { fp: t => { const u = Math.min(1, t / 0.6), p = 1 + Math.sin(t * 6) * 0.05; return { aR: [lerp(0.3, 1.62, u), lerp(0.2, 1.48, u) * p], aL: [lerp(0.3, 1.62, u), lerp(0.2, 1.48, u) * p], spread: 8, squat: 2, jaw: 0 }; },
         fx(f, t) { if (once(f, 'f', t, 0.7)) { bubble(f, 'BIG STEVE!'); SFX.big(); } },
         draw(g, f, t) { if (t < 0.6) return; for (const side of ['handL', 'handR']) { const h = fj(f, side); g.fillStyle = '#ece8de'; g.fillRect(h[0] - 4, h[1] + 6, 8, 3.5); } } },
+      // pats the belly, the floor creaks under him, then he twirls the mustache
+      taft: { fp: t => ({ aL: [0.5 + Math.abs(Math.sin(t * 6)) * 0.15, 3.9], aR: t > 1.2 ? [0.6, 2.9] : [0.5 + Math.abs(Math.sin(t * 6 + 1)) * 0.15, 3.8], spread: 7, head: t > 1.2 ? 0.08 : -0.05 }),
+        fx(f, t) { f.st2.twirl = t > 1.2 ? 1 + Math.sin(t * 10) * 1.2 : 0; if (once(f, 'c', t, 0.5)) { SFX.creak(); bubble(f, 'CREEEAK...', 'white'); } if (once(f, 'p', t, 1.6)) { SFX.thud(); game.shake = 3; } } },
+      // the silent stare. Rebecca peeks out of the coat.
+      coolidge: { fp: t => ({ aL: [0.12, 0.05], aR: [0.12, 0.05], spread: 2, head: 0 }),
+        fx(f, t) { if (once(f, 's', t, 1.2)) bubble(f, '...', 'white'); if (once(f, 'r', t, 1.0)) SFX.chirp(); } },
+      // slams the Buck Stops Here sign down and taps it twice
+      truman: { fp: t => { const tap = t > 0.8 && t < 1.8 ? Math.max(0, Math.sin((t - 0.8) * PI * 2)) * 0.3 : 0; return { aR: [1.05 - tap, 3.0], aL: [0.4, 0.3], head: 0.1, jaw: 0.1 }; },
+        fx(f, t) { if (once(f, 'sl', t, 0.3)) { SFX.thud(); game.shake = 4; } if (once(f, 'a', t, 1.05)) SFX.blip(); if (once(f, 'b', t, 1.55)) SFX.blip(); if (once(f, 'w', t, 1.9)) bubble(f, 'THE BUCK STOPS HERE!'); },
+        draw(g, f) { const h = fj(f, 'handR'), c = fj(f, 'chest'); const sx = (h[0] + c[0]) / 2 + 4, sy = c[1] + 28; g.fillStyle = '#3a2412'; g.fillRect(sx - 18, sy - 8, 36, 16); g.fillStyle = '#5a3a1e'; g.fillRect(sx - 18, sy - 8, 36, 2.4); g.fillStyle = '#e8d8a8'; g.fillRect(sx - 15, sy - 5, 30, 10); g.fillStyle = '#2a1a0a'; g.font = '4.2px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText('THE BUCK', sx, sy - 0.6); g.fillText('STOPS HERE!', sx, sy + 3.8); g.textAlign = 'left'; } },
+      // sweeps the hair back, flashes the smile, points at you
+      jfk: { fp: t => t < 0.9 ? { aR: [2.6, 1.2], aL: [0.3, 0.2], head: -0.08 } : { aR: [1.55, 0.05], aL: [0.3, 0.2], head: 0.05, jaw: 0.15 },
+        fx(f, t) { f.st2.sweep = t < 0.9 ? Math.sin(t * 7) * 2 : 0; if (once(f, 'p', t, 1.1)) bubble(f, 'ASK NOT.'); } },
       // the Big Stick thrust skyward, spectacles glinting: "Bully!"
       teddy: { fp: t => ({ aR: [2.98, 0.05], aL: [0.6, -1.5], jaw: 0.3 }),
         fx(f, t) { if (once(f, 'b', t, 0.25)) { bubble(f, 'BULLY!'); SFX.say('bully'); } },
