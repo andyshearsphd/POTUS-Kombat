@@ -25,9 +25,9 @@ An early-90s arcade fighting game for phones in landscape, starring deceased US 
 | Ronald Reagan | Star Wars Laser, Jelly Bean Spray | Tear Down This Wall | Done |
 | Jimmy Carter | Peanut Barrage, Habitat Hammer | Peanut Grinder | Done |
 
-### Arenas (10 of 10, plus the boss stage to do)
+### Arenas (12, plus the boss stage to do)
 
-Done: The Oval Office, Mount Rushmore, Valley Forge, Gettysburg, the Reflecting Pool, White House Bowling Alley, the Capitol Rotunda, Joint Session of Congress (the crowd cheers louder as the fight heats up), the Smithsonian, and the Tidal Basin. To do: the boss-only Liberty Bell Chamber.
+Done: The Oval Office, Mount Rushmore (sculpted as a height map and lit by a low morning sun, so the carving casts real shadows), Valley Forge, Gettysburg, the Reflecting Pool, White House Bowling Alley, the Capitol Rotunda, Joint Session of Congress (the three-tier rostrum, the Mace, and the members rising to clap and cheer as the fight heats up), the Smithsonian, the Tidal Basin, the Staten Island Ferry (Lower Manhattan on one side, the Statue of Liberty on the other, at dusk), and Yosemite Valley from Tunnel View. To do: the boss-only Liberty Bell Chamber.
 
 ### Bosses (0 of 3)
 

@@ -105,16 +105,6 @@
   // =====================================================================================
   const SKINS = ['#e8c0a0', '#d8a888', '#c08a68', '#8a5a3a', '#5a3a24', '#f0d0b8'];
   const prng = sd => () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
-  // a little painted person: suit, head, arms up or down (crowds, tourists)
-  function person(g, x, y, h, o) {
-    const k = h / 40, up = o.up || 0;
-    g.fillStyle = o.legs || '#1a1a20'; g.fillRect(x - 4 * k, y - 14 * k, 3.2 * k, 14 * k); g.fillRect(x + 0.8 * k, y - 14 * k, 3.2 * k, 14 * k);
-    g.fillStyle = o.top; g.beginPath(); g.moveTo(x - 6 * k, y - 28 * k); g.lineTo(x + 6 * k, y - 28 * k); g.lineTo(x + 5 * k, y - 13 * k); g.lineTo(x - 5 * k, y - 13 * k); g.fill();
-    if (o.tie) { g.fillStyle = '#f0ece4'; g.fillRect(x - 1.2 * k, y - 28 * k, 2.4 * k, 4 * k); g.fillStyle = o.tie; g.fillRect(x - 0.6 * k, y - 27 * k, 1.2 * k, 7 * k); }
-    for (const sd of [-1, 1]) { const a = up > 0 ? -2.6 + sd * 0.3 - Math.sin(o.ph || 0) * 0.3 : 0.15 * sd; R.line(g, x + sd * 5.6 * k, y - 26 * k, x + sd * 5.6 * k + Math.sin(a) * 11 * k * sd * (up ? -1 : 1), y - 26 * k + Math.cos(a) * 11 * k, o.top, 2.6 * k); }
-    g.fillStyle = o.skin; g.beginPath(); g.arc(x, y - 32 * k, 3.6 * k, 0, PI * 2); g.fill();
-    g.fillStyle = o.hair; g.beginPath(); g.arc(x, y - 33.4 * k, 3.6 * k, PI, 0); g.fill();
-  }
   function marble(g, x, y, w, h, c) {
     vg(g, x, y, w, h, [shade(c, 0.08), c, shade(c, -0.25)]);
     g.strokeStyle = 'rgba(120,110,100,0.18)'; g.lineWidth = 0.6;
@@ -132,123 +122,256 @@
   }
 
   // =====================================================================================
-  // MOUNT RUSHMORE: the ledge below the memorial on a bright day. Washington, Jefferson,
-  // Roosevelt and Lincoln carved in pale granite, the talus slope and ponderosa pines below.
+  // MOUNT RUSHMORE at sunrise. The mountain is sculpted, not outlined: the four heads, Washington's
+  // coat, the cliffs and the rubble are one height map, lit by a low sun from the left with cast
+  // shadows, then the pines are painted on top.
   // =====================================================================================
-  const GRAN = '#cfc6b6';
-  // granite texture: blotches, pink-beige streaks and vertical fractures
-  function granite(g, x, y, w, h, c, n = 1) {
-    for (let i = 0; i < w * h / 60 * n; i++) { g.fillStyle = rand() < 0.5 ? 'rgba(60,50,44,0.10)' : 'rgba(255,246,232,0.10)'; g.beginPath(); g.ellipse(x + rand() * w, y + rand() * h, rr(1.5, 6), rr(1, 4), rr(-1, 1), 0, PI * 2); g.fill(); }
-    for (let i = 0; i < w / 40 * n; i++) { const sx = x + rand() * w, sy = y + rand() * h * 0.5, l = rr(10, h * 0.6); g.strokeStyle = rand() < 0.6 ? 'rgba(190,140,120,0.2)' : 'rgba(70,60,56,0.14)'; g.lineWidth = rr(0.6, 2.2); g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(sx + rr(-6, 6), sy + l / 2, sx + rr(-8, 8), sy + l); g.stroke(); }
-    speckle(g, x, y, w, h, w * h / 8, 0.18, 0.12);
+  let NOISE = null;
+  function vnoise(x, y) {
+    if (!NOISE) { NOISE = new Float32Array(256 * 256); const r = prng(977); for (let i = 0; i < NOISE.length; i++) NOISE[i] = r(); }
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, x0 = xi & 255, x1 = (xi + 1) & 255, y0 = (yi & 255) * 256, y1 = ((yi + 1) & 255) * 256;
+    const a = NOISE[y0 + x0], b = NOISE[y0 + x1], c = NOISE[y1 + x0], d = NOISE[y1 + x1], u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
   }
-  // one carved head, lit from the upper left. o: { turn (+ looks to our right), tilt, hair, beard, stache, specs, dark, scale of features }
-  function carved(g, x, y, h, o) {
-    const w = h * 0.5, tn = o.turn || 0, c = o.dark ? shade(GRAN, -0.1 * o.dark) : GRAN, fx = x + tn * w * 0.25;
-    const L = a => `rgba(255,250,242,${a})`, Dk = a => `rgba(46,38,34,${a})`;
-    g.save(); g.translate(x, y); g.rotate(o.tilt || 0); g.translate(-x, -y);
-    // the head emerges from the rock: soft shadow around it so it reads as relief
-    { const rg = g.createRadialGradient(x + w * 0.25, y, w * 0.6, x + w * 0.25, y, w * 1.4); rg.addColorStop(0, Dk(0.22)); rg.addColorStop(1, Dk(0)); g.fillStyle = rg; g.fillRect(x - w * 1.4, y - h * 0.8, w * 3, h * 1.6); }
-    // skull and hair mass
-    const crown = y - h * 0.5;
-    g.beginPath(); g.moveTo(fx - w * 1.0, y + h * 0.05); g.quadraticCurveTo(fx - w * 1.12, crown + h * 0.02, fx - w * 0.1, crown - h * 0.04); g.quadraticCurveTo(fx + w * 1.0, crown, fx + w * 1.02, y + h * 0.02); g.lineTo(fx + w * 0.7, y + h * 0.3); g.lineTo(fx - w * 0.8, y + h * 0.3); g.closePath();
-    const hg = g.createLinearGradient(fx - w, 0, fx + w, 0); hg.addColorStop(0, shade(c, 0.02)); hg.addColorStop(0.45, shade(c, -0.04)); hg.addColorStop(1, shade(c, -0.4)); g.fillStyle = hg; g.fill();
-    // hair carving
-    g.save(); g.clip(); g.lineWidth = 1.1;
-    if (o.hair === 'wig') { for (let i = 0; i < 6; i++) { const x0 = fx - w * 0.2 + i * w * 0.18; g.strokeStyle = Dk(0.22); g.beginPath(); g.moveTo(x0, crown + h * 0.16); g.quadraticCurveTo(x0 - w * 0.35, crown + h * 0.04, x0 - w * 0.75, crown + h * 0.1); g.stroke(); } }
-    else if (o.hair === 'swept') { for (let i = 0; i < 8; i++) { const x0 = fx - w * 0.7 + i * w * 0.2; g.strokeStyle = Dk(0.28); g.beginPath(); g.moveTo(x0, crown + h * 0.25); g.quadraticCurveTo(x0 - w * 0.2, crown + h * 0.08, x0 - w * 0.45, crown + h * 0.02); g.stroke(); } }
-    else { for (let i = 0; i < 10; i++) { g.strokeStyle = Dk(0.22); const x0 = fx - w * 0.9 + i * w * 0.2; g.beginPath(); g.moveTo(x0, crown + h * 0.04); g.lineTo(x0 + w * 0.08, crown + h * 0.24); g.stroke(); } }
-    g.restore();
-    if (o.hair === 'wig') for (const sd of [-1, 1]) for (let i = 0; i < 2; i++) { const cx = fx + sd * w * 0.92, cy = y - h * 0.08 + i * h * 0.1; g.fillStyle = shade(c, sd < 0 ? 0.04 : -0.32); g.beginPath(); g.ellipse(cx, cy, w * 0.2, h * 0.045, 0, 0, PI * 2); g.fill(); g.fillStyle = Dk(0.4); g.fillRect(cx - w * 0.2, cy + h * 0.035, w * 0.4, 1); }
-    // the face: high forehead, cheekbones, a strong jaw tapering to the chin
-    const fh = y - h * 0.3, chin = y + h * 0.5;
-    g.beginPath(); g.moveTo(fx - w * 0.6, fh); g.quadraticCurveTo(fx, fh - h * 0.07, fx + w * 0.6, fh);
-    g.quadraticCurveTo(fx + w * 0.72, y + h * 0.02, fx + w * 0.62, y + h * 0.24); g.quadraticCurveTo(fx + w * 0.42, chin - h * 0.02, fx + w * 0.08, chin);
-    g.quadraticCurveTo(fx - w * 0.3, chin + h * 0.01, fx - w * 0.6, y + h * 0.26); g.quadraticCurveTo(fx - w * 0.74, y + h * 0.02, fx - w * 0.6, fh); g.closePath();
-    const fg = g.createLinearGradient(fx - w * 0.75, 0, fx + w * 0.75, 0); fg.addColorStop(0, shade(c, 0.1)); fg.addColorStop(0.35 - tn * 0.1, shade(c, 0.14)); fg.addColorStop(0.62, shade(c, -0.06)); fg.addColorStop(1, shade(c, -0.45)); g.fillStyle = fg; g.fill();
-    g.save(); g.clip(); granite(g, fx - w, fh - 6, w * 2, h, c, 0.5);
-    // the brow overhang: one dark band across both eyes
-    const ey = y - h * 0.1, sk = o.deep ? 0.62 : 0.5;
-    g.fillStyle = Dk(sk * 0.55); g.beginPath(); g.ellipse(fx + w * 0.04, ey + h * 0.01, w * 0.6, h * 0.06, 0, 0, PI * 2); g.fill();
-    g.restore();
-    g.fillStyle = L(0.35); g.beginPath(); g.ellipse(fx - w * 0.1, ey - h * 0.07, w * 0.5, h * 0.025, 0, 0, PI * 2); g.fill();
-    for (const sd of [-1, 1]) {
-      const sx = fx + sd * w * (sd > 0 ? 0.3 - tn * 0.06 : 0.3 + tn * 0.04);
-      g.fillStyle = Dk(sk); g.beginPath(); g.ellipse(sx, ey, w * 0.18, h * 0.045, 0, 0, PI * 2); g.fill();
-      // the carved pupil: a hole with a peg of stone that catches the light
-      g.fillStyle = Dk(0.85); g.beginPath(); g.arc(sx + w * 0.02, ey + h * 0.004, h * 0.016, 0, PI * 2); g.fill();
-      g.fillStyle = L(0.85); g.beginPath(); g.arc(sx + w * 0.01, ey - h * 0.002, h * 0.007, 0, PI * 2); g.fill();
-      g.fillStyle = L(0.2); g.beginPath(); g.ellipse(sx - w * 0.02, ey + h * 0.05, w * 0.14, h * 0.018, 0, 0, PI * 2); g.fill();
-      if (o.specs) { g.strokeStyle = Dk(0.6); g.lineWidth = 0.9; g.beginPath(); g.ellipse(sx, ey + h * 0.005, w * 0.2, h * 0.06, 0, 0, PI * 2); g.stroke(); }
+  function fbm(x, y, o) { let s = 0, a = 1, n = 0; for (let i = 0; i < o; i++) { s += vnoise(x, y) * a; n += a; a *= 0.5; x = x * 2.03 + 17.1; y = y * 2.03 + 3.7; } return s / n; }
+  // jittered-cell (Worley) lookup: nearest and second-nearest feature point, and the nearest cell's id
+  function cells(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y); let d1 = 9, d2 = 9, id = 0, ox = 0, oy = 0;
+    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+      const cx = xi + i, cy = yi + j, h = ((cx * 374761393 + cy * 668265263) ^ 0x5bd1e995) >>> 0, r1 = ((h * 2654435761) >>> 0) / 4294967296, r2 = ((h * 2246822519) >>> 0) / 4294967296;
+      const dx = cx + 0.15 + r1 * 0.7 - x, dy = cy + 0.15 + r2 * 0.7 - y, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < d1) { d2 = d1; d1 = d; id = h; ox = dx; oy = dy; } else if (d < d2) d2 = d;
     }
-    if (o.specs) R.line(g, fx - w * 0.1, ey - 1, fx + w * 0.1, ey - 1, Dk(0.6), 0.9);
-    // the nose: a long ridge, bright on the lit side, casting a shadow to the right
-    const nt = y + h * 0.12;
-    g.fillStyle = L(0.4); g.beginPath(); g.moveTo(fx - w * 0.04, ey + h * 0.02); g.lineTo(fx - w * 0.12, nt); g.lineTo(fx + w * 0.02, nt + h * 0.015); g.lineTo(fx + w * 0.02, ey + h * 0.02); g.fill();
-    g.fillStyle = Dk(0.5); g.beginPath(); g.moveTo(fx + w * 0.03, ey + h * 0.03); g.lineTo(fx + w * 0.2, nt + h * 0.01); g.lineTo(fx + w * 0.03, nt + h * 0.03); g.fill();
-    g.fillStyle = Dk(0.6); g.beginPath(); g.ellipse(fx + w * 0.04, nt + h * 0.035, w * 0.15, h * 0.02, 0, 0, PI * 2); g.fill();
-    // cheekbone highlights and the shadow side of the face
-    g.fillStyle = L(0.22); g.beginPath(); g.ellipse(fx - w * 0.36, y + h * 0.02, w * 0.16, h * 0.08, 0.3, 0, PI * 2); g.fill();
-    g.fillStyle = Dk(0.22); g.beginPath(); g.ellipse(fx + w * 0.42, y + h * 0.08, w * 0.16, h * 0.14, -0.2, 0, PI * 2); g.fill();
-    // nasolabial folds
-    g.strokeStyle = Dk(0.35); g.lineWidth = 1;
-    for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(fx + sd * w * 0.18, nt + h * 0.02); g.quadraticCurveTo(fx + sd * w * 0.3, nt + h * 0.1, fx + sd * w * 0.26, nt + h * 0.18); g.stroke(); }
-    if (o.stache) { g.fillStyle = shade(c, -0.12); g.beginPath(); g.moveTo(fx - w * 0.3, nt + h * 0.09); g.quadraticCurveTo(fx, nt + h * 0.035, fx + w * 0.3, nt + h * 0.09); g.quadraticCurveTo(fx + w * 0.2, nt + h * 0.13, fx, nt + h * 0.1); g.quadraticCurveTo(fx - w * 0.2, nt + h * 0.13, fx - w * 0.3, nt + h * 0.09); g.fill(); g.fillStyle = Dk(0.5); g.fillRect(fx - w * 0.26, nt + h * 0.115, w * 0.52, 1.2); }
-    // mouth, lower lip, the shadow under it, the chin
-    const my = nt + h * (o.stache ? 0.15 : 0.13);
-    g.strokeStyle = Dk(0.8); g.lineWidth = 1.3; g.beginPath(); g.moveTo(fx - w * 0.2, my); g.quadraticCurveTo(fx, my + h * 0.008, fx + w * 0.2, my - h * 0.004); g.stroke();
-    g.fillStyle = L(0.3); g.fillRect(fx - w * 0.14, my + h * 0.014, w * 0.24, h * 0.02);
-    g.fillStyle = Dk(0.45); g.beginPath(); g.ellipse(fx + w * 0.02, my + h * 0.055, w * 0.13, h * 0.016, 0, 0, PI * 2); g.fill();
+    return [d1, d2, id, ox, oy];
+  }
+  const gs = (u, v, cu, cv, su, sv) => { const a = (u - cu) / su, b = (v - cv) / sv, e = a * a + b * b; return e > 12 ? 0 : Math.exp(-e); };
+  const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  // one carved head as a relief: u across (viewer's right is +), v down, the eye line at v = 0,
+  // all in head heights. Returns how far the stone stands out at (u, v), or -1 off the head.
+  function headRelief(u, v, o) {
+    if (v < o.top || v > o.chin) return -1;
+    // outline: round crown, straight temples and cheeks, the jaw tapering to a squared chin
+    let w = o.a;
+    if (v < o.sk) { const t = (o.sk - v) / (o.sk - o.top); w *= Math.sqrt(Math.max(0, 1 - Math.pow(t, 2.2))); }
+    else if (v > o.jaw) { const t = (v - o.jaw) / (o.chin - o.jaw); w = o.a - (o.a - o.chinW) * Math.pow(t, o.jp || 1.6); if (v > o.chin - 0.06) w *= Math.sqrt(Math.max(0, 1 - ((v - o.chin + 0.06) / 0.06) ** 2)); }
+    if (o.wig && v > -0.3 && v < 0.34) w += o.wig * Math.sqrt(Math.max(0, 1 - ((v - 0.02) / 0.32) ** 2));
+    if (o.beard && v > 0.1) w = Math.max(w, (o.a - (v - 0.1) * 0.32) * (v > o.chin - 0.08 ? Math.sqrt(Math.max(0, 1 - ((v - o.chin + 0.08) / 0.08) ** 2)) : 1));
+    const au = Math.abs(u); if (au >= w) return -1;
+    // the skull: an ellipsoid, deep enough to turn the corner at the cheekbones
+    const q = au / w; let z = o.D * Math.pow(1 - Math.pow(q, 2.5), 0.45);
+    if (v < -0.1) { const t = (-0.1 - v) / (-0.1 - o.top); z *= Math.sqrt(Math.max(0, 1 - t * t * 0.85)); }
+    // the face plane stands forward of the skull from the brow down to the chin
+    z += 0.05 * Math.exp(-((au / 0.25) ** 4)) * sstep(-0.16, -0.06, v) * (1 - 0.6 * sstep(o.chin - 0.12, o.chin, v));
+    // hair: a raised mass, combed in long shallow waves; a roll over each ear for the wigs
+    const hairAt = o.hairline + o.hairCurve * u * u, side = o.wigSide ? sstep(o.wigSide - 0.04, o.wigSide + 0.02, au) * sstep(0.32, 0.12, v) : 0;
+    const hm = Math.max(sstep(0, 0.08, hairAt - v), side);
+    z -= (o.groove ?? 0.014) * Math.exp(-(((v - hairAt) / 0.014) ** 2)) * (1 - side);
+    if (hm > 0) z += hm * (o.hairZ - 0.008 * Math.abs(Math.sin((u * o.comb[0] + v * o.comb[1]) * 26 + Math.sin(v * 12 + u * 6) * 2)));
+    if (o.roll) z += o.roll * (gs(au, v, o.a - 0.02, 0.04, 0.08, 0.16) + 0.8 * gs(au, v, o.a - 0.03, 0.22, 0.07, 0.07)) * (1 - 0.35 * Math.abs(Math.sin(v * 38)));
+    // the brow: a heavy shelf over the eyes, a little notch between them
+    z += o.brow * 1.15 * Math.exp(-(((v + 0.075 - o.browArch * u * u) / 0.04) ** 2)) * Math.exp(-((au / 0.27) ** 4)) * (1 - 0.3 * Math.exp(-((u / 0.03) ** 2)));
+    // sockets, eyeballs, the upper lids, the carved iris with its peg
+    const ex = o.ex, rE = Math.hypot((au - ex) / 0.075, v / 0.055);
+    z -= o.sock * 1.3 * Math.exp(-rE * rE * 0.9);
+    const rb = Math.hypot((au - ex) / 0.05, (v - 0.012) / 0.028); if (rb < 1) z += o.sock * 0.7 * Math.sqrt(1 - rb * rb);
+    z += 0.016 * gs(au, v, ex, -0.012, 0.05, 0.011);
+    const ix = ex + (u < 0 ? -o.look : o.look); z -= 0.006 * gs(au, v, ix, 0.012, 0.012, 0.011);
+    // the nose: planed sides from the bridge to a broad base, a bulb at the tip, nostril wings, undercut
+    if (v > -0.08 && v < o.nose + 0.1) {
+      const nt = Math.max(0, Math.min(1, (v + 0.05) / (o.nose + 0.05)));
+      let hn = o.nz * (0.25 + 0.75 * nt), nw = 0.022 + o.nb * Math.pow(nt, 1.6);
+      if (v > o.nose) { const f = Math.exp(-(((v - o.nose) / 0.022) ** 2)); hn *= f; }
+      z += hn * Math.pow(Math.max(0, 1 - au / nw), 1.15);
+      z += o.nz * 0.22 * gs(u, v, 0, o.nose - 0.025, 0.04, 0.035);
+      z += o.nz * 0.3 * gs(au, v, o.nb * 0.95, o.nose - 0.015, 0.026, 0.024);
+    }
+    // cheekbones and hollows, the muzzle, soft cheek masses beside the mouth
+    z += o.cheek * gs(au, v, 0.19, 0.1, 0.08, 0.07) - o.hollow * gs(au, v, 0.17, 0.3, 0.07, 0.1);
+    z += 0.05 * gs(u, v, 0, o.mouth - 0.01, 0.17, 0.12);
+    z += o.fold * gs(au, v, 0.15, o.mouth - 0.02, 0.05, 0.07);
+    // lips, the mouth line and the chin
+    const mv = o.mouth + o.smile * u * u;
+    z += 0.022 * gs(u, v, 0, mv - 0.022, 0.09, 0.02);
+    z -= 0.032 * Math.exp(-(((v - mv) / 0.009) ** 2)) * Math.exp(-((u / o.mw) ** 6));
+    z += 0.026 * gs(u, v, 0, mv + 0.028, 0.075, 0.02) - 0.02 * gs(u, v, 0, mv + 0.065, 0.06, 0.018);
+    z += o.chinB * gs(u, v, 0, o.chin - 0.08, 0.09, 0.055);
+    z -= 0.02 * gs(au, v, 0.31, -0.12, 0.05, 0.08);
+    // Roosevelt's mustache and pince-nez; Lincoln's beard along the jaw and chin
+    if (o.stache) { const sv = o.nose + 0.055 + 1.3 * u * u; z += o.stache * 1.3 * Math.exp(-(((v - sv) / 0.045) ** 2)) * Math.exp(-((u / 0.16) ** 6)) * (1 - 0.06 * Math.abs(Math.sin(u * 70))); }
+    if (o.specs) { const r = Math.hypot(au - ex, (v - 0.008) * 1.1); z += 0.01 * Math.exp(-(((r - 0.062) / 0.007) ** 2)) * (v > 0 ? 1 : 0); }
     if (o.beard) {
-      // Lincoln's chin beard along the jaw, no mustache
-      g.save(); g.beginPath(); g.moveTo(fx - w * 0.64, y + h * 0.12); g.quadraticCurveTo(fx - w * 0.5, chin + h * 0.04, fx + w * 0.06, chin + h * 0.06); g.quadraticCurveTo(fx + w * 0.5, chin + h * 0.02, fx + w * 0.66, y + h * 0.12);
-      g.quadraticCurveTo(fx + w * 0.4, chin - h * 0.1, fx, my + h * 0.08); g.quadraticCurveTo(fx - w * 0.4, chin - h * 0.1, fx - w * 0.64, y + h * 0.12); g.closePath();
-      const bg = g.createLinearGradient(fx - w * 0.6, 0, fx + w * 0.6, 0); bg.addColorStop(0, shade(c, -0.06)); bg.addColorStop(1, shade(c, -0.42)); g.fillStyle = bg; g.fill();
-      g.clip(); for (let i = 0; i < 70; i++) { g.strokeStyle = rand() < 0.55 ? Dk(0.35) : L(0.18); g.lineWidth = 0.8; const bx = fx + rr(-w * 0.66, w * 0.66), by = rr(y + h * 0.1, chin + h * 0.06); g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + rr(-1, 1), by + rr(2, 5)); g.stroke(); } g.restore();
-    } else { g.fillStyle = L(0.28); g.beginPath(); g.ellipse(fx - w * 0.03, chin - h * 0.06, w * 0.15, h * 0.035, 0, 0, PI * 2); g.fill(); }
-    // under the jaw the stone falls into shadow
-    { const ng = g.createLinearGradient(0, chin - h * 0.02, 0, chin + h * 0.22); ng.addColorStop(0, Dk(0.42)); ng.addColorStop(1, Dk(0)); g.fillStyle = ng; g.beginPath(); g.moveTo(fx - w * 0.42, chin - h * 0.06); g.quadraticCurveTo(fx, chin + h * 0.06, fx + w * 0.5, chin - h * 0.08); g.lineTo(fx + w * 0.5, chin + h * 0.22); g.lineTo(fx - w * 0.42, chin + h * 0.22); g.closePath(); g.fill(); }
-    g.restore();
+      const bl = o.mouth + 0.065 - (o.mouth + 0.065 - 0.1) * Math.pow(Math.min(1, au / 0.3), 1.4);
+      z += sstep(-0.02, 0.09, v - bl) * (o.beard - 0.004 * Math.abs(Math.sin(u * 60 + v * 10)));
+    }
+    return z;
+  }
+  const RUSH_HEADS = [
+    // Lincoln, set apart on the right, turned a little to his right; long face, deep eyes, the jaw beard
+    { x: 746, y: 76, H: 80, yaw: -0.3, pitch: 0.02, roll: 0.02, z0: -4, o: { top: -0.42, chin: 0.62, sk: -0.12, jaw: 0.22, a: 0.37, chinW: 0.18, D: 0.6, nb: 0.07, hairline: -0.25, hairCurve: 0.9, hairZ: 0.035, comb: [0.4, 1], ex: 0.125, look: 0.01, brow: 0.075, browArch: 0.4, sock: 0.085, nose: 0.23, nz: 0.14, cheek: 0.03, hollow: 0.04, fold: 0.02, mouth: 0.36, mw: 0.09, smile: 0.15, chinB: 0.02, beard: 0.04 } },
+    // Roosevelt, deep in his recess: glasses, the big mustache
+    { x: 662, y: 88, H: 66, yaw: -0.1, pitch: 0.04, roll: -0.02, z0: -15, o: { top: -0.4, chin: 0.6, sk: -0.12, jaw: 0.22, a: 0.4, chinW: 0.22, D: 0.58, nb: 0.075, hairline: -0.26, hairCurve: 0.5, hairZ: 0.02, comb: [1, 0.2], ex: 0.135, look: -0.005, brow: 0.065, browArch: 0.3, sock: 0.07, nose: 0.21, nz: 0.13, cheek: 0.035, hollow: 0.01, fold: 0.012, mouth: 0.38, mw: 0.09, smile: 0, chinB: 0.045, stache: 0.07, specs: 1 } },
+    // Jefferson, behind Washington's right shoulder, turned to his left and lifting his chin
+    { x: 604, y: 66, H: 72, yaw: 0.34, pitch: -0.2, roll: -0.1, z0: -5, o: { top: -0.42, chin: 0.58, sk: -0.12, jaw: 0.22, a: 0.39, chinW: 0.2, D: 0.6, nb: 0.07, hairline: -0.24, hairCurve: 0.8, hairZ: 0.03, groove: 0.004, comb: [1, 0.5], ex: 0.125, look: 0.01, brow: 0.05, browArch: 0.3, sock: 0.065, nose: 0.21, nz: 0.14, cheek: 0.03, hollow: 0.01, fold: 0.012, mouth: 0.35, mw: 0.085, smile: -0.1, chinB: 0.04, roll: 0.05, wigSide: 0.31, wig: 0.03 } },
+    // Washington out front: broad face, strong brow, straight nose, firm mouth, the wig with its side roll
+    { x: 532, y: 46, H: 84, yaw: 0.05, pitch: 0, roll: 0, z0: 5, o: { top: -0.39, chin: 0.61, sk: -0.12, jaw: 0.24, a: 0.44, chinW: 0.3, jp: 2, D: 0.62, nb: 0.08, hairline: -0.24, hairCurve: 0.5, hairZ: 0.04, comb: [1, 0.35], ex: 0.135, look: 0, brow: 0.07, browArch: 0.3, sock: 0.075, nose: 0.21, nz: 0.15, cheek: 0.03, hollow: 0.01, fold: 0.014, mouth: 0.37, mw: 0.1, smile: 0.1, chinB: 0.05, roll: 0.1, wigSide: 0.36, wig: 0.05 } },
+  ];
+  function rushmoreRelief(B, flat) {
+    const S = 2, W2 = BW * S, H2 = FY * S, N = W2 * H2;
+    const Z = new Float32Array(N).fill(-1e4), M = new Uint8Array(N);   // 0 sky, 1 cliff, 2 carved, 3 rubble, 4 weathered schist
+    // the skyline, in back-layer pixels
+    const RIDGE = [[0, 104], [90, 84], [180, 66], [260, 50], [340, 36], [400, 22], [450, 12], [490, 10], [520, 16], [565, 34], [600, 46], [630, 58], [665, 64], [690, 70], [712, 66], [735, 56], [790, 34], [830, 22], [870, 18], [910, 22], [960, 36], [1040, 52], [1140, 70], [1280, 88]];
+    const ridge = x => { for (let i = 1; i < RIDGE.length; i++) if (x <= RIDGE[i][0]) { const [x0, y0] = RIDGE[i - 1], [x1, y1] = RIDGE[i], t = (x - x0) / (x1 - x0); return y0 + (y1 - y0) * (t * t * (3 - 2 * t)); } return 88; };
+    const talusTop = x => 140 + ((x - 664) / 110) ** 2 * 44;
+    // the mountain is shaped at the back layer's own resolution, then smoothly enlarged
+    const Z1 = new Float32Array(BW * FY), M1 = new Uint8Array(BW * FY), TOP = new Float32Array(W2);
+    for (let x = 0; x < W2; x++) TOP[x] = flat ? -1 : ridge(x / S) + (fbm(x / S / 22, 1.7, 3) - 0.5) * 12;
+    for (let Y = 0; Y < FY; Y++) for (let X = 0; X < BW; X++) {
+      const i = Y * BW + X;
+      if (flat) { M1[i] = 1; continue; }
+      const top = TOP[X * S]; if (Y < top - 2) continue;
+      // jointed granite: big blocks, each a slightly tilted plane, thin cracks between, sheeting along the slope
+      const near = Math.exp(-(((X - 640) / 170) ** 2)), sc = 1 / (46 + 24 * near);
+      const wx = (fbm(X / 34, Y / 34 + 9, 2) - 0.5) * 1.4, wy = (fbm(X / 34 + 5, Y / 34, 2) - 0.5) * 1.4, [d1, d2, id, ox, oy] = cells(X * sc * 0.7 + wx, Y * sc * 1.6 + wy), r1 = (id % 1000) / 1000, r2 = ((id >>> 10) % 1000) / 1000;
+      let z = (r1 - 0.5) * 5 * (1 - near * 0.7) - (ox * (r2 - 0.5) + oy * (r1 - 0.4)) * 5 * (1 - near * 0.6);
+      z -= 0.9 * (1 - near) * Math.exp(-((d2 - d1) / 0.025));
+      z += (fbm(X / 40, Y / 26, 3) - 0.5) * 9 + (fbm(X / 8, Y / 8, 2) - 0.5) * 3;
+      const d = Y - top, Rr = 18; if (d < Rr) z -= Rr - Math.sqrt(Math.max(0, Rr * Rr - (Rr - d) * (Rr - d)));
+      // Roosevelt's recess and the deep cleft that sets Lincoln apart
+      z -= 15 * sstep(1, 0.55, Math.hypot((X - 662) / 56, (Y - 92) / 80));
+      z -= 22 * Math.exp(-(((X - 703 - (Y - 70) * 0.12) / 7) ** 2)) * sstep(52, 70, Y) * sstep(160, 120, Y);
+      // the flanks stand forward of the carved face
+      z += 8 * sstep(470, 380, X) + 6 * sstep(800, 880, X);
+      Z1[i] = z; M1[i] = Y > 146 + fbm(X / 30, 9, 2) * 18 && X > 330 && X < 600 ? 4 : 1;
+      // Washington's coat: a broad chest, a collar round the neck, folds running down from it
+      { const e = 1 - ((X - 520) / 160) ** 2 - ((Y - 152) / 84) ** 2;
+        if (e > 0) {
+          let zc = 34 * Math.sqrt(e) - 16 + (fbm(X / 30, Y / 30 + 5, 3) - 0.5) * 8 - 18 * sstep(150, 178, Y + (fbm(X / 20, 4, 2) - 0.5) * 24);
+          const fold = (ax, ay, bx, by, side) => { const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy), s = ((X - ax) * dy - (Y - ay) * dx) / L * side; return s > -4 && s < 22 ? 3.2 * Math.sin(Math.min(1, (s + 4) / 8) * PI / 2) * (1 - Math.max(0, s) / 22) : 0; };
+          zc += fold(526, 106, 440, 188, 1) + fold(554, 104, 616, 186, -1);
+          if (Y < 112 && Math.abs(X - 535) < 24) zc = Math.max(zc, 14 * Math.sqrt(1 - ((X - 535) / 24) ** 2) + 2);
+          zc += 3.4 * Math.exp(-(((Math.hypot((X - 535) / 34, (Y - 100) / 14) - 1) / 0.25) ** 2)) * (Y > 100 ? 1 : 0);
+          if (zc > Z1[i]) { Z1[i] = zc; M1[i] = 2; }
+        }
+      }
+      // the talus slope of blasted rubble below the faces
+      const tt = talusTop(X) + (fbm(X / 12, 7, 2) - 0.5) * 8;
+      if (Y > tt) {
+        const [r1d, r2d] = cells(X / 3.2, Y / 2.6), zt = 6 + (Y - tt) * 0.7 + 1.6 * (1 - Math.min(1, r1d * 1.6)) - 1.2 * Math.exp(-((r2d - r1d) / 0.06));
+        if (zt > Z1[i]) { Z1[i] = zt; M1[i] = 3; }
+      }
+    }
+    for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) {
+      if (y / S < TOP[x]) continue;
+      const fx = Math.min(BW - 1.001, Math.max(0, (x - 0.5) / S)), fy = Math.min(FY - 1.001, Math.max(0, (y - 0.5) / S)), x0 = fx | 0, y0 = fy | 0, tx = fx - x0, ty = fy - y0, k = y0 * BW + x0;
+      const i = y * W2 + x; Z[i] = S * ((Z1[k] * (1 - tx) + Z1[k + 1] * tx) * (1 - ty) + (Z1[k + BW] * (1 - tx) + Z1[k + BW + 1] * tx) * ty);
+      M[i] = M1[((y / S) | 0) * BW + ((x / S) | 0)] || 1;
+    }
+    // the heads: sample each relief finely, turn it, and keep whatever stands out farthest
+    const HID = new Int8Array(N).fill(-1);
+    RUSH_HEADS.forEach((hd, k) => {
+      const o = hd.o, s = hd.H * S, step = 1 / (s * 1.45), uw = o.a + 0.06, cy = Math.cos(hd.yaw), sy = Math.sin(hd.yaw), cp = Math.cos(hd.pitch), sp = Math.sin(hd.pitch), cr = Math.cos(hd.roll), sr = Math.sin(hd.roll);
+      for (let v = o.top; v <= o.chin + 0.02; v += step) for (let u = -uw; u <= uw; u += step) {
+        const h = headRelief(u, v, o); if (h < 0) continue;
+        let px = u, py = v, pz = h;
+        let t = px * cy + pz * sy; pz = -px * sy + pz * cy; px = t;
+        t = py * cp - pz * sp; pz = py * sp + pz * cp; py = t;
+        t = px * cr - py * sr; py = px * sr + py * cr; px = t;
+        const X = Math.round(hd.x * S + px * s), Yp = Math.round(hd.y * S + py * s);
+        if (X < 0 || X >= W2 || Yp < 0 || Yp >= H2) continue;
+        const i = Yp * W2 + X, zz = (hd.z0 - o.D * hd.H * 0.55) * S + pz * s;
+        if (zz > Z[i]) { Z[i] = zz; M[i] = 2; HID[i] = k; }
+      }
+    });
+    // light: a low morning sun from the left, cast shadows by marching toward it through the height map
+    const L = [-0.58, -0.4, 0.71], ln = Math.hypot(...L); L[0] /= ln; L[1] /= ln; L[2] /= ln;
+    const lxy = Math.hypot(L[0], L[1]), sdx = L[0] / lxy, sdy = L[1] / lxy, slope = L[2] / lxy;
+    const lit = new Float32Array(N), ao = new Float32Array(N); const PM = new Float32Array(N);   // the tallest stone above and to the left of each point: the sun's rays only travel that way
+    for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) { const i = y * W2 + x; let m = Z[i]; if (x) m = Math.max(m, PM[i - 1]); if (y) m = Math.max(m, PM[i - W2]); PM[i] = m; }
+    // ambient occlusion from a blurred height map (summed-area table)
+    { const sat = new Float64Array((W2 + 1) * (H2 + 1)), R0 = 10;
+      for (let y = 0; y < H2; y++) { let row = 0; for (let x = 0; x < W2; x++) { const zz = Z[y * W2 + x]; row += zz < -5e3 ? -40 : zz; sat[(y + 1) * (W2 + 1) + x + 1] = sat[y * (W2 + 1) + x + 1] + row; } }
+      for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) {
+        const i = y * W2 + x; if (M[i] === 0) continue;
+        const xa = Math.max(0, x - R0), xb = Math.min(W2, x + R0 + 1), ya = Math.max(0, y - R0), yb = Math.min(H2, y + R0 + 1);
+        const avg = (sat[yb * (W2 + 1) + xb] - sat[ya * (W2 + 1) + xb] - sat[yb * (W2 + 1) + xa] + sat[ya * (W2 + 1) + xa]) / ((xb - xa) * (yb - ya));
+        ao[i] = Math.max(0.35, Math.min(1, 1 - (avg - Z[i]) * 0.018));
+      }
+    }
+    for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) {
+      const i = y * W2 + x; if (M[i] === 0) continue;
+      const z = Z[i];
+      let a1 = x > 0 ? Z[i - 1] : z, a2 = x > 1 ? Z[i - 2] : z, b1 = x < W2 - 1 ? Z[i + 1] : z, b2 = x < W2 - 2 ? Z[i + 2] : z, c1 = y > 0 ? Z[i - W2] : z, c2 = y > 1 ? Z[i - 2 * W2] : z, e1 = y < H2 - 1 ? Z[i + W2] : z, e2 = y < H2 - 2 ? Z[i + 2 * W2] : z;
+      if (Math.abs(a1 - z) > 40) a1 = z; if (Math.abs(a2 - z) > 40) a2 = z; if (Math.abs(b1 - z) > 40) b1 = z; if (Math.abs(b2 - z) > 40) b2 = z;
+      if (Math.abs(c1 - z) > 40) c1 = z; if (Math.abs(c2 - z) > 40) c2 = z; if (Math.abs(e1 - z) > 40) e1 = z; if (Math.abs(e2 - z) > 40) e2 = z;
+      const zL = (a1 + a2) / 2, zR = (b1 + b2) / 2, zU = (c1 + c2) / 2, zD = (e1 + e2) / 2;
+      let nx = -(zR - zL) / 3, ny = -(zD - zU) / 3, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+      let dif = nx * L[0] + ny * L[1] + nz * L[2];
+      if (dif > 0) {
+        let sh = 1;
+        for (let k = 1, dd = 1; k < 70; k++, dd += 1 + k * 0.08) {
+          const sx = Math.round(x + sdx * dd), sy2 = Math.round(y + sdy * dd); if (sx < 0 || sy2 < 0 || sx >= W2) break;
+          const zr = z + dd * slope, j = sy2 * W2 + sx; if (zr > PM[j]) break; const over = Z[j] - zr;
+          if (M[j] && over > 0) { sh = Math.min(sh, Math.max(0, 1 - over / 3)); if (sh <= 0) break; }
+        }
+        dif *= sh;
+      } else dif = 0;
+      lit[i] = dif;
+      ao[i] *= 0.6 + 0.4 * Math.max(0, -ny * 0.5 + nz * 0.7);
+    }
+    // stone colors: pale carved granite, mottled natural cliff, gray rubble, dark weathered schist.
+    // The cliff pales toward the carving so the finished stone and the raw rock blend.
+    const img = B.getImageData(0, 0, BW, FY), D = img.data;
+    const SUN = [1.55, 1.12, 0.64], SKY = [0.22, 0.28, 0.46], alb = [0, 0, 0, 0, 0];
+    for (let y = 0; y < FY; y++) for (let x = 0; x < BW; x++) {
+      let r = 0, g = 0, b = 0, cov = 0, done = 0;
+      for (let q = 0; q < 4; q++) {
+        const i = (y * 2 + (q >> 1)) * W2 + x * 2 + (q & 1), m = M[i]; if (!m) continue;
+        cov++;
+        if (!(done & (1 << m))) {
+          done |= 1 << m;
+          if (m === 2) { const n = fbm(x / 14, y / 3, 3), st = fbm(x / 1.5, y / 40, 2); alb[2] = 0.82 + (n - 0.5) * 0.12 - (st > 0.72 ? 0.08 : 0); }
+          else if (m === 1) { const n = fbm(x / 18, y / 12, 3), st = fbm(x / 3, y / 46, 2), near = Math.exp(-(((x - 640) / 150) ** 2)) * sstep(170, 60, y); alb[1] = (0.66 + (n - 0.5) * 0.36 - Math.max(0, st - 0.55) * 0.7) * (1 - near * 0.5) + (0.8 + (n - 0.5) * 0.12) * near * 0.5; }
+          else if (m === 3) { const [, , cid] = cells(x / 3.2, y / 2.6); alb[3] = 0.4 + ((cid % 100) / 100) * 0.24; }
+          else alb[4] = 0.34 + fbm(x / 4, y / 26 + x / 40, 3) * 0.22;
+        }
+        let a0 = alb[m], a1, a2;
+        if (m === 3) { a1 = a0 * 0.98; a2 = a0 * 0.98; } else if (m === 4) { a1 = a0 * 0.9; a2 = a0 * 0.82; } else { a1 = a0 * 0.89; a2 = a0 * 0.77; }
+        if (HID[i] === 1) { a0 *= 0.96; a1 *= 0.95; }
+        const li = lit[i], am = ao[i];
+        r += a0 * (SKY[0] * am + SUN[0] * li); g += a1 * (SKY[1] * am + SUN[1] * li); b += a2 * (SKY[2] * am + SUN[2] * li);
+      }
+      if (!cov) continue;
+      const p = (y * BW + x) * 4, k = cov / 4, tone = c => Math.min(255, 255 * Math.pow(c / cov, 0.9));
+      D[p] = D[p] * (1 - k) + tone(r) * k; D[p + 1] = D[p + 1] * (1 - k) + tone(g) * k; D[p + 2] = D[p + 2] * (1 - k) + tone(b) * k; D[p + 3] = 255;
+    }
+    B.putImageData(img, 0, 0);
+  }
+  // a ponderosa pine catching the sun on its left side
+  function ponderosa(g, x, y, h) {
+    // a tall straight trunk, open clumps of needles hung from short limbs, sun on the left
+    g.fillStyle = '#4a2c18'; g.beginPath(); g.moveTo(x - h * 0.035, y); g.lineTo(x - h * 0.012, y - h * 0.95); g.lineTo(x + h * 0.012, y - h * 0.95); g.lineTo(x + h * 0.035, y); g.fill();
+    const n = 7 + (h / 6 | 0);
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1), cy = y - h * (0.28 + t * 0.7), reach = h * (0.26 * (1 - t) + 0.07) * rr(0.6, 1.2), sd = i % 2 ? 1 : -1, cx = x + sd * reach * 0.55;
+      R.line(g, x, cy + h * 0.03, cx, cy, '#3a2414', Math.max(0.6, h * 0.018));
+      for (let k = 0; k < 3; k++) {
+        const bx = cx + rr(-reach, reach) * 0.45, by = cy + rr(-1, 1) * h * 0.025, rw = reach * rr(0.35, 0.6), rh = h * rr(0.045, 0.07);
+        g.fillStyle = shade('#1c3418', rr(-0.25, 0.05)); g.beginPath(); g.ellipse(bx, by, rw, rh, rr(-0.2, 0.2), 0, PI * 2); g.fill();
+        g.fillStyle = 'rgba(200,170,90,0.35)'; g.beginPath(); g.ellipse(bx - rw * 0.4, by - rh * 0.3, rw * 0.45, rh * 0.5, 0, 0, PI * 2); g.fill();
+      }
+    }
   }
   function rushmore(B, F) {
     setSeed(31);
-    // a bright day: blue sky and drifting cumulus
-    vg(B, 0, 0, BW, FY, ['#4a7ab8', '#6a98cc', '#9ab8dc', '#c8d8e8']);
-    clouds(B, 4, 80, 14, 'rgba(230,236,244,0.55)', 'rgba(255,255,255,0.75)', -1);
-    // the granite massif: crags on both ends, the carved face in the middle
-    B.fillStyle = shade(GRAN, -0.12); B.beginPath(); B.moveTo(0, FY); B.lineTo(0, 110); B.quadraticCurveTo(60, 70, 140, 64); B.lineTo(200, 40); B.quadraticCurveTo(250, 20, 330, 18);
-    B.quadraticCurveTo(470, 8, 560, 14); B.quadraticCurveTo(640, 20, 700, 30); B.quadraticCurveTo(820, 34, 900, 44); B.lineTo(980, 52); B.quadraticCurveTo(1100, 60, 1180, 86); B.lineTo(1280, 120); B.lineTo(1280, FY); B.closePath(); B.fill();
-    for (const [dx, dy, r] of [[180, 52, 40], [250, 30, 46], [330, 24, 34], [410, 18, 40], [700, 32, 36], [760, 34, 34], [930, 50, 44], [1010, 56, 40], [1090, 70, 46], [1180, 90, 50]]) { B.fillStyle = shade(GRAN, rr(-0.16, -0.06)); B.beginPath(); B.ellipse(dx, dy + r * 0.6, r, r * 0.8, 0, 0, PI * 2); B.fill(); B.fillStyle = 'rgba(255,248,236,0.18)'; B.beginPath(); B.ellipse(dx - r * 0.3, dy + r * 0.3, r * 0.5, r * 0.4, 0, 0, PI * 2); B.fill(); }
-    B.save(); B.beginPath(); B.rect(0, 0, BW, FY); B.clip(); granite(B, 0, 0, BW, FY, GRAN, 1.2);
-    // big jointed blocks and fractures on the flanks
-    for (let i = 0; i < 70; i++) { const x = rand() < 0.5 ? rr(0, 330) : rr(900, BW), y = rr(30, 170), w = rr(18, 60), h = rr(14, 44); B.fillStyle = `rgba(${rand() < 0.5 ? '70,60,56' : '255,246,232'},${rr(0.06, 0.18)})`; B.beginPath(); B.ellipse(x, y, w, h, rr(-0.5, 0.5), 0, PI * 2); B.fill(); }
-    for (let i = 0; i < 14; i++) { const x = rand() < 0.5 ? rr(0, 400) : rr(900, BW), y0 = rr(40, 120); B.strokeStyle = 'rgba(56,48,44,0.22)'; B.lineWidth = rr(0.8, 1.6); B.beginPath(); B.moveTo(x, y0); B.lineTo(x + rr(-10, 10), y0 + rr(30, 70)); B.stroke(); }
-    B.restore();
-    // the deep cut that sets Lincoln apart, and the recess Roosevelt sits in
-    const lx = 790, tx = 712;
-    B.fillStyle = 'rgba(40,34,30,0.22)'; B.beginPath(); B.ellipse(lx - 34, 96, 14, 70, 0.08, 0, PI * 2); B.fill();
-    B.fillStyle = 'rgba(40,34,30,0.32)'; B.beginPath(); B.ellipse(tx, 92, 34, 52, 0, 0, PI * 2); B.fill();
-    // the four heads, back to front: Lincoln, Roosevelt in his recess, Jefferson, Washington out front
-    carved(B, 840, 98, 74, { turn: -0.25, beard: 1, deep: 1 });
-    carved(B, tx, 100, 64, { turn: -0.15, stache: 1, specs: 1, dark: 1.3, deep: 1 });
-    carved(B, 646, 80, 72, { turn: 0.45, tilt: -0.14, hair: 'swept' });
-    // Washington's coat collar and lapel carved into the stone below his chin
-    B.fillStyle = shade(GRAN, -0.04); B.beginPath(); B.moveTo(470, 182); B.quadraticCurveTo(480, 126, 540, 118); B.lineTo(612, 122); B.quadraticCurveTo(640, 140, 650, 184); B.closePath(); B.fill();
-    B.strokeStyle = 'rgba(56,48,44,0.45)'; B.lineWidth = 1.6; B.beginPath(); B.moveTo(552, 122); B.quadraticCurveTo(560, 146, 588, 176); B.moveTo(600, 124); B.quadraticCurveTo(598, 146, 610, 170); B.moveTo(514, 132); B.quadraticCurveTo(530, 150, 540, 178); B.stroke();
-    carved(B, 568, 80, 84, { turn: 0.1, hair: 'wig' });
-    // a light wash of distance haze
-    B.fillStyle = 'rgba(200,214,232,0.10)'; B.fillRect(0, 0, BW, FY);
-    // the talus slope of blasted rubble below the faces
-    B.fillStyle = '#9a948c'; B.beginPath(); B.moveTo(470, FY); B.quadraticCurveTo(600, 128, 700, 140); B.quadraticCurveTo(800, 150, 900, FY); B.closePath(); B.fill();
-    for (let i = 0; i < 700; i++) { const x = rr(470, 900), y = rr(130, FY); B.fillStyle = shade('#a8a298', rr(-0.3, 0.15)); B.fillRect(x, y, rr(1, 3), rr(1, 2)); }
-    // ponderosa pines scattered up the slopes and in front
-    const pine = (x, y, h) => { B.fillStyle = '#3a2a1a'; B.fillRect(x - 0.8, y - h * 0.3, 1.6, h * 0.3); for (let i = 0; i < 4; i++) { const t = i / 4, ww = h * (0.34 - t * 0.06); B.fillStyle = shade('#2a4a24', rr(-0.15, 0.08)); B.beginPath(); B.moveTo(x - ww, y - h * (0.2 + t * 0.22)); B.lineTo(x, y - h * (0.5 + t * 0.2)); B.lineTo(x + ww, y - h * (0.2 + t * 0.22)); B.fill(); } };
-    for (let i = 0; i < 60; i++) { const x = rr(0, BW); if (x > 520 && x < 860 && rand() < 0.6) continue; pine(x, rr(130, FY - 4), rr(10, 22)); }
-    for (let i = 0; i < 90; i++) pine(rr(0, BW), FY - rr(0, 14), rr(16, 30));
-    for (let i = 0; i < 18; i++) pine(rr(0, BW), FY - rr(0, 4), rr(30, 48));
+    // a cloudless deep blue morning sky
+    vg(B, 0, 0, BW, FY, ['#0a3a9e', '#1656c0', '#2a74d4', '#5a9ae0']);
+    rushmoreRelief(B);
+    // ponderosa pines on the rubble and along the foot of the mountain
+    for (const [x, y, h] of [[598, 168, 22], [640, 150, 18], [690, 160, 24], [726, 172, 28], [770, 176, 26], [812, 166, 30], [852, 178, 24], [560, 182, 20], [300, 176, 28], [340, 182, 24], [930, 178, 30], [980, 172, 26], [1060, 180, 34], [160, 178, 30], [220, 170, 22], [1160, 176, 30]]) ponderosa(B, x, y, h);
+    for (let i = 0; i < 70; i++) ponderosa(B, rr(0, BW), FY - rr(-2, 8), rr(14, 30));
     vignette(B, BW);
-    // the viewing terrace: pale granite pavers
-    pfloor(F, 'stone', '#bcb4a6', '#7a7468', { rows: 7, span: 54 });
+    // the Grand View Terrace: warm granite pavers
+    pfloor(F, 'stone', '#c8b498', '#7a6a56', { rows: 7, span: 54 });
   }
 
   // =====================================================================================
@@ -388,33 +511,363 @@
   }
 
   // =====================================================================================
-  // HOUSE CHAMBER, JOINT SESSION: the rostrum, the flag, and the whole Congress on its feet
+  // HOUSE CHAMBER, JOINT SESSION: the three-tier walnut rostrum with the flag hung behind the
+  // Speaker, the bronze fasces, the Mace, the galleries, and the members in their rows on each side
   // =====================================================================================
-  const HOUSE_SEATS = (() => { const r = prng(113), a = [], suits = ['#1a1a22', '#2a2e3a', '#3a3a44', '#1c2436', '#5a1a24', '#2a3a2a', '#4a4a56', '#6a5a4a', '#1a1a1a', '#7a2a3a', '#2a3a6a'];
-    for (let row = 0; row < 3; row++) for (let i = 0; i < 26; i++) { const x = 20 + i * 48 + (row % 2) * 24 + r() * 10; if (Math.abs(x - CX) < 120 && row < 2) continue; a.push({ x, y: FY - 8 - row * 22, h: 40 - row * 5, top: suits[(r() * suits.length) | 0], skin: SKINS[(r() * SKINS.length) | 0], hair: ['#1a1208', '#3a2a1a', '#8a8680', '#c8c4bc', '#6a4428', '#b89a6a'][(r() * 6) | 0], ph: r() * 6, eager: r(), tie: r() < 0.6 ? ['#8a1a24', '#1a2a6a', '#c8a040'][(r() * 3) | 0] : null }); }
-    return a; })();
+  // a member of Congress from the waist up: seated, half risen or on their feet clapping and cheering.
+  // Hs is the person's standing height in pixels, rail is where the row in front hides them.
+  function member(g, x, rail, Hs, p, up, t) {
+    const hip = rail + Hs * 0.06 - up * Hs * 0.26, sh = hip - Hs * 0.3, hr = Hs * 0.062, hc = sh - Hs * 0.03 - hr * 1.05, sw = Hs * 0.125;
+    // arms behind the jacket's front edge: resting, clapping at the chest, or thrown up
+    const lw = Math.max(1.4, Hs * 0.05), clap = p.cheer === 'clap', hands = [];
+    for (const sd of [-1, 1]) {
+      const ax = x + sd * sw * 0.86, ay = sh + Hs * 0.02;
+      let ex2, ey2, hx, hy;
+      if (up > 0.5 && !clap) { const w = Math.sin(t * 7 + p.ph + sd) * Hs * 0.03; ex2 = ax + sd * Hs * 0.06; ey2 = ay - Hs * 0.13; hx = ax + sd * Hs * 0.05 + w; hy = ay - Hs * 0.27; }
+      else if (up > 0.5) { const s = (1 + Math.sin(t * 17 + p.ph)) * Hs * 0.022 + Hs * 0.005; ex2 = ax + sd * Hs * 0.05; ey2 = ay + Hs * 0.11; hx = x + sd * s; hy = ay + Hs * 0.06; }
+      else { ex2 = ax + sd * Hs * 0.02; ey2 = ay + Hs * 0.13; hx = x + sd * Hs * 0.06; hy = ay + Hs * 0.24; }
+      R.line(g, ax, ay, ex2, ey2, shade(p.coat, -0.15), lw); R.line(g, ex2, ey2, hx, hy, shade(p.coat, -0.15), lw * 0.9);
+      hands.push([hx, hy]);
+    }
+    // jacket, shirt and tie (or a blouse), lapels
+    g.fillStyle = p.coat; g.beginPath(); g.moveTo(x - sw * 0.92, hip + 2); g.lineTo(x - sw, sh + Hs * 0.03); g.quadraticCurveTo(x - sw, sh - Hs * 0.005, x - sw * 0.45, sh - Hs * 0.012); g.lineTo(x + sw * 0.45, sh - Hs * 0.012); g.quadraticCurveTo(x + sw, sh - Hs * 0.005, x + sw, sh + Hs * 0.03); g.lineTo(x + sw * 0.92, hip + 2); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255,240,220,0.12)'; g.fillRect(x - sw, sh, sw * 0.5, hip - sh);
+    g.fillStyle = p.shirt; g.beginPath(); g.moveTo(x - sw * 0.3, sh - Hs * 0.01); g.lineTo(x + sw * 0.3, sh - Hs * 0.01); g.lineTo(x, sh + Hs * 0.12); g.fill();
+    if (p.tie) { g.fillStyle = p.tie; g.beginPath(); g.moveTo(x - Hs * 0.012, sh); g.lineTo(x + Hs * 0.012, sh); g.lineTo(x + Hs * 0.017, sh + Hs * 0.1); g.lineTo(x, sh + Hs * 0.12); g.lineTo(x - Hs * 0.017, sh + Hs * 0.1); g.fill(); }
+    g.strokeStyle = shade(p.coat, -0.35); g.lineWidth = Math.max(0.6, Hs * 0.01); g.beginPath(); g.moveTo(x - sw * 0.32, sh - Hs * 0.01); g.lineTo(x - Hs * 0.01, sh + Hs * 0.16); g.moveTo(x + sw * 0.32, sh - Hs * 0.01); g.lineTo(x + Hs * 0.01, sh + Hs * 0.16); g.stroke();
+    if (p.pin) { g.fillStyle = '#e8c860'; g.fillRect(x - sw * 0.55, sh + Hs * 0.04, Math.max(1, Hs * 0.012), Math.max(1, Hs * 0.012)); }
+    // neck, head, face, hair
+    g.fillStyle = shade(p.skin, -0.18); g.fillRect(x - hr * 0.45, hc + hr * 0.6, hr * 0.9, sh - hc - hr * 0.5);
+    g.fillStyle = p.skin; g.beginPath(); g.ellipse(x, hc, hr * 0.86, hr * 1.05, 0, 0, PI * 2); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(x + hr * 0.3, hc + hr * 0.1, hr * 0.5, hr * 0.9, 0, -PI / 2, PI / 2); g.fill();
+    const ey = hc - hr * 0.05, es = Math.max(0.9, hr * 0.17);
+    g.fillStyle = '#1a1210'; g.fillRect(x - hr * 0.42, ey, es, es); g.fillRect(x + hr * 0.42 - es, ey, es, es);
+    if (up > 0.5 && p.cheer !== 'clap') { g.fillStyle = '#4a1a14'; g.beginPath(); g.ellipse(x, hc + hr * 0.5, hr * 0.26, hr * 0.2, 0, 0, PI * 2); g.fill(); }
+    else { g.fillStyle = shade(p.skin, -0.35); g.fillRect(x - hr * 0.25, hc + hr * 0.48, hr * 0.5, Math.max(0.7, hr * 0.1)); }
+    g.fillStyle = p.hair;
+    if (p.style === 0) { g.beginPath(); g.ellipse(x, hc - hr * 0.45, hr * 0.9, hr * 0.62, 0, PI, 0); g.fill(); g.fillRect(x - hr * 0.9, hc - hr * 0.5, hr * 0.2, hr * 0.6); g.fillRect(x + hr * 0.7, hc - hr * 0.5, hr * 0.2, hr * 0.6); }
+    else if (p.style === 1) { g.fillRect(x - hr * 0.9, hc - hr * 0.3, hr * 0.22, hr * 0.7); g.fillRect(x + hr * 0.68, hc - hr * 0.3, hr * 0.22, hr * 0.7); }
+    else if (p.style === 2) { g.beginPath(); g.ellipse(x, hc - hr * 0.35, hr * 1.05, hr * 0.8, 0, PI * 1.05, PI * 1.95); g.fill(); g.beginPath(); g.moveTo(x - hr * 1.0, hc - hr * 0.5); g.quadraticCurveTo(x - hr * 1.3, hc + hr * 0.8, x - hr * 0.8, hc + hr * 1.3); g.lineTo(x - hr * 0.7, hc); g.fill(); g.beginPath(); g.moveTo(x + hr * 1.0, hc - hr * 0.5); g.quadraticCurveTo(x + hr * 1.3, hc + hr * 0.8, x + hr * 0.8, hc + hr * 1.3); g.lineTo(x + hr * 0.7, hc); g.fill(); }
+    else { g.beginPath(); g.ellipse(x, hc - hr * 0.55, hr * 0.92, hr * 0.6, 0, PI, 0); g.fill(); g.beginPath(); g.ellipse(x - hr * 0.2, hc - hr * 0.75, hr * 0.7, hr * 0.35, -0.3, 0, PI * 2); g.fill(); }
+    // hands last so claps and waves read in front of the jacket
+    g.fillStyle = p.skin; for (const [hx, hy] of hands) { g.beginPath(); g.arc(hx, hy, Math.max(1, Hs * 0.022), 0, PI * 2); g.fill(); }
+  }
+  const HOUSE_ROWS = [0, 1, 2, 3].map(r => ({ rail: FY - 10 - r * 25, Hs: 98 - r * 13, inner: 192 + r * 24 }));
+  const HOUSE_SEATS = (() => {
+    const rnd = prng(113), pick = a => a[(rnd() * a.length) | 0], out = [];
+    const SUITS = ['#1a1c24', '#22283a', '#2e3240', '#1a1a1a', '#34383e', '#20283a', '#3a3e48'], BRIGHT = ['#b0242e', '#1e3c8a', '#e8e4dc', '#2a7a8a', '#6a2a7a', '#c8a040', '#1a1a22'];
+    const HAIR = ['#1a1208', '#3a2a1a', '#8a8680', '#c8c4bc', '#6a4428', '#d8c08a', '#2a1a10', '#e8e4dc'];
+    HOUSE_ROWS.forEach((row, r) => {
+      const gap = row.Hs * 0.31;
+      for (const sd of [-1, 1]) for (let x = CX + sd * row.inner; x > 120 && x < BW - 120; x += sd * gap) {
+        const woman = rnd() < 0.32, xx = x + (rnd() - 0.5) * 3;
+        out.push({ r, x: xx, empty: rnd() < 0.06, coat: woman ? pick(BRIGHT) : pick(SUITS), shirt: woman ? (rnd() < 0.5 ? '#f0ece4' : '#2a2a30') : rnd() < 0.85 ? '#f0ece4' : '#a8c0e0', tie: woman ? null : pick(['#8a1a24', '#1a2a6a', '#c8a040', '#2a5a3a', '#6a1a2a', '#3a4a8a']),
+          skin: pick(SKINS), hair: pick(HAIR), style: woman ? (rnd() < 0.7 ? 2 : 3) : rnd() < 0.18 ? 1 : 0, pin: rnd() < 0.5, ph: rnd() * 6, eager: rnd(), cheer: rnd() < 0.55 ? 'clap' : 'wave' });
+      }
+    });
+    return out;
+  })();
+  // the blue leather chairs, the walnut rail in front of each row
+  function houseChair(g, x, row) { const Hs = row.Hs, w = Hs * 0.15, top = row.rail - Hs * 0.44; g.fillStyle = '#1c2c5a'; g.beginPath(); g.moveTo(x - w, row.rail); g.lineTo(x - w, top + w * 0.6); g.quadraticCurveTo(x - w, top, x, top); g.quadraticCurveTo(x + w, top, x + w, top + w * 0.6); g.lineTo(x + w, row.rail); g.fill(); g.fillStyle = 'rgba(160,180,230,0.18)'; g.fillRect(x - w * 0.8, top + w * 0.4, w * 0.4, row.rail - top - w * 0.4); g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(x + w * 0.5, top + w * 0.4, w * 0.5, row.rail - top - w * 0.4); }
+  function houseRail(g, row) {
+    for (const sd of [-1, 1]) {
+      const x0 = sd < 0 ? 0 : CX + row.inner - row.Hs * 0.2, x1 = sd < 0 ? CX - row.inner + row.Hs * 0.2 : BW;
+      vg(g, x0, row.rail - 2, x1 - x0, 13, ['#8a5a30', '#5a3618', '#2a180a']); g.fillStyle = '#b88050'; g.fillRect(x0, row.rail - 2, x1 - x0, 1.2);
+    }
+  }
+  function rostrumTier(g, hw, top, bot) {
+    vg(g, CX - hw, top, hw * 2, bot - top, ['#6a4020', '#4a2a12', '#2a160a']);
+    g.fillStyle = '#8a5a30'; g.fillRect(CX - hw - 2, top - 3, hw * 2 + 4, 4); g.fillStyle = '#c89060'; g.fillRect(CX - hw - 2, top - 3, hw * 2 + 4, 1);
+    const n = Math.round(hw / 16); for (let i = 0; i < n * 2; i++) { const x = CX - hw + 4 + i * (hw * 2 - 8) / (n * 2); g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(x, top + 4, 1.2, bot - top - 7); g.fillStyle = 'rgba(255,200,150,0.1)'; g.fillRect(x + 1.2, top + 4, 1, bot - top - 7); }
+    g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(CX - hw, bot - 2, hw * 2, 2);
+  }
+  // the Speaker's desk on the top tier and the President's lectern with its microphones in front of it
+  function rostrumTop(g) {
+    rostrumTier(g, 94, 98, 124);
+    vg(g, CX - 15, 104, 30, 20, ['#7a4a24', '#4a2a12']); g.fillStyle = '#9a6a3a'; g.fillRect(CX - 17, 102, 34, 3);
+    for (const dx of [-6, 6]) { R.line(g, CX + dx, 102, CX + dx * 1.4, 92, '#1a1a1a', 0.9); g.fillStyle = '#2a2a2a'; g.fillRect(CX + dx * 1.4 - 1.2, 89, 2.4, 3.6); }
+  }
+  const HOUSE_LEADERS = [{ x: CX - 26, coat: '#1a1c24', shirt: '#f0ece4', tie: '#8a1a24', skin: SKINS[0], hair: '#c8c4bc', style: 0, ph: 1, eager: 0.5, cheer: 'clap' }, { x: CX + 26, coat: '#22283a', shirt: '#f0ece4', tie: '#1a2a6a', skin: SKINS[1], hair: '#8a8680', style: 1, ph: 2, eager: 0.7, cheer: 'clap' }];
   function house(B, F) {
     setSeed(91);
-    vg(B, 0, 0, BW, FY, ['#1a1410', '#2a2016', '#3a2c1e']);
-    // gallery up top, ceiling glass, walls
-    vg(B, 0, 0, BW, 22, ['#c8b88a', '#8a7a5a']); for (let x = 0; x < BW; x += 30) { B.fillStyle = 'rgba(0,0,0,0.25)'; B.fillRect(x, 0, 1, 22); }
-    B.fillStyle = '#3a2416'; B.fillRect(0, 22, BW, 26); for (let x = 0; x < BW; x += 14) { B.fillStyle = '#5a3a20'; B.fillRect(x + 2, 26, 9, 16); }
-    hgf(B, 0, 48, BW, FY - 48, ['#4a3a28', '#6a5438', '#4a3a28']);
-    // the rostrum, the flag, the seal
-    const rx = CX;
-    B.fillStyle = '#2a3a5a'; B.fillRect(rx - 120, 52, 240, 74);
-    for (let i = 0; i < 13; i++) { B.fillStyle = i % 2 ? '#e8e0d0' : '#9a1420'; B.fillRect(rx - 40, 58 + i * 3.6, 80, 3.6); } B.fillStyle = '#1e2a5a'; B.fillRect(rx - 40, 58, 32, 25); B.fillStyle = '#f0eee8'; for (let i = 0; i < 20; i++) B.fillRect(rx - 37 + (i % 5) * 6, 61 + ((i / 5) | 0) * 5.4, 1, 1);
-    marble(B, rx - 130, 126, 260, FY - 126, '#a89878');
-    for (let i = 0; i < 3; i++) { B.fillStyle = shade('#6a4a2a', -i * 0.1); B.fillRect(rx - 110 + i * 14, 112 + i * 18, 220 - i * 28, 16); B.fillStyle = '#c8a040'; B.fillRect(rx - 110 + i * 14, 112 + i * 18, 220 - i * 28, 1.4); }
-    R.ball(B, rx, 166, 10, '#c8a050'); R.ball(B, rx, 166, 7, '#1e2a5a');
-    for (const sd of [-1, 1]) { B.fillStyle = '#1a1208'; B.fillRect(rx + sd * 150 - 1, 60, 2, FY - 60); B.fillStyle = '#c8a040'; B.fillRect(rx + sd * 150 - 6, 60, 12, 4); }
-    // tiered desks the crowd stands behind (people drawn live)
-    for (let row = 0; row < 3; row++) { const y = FY - 8 - row * 22; B.fillStyle = shade('#5a3a20', -row * 0.08); B.fillRect(0, y - 4, BW, 12); B.fillStyle = '#7a5030'; B.fillRect(0, y - 4, BW, 1.6); }
-    glow(B, CX, 40, 300, 'rgba(255,220,160,0.12)');
+    // ceiling: coffers around the stained-glass skylight
+    vg(B, 0, 0, BW, 16, ['#3a2e1a', '#6a5634']);
+    for (let x = 0; x < BW; x += 22) { B.fillStyle = 'rgba(0,0,0,0.3)'; B.fillRect(x, 0, 2, 16); B.fillStyle = 'rgba(232,200,120,0.25)'; B.fillRect(x + 4, 3, 14, 9); }
+    vg(B, CX - 150, 0, 300, 14, ['#b89848', '#e8d090', '#a88838']); B.fillStyle = '#7a5a20'; B.fillRect(CX - 150, 13, 300, 2);
+    // the gallery: a balcony of visitors all the way round
+    vg(B, 0, 16, BW, 36, ['#3a2c1c', '#4a3824']);
+    const gal = prng(57);
+    for (let x = 6; x < BW; x += 9) { if (Math.abs(x - CX) < 150) continue; member(B, x + gal() * 3, 46, 30, { coat: ['#2a2a32', '#5a3a2a', '#3a4a6a', '#6a2a2a', '#2a4a3a'][(gal() * 5) | 0], shirt: '#e8e0d0', skin: SKINS[(gal() * 6) | 0], hair: ['#1a1208', '#6a4428', '#8a8680'][(gal() * 3) | 0], style: (gal() * 4) | 0, ph: 0 }, 0, 0); }
+    vg(B, 0, 44, BW, 8, ['#c8a060', '#8a6030', '#4a2e14']); for (let x = 0; x < BW; x += 6) { B.fillStyle = 'rgba(40,20,8,0.5)'; B.fillRect(x, 46, 1.2, 6); }
+    // cream walls with marble pilasters, doors under the gallery
+    vg(B, 0, 52, BW, FY - 52, ['#a89070', '#c8b08a', '#8a7454']);
+    for (let x = 30; x < BW; x += 96) { if (Math.abs(x - CX) < 190) continue; hgf(B, x - 9, 52, 18, FY - 52, ['#5a5040', '#9a8a70', '#c8b898', '#6a5c48']); B.fillStyle = '#e8d8b0'; B.fillRect(x - 11, 52, 22, 4); }
+    for (const x of [CX - 430, CX + 430, CX - 610, CX + 610]) { B.fillStyle = '#3a2412'; B.fillRect(x - 16, 74, 32, 60); B.fillStyle = '#5a3a1e'; B.fillRect(x - 13, 78, 12, 52); B.fillRect(x + 1, 78, 12, 52); B.fillStyle = '#c8a040'; B.fillRect(x - 3, 102, 2, 4); B.fillRect(x + 1, 102, 2, 4); }
+    // behind the rostrum: dark marble pilasters, IN GOD WE TRUST, the flag between the fasces
+    vg(B, CX - 160, 16, 320, FY - 16, ['#4a4236', '#6a5e4a', '#4a4236']);
+    for (const dx of [-150, -96, 96, 150]) hgf(B, CX + dx - 9, 16, 18, 110, ['#2a2620', '#5a5246', '#3a342a']);
+    B.fillStyle = '#e8c860'; B.font = 'bold 8px Georgia, serif'; B.textAlign = 'center'; B.fillText('IN GOD WE TRUST', CX, 26); B.textAlign = 'left';
+    { const fx = CX - 26, fy = 31, fw = 52, fh = 74;   // hung vertically: stripes run down, the union at the upper left
+      for (let i = 0; i < 13; i++) { const x0 = fx + i * fw / 13; hgf(B, x0, fy, fw / 13 + 0.4, fh, i % 2 ? ['#d8d0c0', '#f4f0e8', '#d8d0c0'] : ['#8a1018', '#b81c28', '#8a1018']); }
+      B.fillStyle = '#1e2a5a'; B.fillRect(fx, fy, fw * 7 / 13, fh * 0.42);
+      B.fillStyle = '#f0eee8'; for (let r = 0; r < 9; r++) for (let c = 0; c < 5; c++) B.fillRect(fx + 2.5 + c * 5 + (r % 2) * 2.4, fy + 2.5 + r * 3.2, 1, 1);
+      for (let i = 0; i < 6; i++) { B.fillStyle = 'rgba(0,0,0,0.12)'; B.fillRect(fx + 4 + i * 9, fy, 2, fh); }
+      B.fillStyle = '#c8a040'; B.fillRect(fx - 3, fy - 3, fw + 6, 3);
+    }
+    for (const sd of [-1, 1]) {   // the bronze fasces: a bundle of rods bound with straps, an axe blade at the top
+      const x = CX + sd * 52, top = 34, bot = 104;
+      hgf(B, x - 5, top, 10, bot - top, ['#4a3010', '#c89a40', '#e8c060', '#7a5418']);
+      B.fillStyle = 'rgba(40,24,6,0.6)'; for (let i = -2; i <= 2; i++) B.fillRect(x + i * 2 - 0.4, top, 0.8, bot - top);
+      for (const yy of [top + 10, (top + bot) / 2, bot - 10]) { B.fillStyle = '#8a6420'; B.fillRect(x - 6, yy, 12, 3); }
+      B.fillStyle = '#d8b050'; B.beginPath(); B.moveTo(x - sd * 5, top + 2); B.quadraticCurveTo(x - sd * 14, top + 8, x - sd * 5, top + 16); B.fill();
+    }
+    // the Mace of the House on its green marble pedestal at the Speaker's right: a silver eagle on a globe
+    { const x = CX - 118; vg(B, x - 7, 104, 14, 46, ['#2a5a40', '#1a3a28']); B.fillStyle = '#4a8a64'; B.fillRect(x - 8, 104, 16, 2);
+      for (let i = -2; i <= 2; i++) R.line(B, x + i * 1.2, 104, x + i * 0.8, 62, '#1a1210', 1.1); B.fillStyle = '#c8ccd4'; B.fillRect(x - 3, 72, 6, 2); B.fillRect(x - 3, 88, 6, 2);
+      R.ball(B, x, 58, 5, '#d8dce4'); B.fillStyle = '#e8ecf4'; B.beginPath(); B.moveTo(x, 53); B.lineTo(x - 7, 48); B.lineTo(x - 2, 52); B.lineTo(x, 47); B.lineTo(x + 2, 52); B.lineTo(x + 7, 48); B.closePath(); B.fill(); }
+    // the rostrum: three tiers of carved walnut, each wider and lower than the one above
+    rostrumTier(B, 170, 152, FY); rostrumTier(B, 132, 124, 152);
+    // the Speaker's and Vice President's high-backed chairs on the top tier
+    for (const dx of [-26, 26]) { B.fillStyle = '#2a1a10'; B.beginPath(); B.moveTo(CX + dx - 11, 98); B.lineTo(CX + dx - 11, 64); B.quadraticCurveTo(CX + dx, 56, CX + dx + 11, 64); B.lineTo(CX + dx + 11, 98); B.fill(); B.fillStyle = '#4a2a1a'; B.fillRect(CX + dx - 8, 66, 16, 30); }
+    rostrumTop(B);
+    // the seal on the lowest tier
+    R.ball(B, CX, 168, 11, '#c8a050'); R.ball(B, CX, 168, 8.5, '#1e2a5a'); B.fillStyle = '#e8d090'; B.beginPath(); B.moveTo(CX, 162); B.lineTo(CX - 6, 167); B.lineTo(CX - 2, 167); B.lineTo(CX, 174); B.lineTo(CX + 2, 167); B.lineTo(CX + 6, 167); B.fill();
+    glow(B, CX, 60, 260, 'rgba(255,230,180,0.14)');
     vignette(B, BW);
-    // blue carpet with the stars
-    pfloor(F, 'stone', '#2a3a6a', '#141c3a', { rows: 7, span: 70 });
-    F.fillStyle = 'rgba(230,200,100,0.4)'; for (let i = 0; i < 60; i++) { const x = rand() * AWX, y = FY + 6 + rand() * 48; F.beginPath(); for (let j = 0; j < 5; j++) { const a = -PI / 2 + j * PI * 4 / 5; F.lineTo(x + Math.cos(a) * 2.4, y + Math.sin(a) * 1.4); } F.fill(); }
+    // the well of the House: deep blue carpet with gold stars
+    pfloor(F, 'stone', '#24346a', '#121a3a', { rows: 7, span: 70 });
+    F.fillStyle = 'rgba(230,200,100,0.45)'; for (let i = 0; i < 70; i++) { const x = rand() * AWX, y = FY + 6 + rand() * 48; F.beginPath(); for (let j = 0; j < 5; j++) { const a = -PI / 2 + j * PI * 4 / 5; F.lineTo(x + Math.cos(a) * 2.6, y + Math.sin(a) * 1.5); } F.fill(); }
+  }
+
+  // =====================================================================================
+  // THE STATEN ISLAND FERRY at dusk: the open stern deck of the orange ferry crossing the harbor,
+  // Lower Manhattan lighting up on one side, the Statue of Liberty floodlit on the other
+  // =====================================================================================
+  const HARBOR = 140;   // the waterline on the back layer
+  // a tower with its windows coming on for the evening
+  function tower(g, x, w, top, c, o = {}) {
+    const base = HARBOR + 2;
+    hgf(g, x, top, w, base - top, [shade(c, 0.12), c, shade(c, -0.25)]);
+    const cols = Math.max(2, Math.floor(w / 3)), rows = Math.floor((base - top - 3) / 3);
+    for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
+      const v = rand(); if (v > (o.lit || 0.4)) continue;
+      g.fillStyle = v < 0.06 ? 'rgba(200,220,255,0.75)' : `rgba(255,${200 + (rand() * 40) | 0},${110 + (rand() * 60) | 0},${0.5 + rand() * 0.45})`;
+      g.fillRect(x + 1.2 + k * (w - 2) / cols, top + 2.5 + r * 3, 1, 1.4);
+    }
+    if (o.glow) { g.fillStyle = 'rgba(255,170,120,0.22)'; g.fillRect(x + w * 0.6, top, w * 0.4, base - top); }
+  }
+  // One World Trade Center: chamfered corners make long triangles of glass, the spire on top
+  function oneWTC(g, x, top) {
+    const bw = 30, tw = 17, base = HARBOR + 2;
+    g.fillStyle = '#3a4a6a'; g.beginPath(); g.moveTo(x - bw / 2, base); g.lineTo(x - tw / 2, top); g.lineTo(x + tw / 2, top); g.lineTo(x + bw / 2, base); g.fill();
+    // the sunset caught in the west face, the facets alternating light and shade
+    const lg = g.createLinearGradient(0, top, 0, base); lg.addColorStop(0, '#f0b890'); lg.addColorStop(0.5, '#a88aa8'); lg.addColorStop(1, '#4a5a7a');
+    g.fillStyle = lg; g.beginPath(); g.moveTo(x - tw / 2, top); g.lineTo(x + tw / 2, top); g.lineTo(x, base); g.fill();
+    g.fillStyle = 'rgba(20,30,60,0.45)'; g.beginPath(); g.moveTo(x + tw / 2, top); g.lineTo(x + bw / 2, base); g.lineTo(x, base); g.fill();
+    g.fillStyle = 'rgba(255,220,200,0.25)'; g.beginPath(); g.moveTo(x - tw / 2, top); g.lineTo(x - bw / 2, base); g.lineTo(x, base); g.fill();
+    for (let y = top + 3; y < base; y += 3) { const w = tw + (bw - tw) * (y - top) / (base - top); g.fillStyle = 'rgba(20,24,40,0.25)'; g.fillRect(x - w / 2, y, w, 0.6); }
+    g.fillStyle = '#8a9ab0'; g.fillRect(x - tw / 2, top - 3, tw, 3); g.fillStyle = '#c8d0e0'; g.fillRect(x - 1, top - 34, 2, 31); g.fillRect(x - 3, top - 6, 6, 3);
+    return [x, top - 34];
+  }
+  // the Statue of Liberty on her island: the star fort, the granite pedestal, the copper-green figure, torch high
+  function liberty(g, x) {
+    const base = HARBOR;
+    // island and trees
+    g.fillStyle = '#1a2418'; g.beginPath(); g.moveTo(x - 90, base + 2); g.quadraticCurveTo(x, base - 12, x + 90, base + 2); g.fill();
+    for (let i = 0; i < 26; i++) { const tx = x + rr(-80, 80); g.fillStyle = shade('#1e3420', rr(-0.2, 0.1)); g.beginPath(); g.arc(tx, base - 4 - rr(0, 6) * (1 - Math.abs(tx - x) / 90), rr(3, 6), 0, PI * 2); g.fill(); }
+    // Fort Wood's star-shaped walls
+    g.fillStyle = '#8a7e6a'; g.beginPath(); g.moveTo(x - 34, base - 4); g.lineTo(x - 26, base - 12); g.lineTo(x - 14, base - 9); g.lineTo(x, base - 14); g.lineTo(x + 14, base - 9); g.lineTo(x + 26, base - 12); g.lineTo(x + 34, base - 4); g.fill();
+    g.fillStyle = 'rgba(255,220,170,0.3)'; g.fillRect(x - 30, base - 10, 60, 2);
+    // the pedestal, floodlit from below
+    const pt = base - 58, pb = base - 12;
+    const pg = g.createLinearGradient(0, pt, 0, pb); pg.addColorStop(0, '#8a7c66'); pg.addColorStop(1, '#e8d4a8');
+    g.fillStyle = pg; g.beginPath(); g.moveTo(x - 17, pb); g.lineTo(x - 13, pt + 8); g.lineTo(x + 13, pt + 8); g.lineTo(x + 17, pb); g.fill();
+    g.fillStyle = '#b8a888'; g.fillRect(x - 15, pt + 4, 30, 4); g.fillStyle = '#d8c8a0'; g.fillRect(x - 12, pt, 24, 5); g.fillRect(x - 16, pb - 16, 32, 3);
+    g.fillStyle = 'rgba(40,30,20,0.55)'; for (const dx of [-8, -3, 2, 7]) g.fillRect(x + dx, pt + 12, 2, 8);
+    g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.moveTo(x + 4, pb); g.lineTo(x + 3, pt + 8); g.lineTo(x + 13, pt + 8); g.lineTo(x + 17, pb); g.fill();
+    // the figure: robe in long folds, the tablet in her left arm, the right arm raised with the torch
+    const ft = pt, sy = ft - 40, CU = '#5aa48e', LT = '#9adcc8', DK = '#2a5e52';
+    const rg = g.createLinearGradient(x - 9, 0, x + 9, 0); rg.addColorStop(0, LT); rg.addColorStop(0.45, CU); rg.addColorStop(1, DK);
+    g.fillStyle = rg; g.beginPath(); g.moveTo(x - 9, ft); g.quadraticCurveTo(x - 10, sy + 20, x - 7, sy + 2); g.quadraticCurveTo(x, sy - 2, x + 7, sy + 2); g.quadraticCurveTo(x + 10, sy + 20, x + 9, ft); g.fill();
+    g.strokeStyle = 'rgba(20,60,50,0.55)'; g.lineWidth = 0.7; for (const dx of [-5, -2, 1, 4, 6.5]) { g.beginPath(); g.moveTo(x + dx * 0.7, sy + 8); g.quadraticCurveTo(x + dx, sy + 24, x + dx * 1.1, ft); g.stroke(); }
+    g.strokeStyle = 'rgba(20,60,50,0.6)'; g.beginPath(); g.moveTo(x - 7, sy + 6); g.quadraticCurveTo(x, sy + 14, x + 8, sy + 10); g.stroke();
+    // tablet
+    g.fillStyle = '#7ac4b0'; g.beginPath(); g.moveTo(x + 4, sy + 9); g.lineTo(x + 10, sy + 7); g.lineTo(x + 12, sy + 24); g.lineTo(x + 6, sy + 26); g.fill(); g.fillStyle = DK; g.beginPath(); g.moveTo(x + 10, sy + 7); g.lineTo(x + 12, sy + 24); g.lineTo(x + 13, sy + 23); g.lineTo(x + 11, sy + 6); g.fill();
+    R.line(g, x + 6, sy + 5, x + 6, sy + 14, CU, 2.6);
+    // raised right arm and torch
+    R.line(g, x - 5, sy + 2, x - 8, sy - 12, CU, 3.2); R.line(g, x - 8, sy - 12, x - 9, sy - 24, LT, 2.8);
+    g.fillStyle = '#c8a050'; g.fillRect(x - 11, sy - 29, 4, 4); g.fillStyle = '#ffd070'; g.beginPath(); g.moveTo(x - 12, sy - 29); g.quadraticCurveTo(x - 9, sy - 38, x - 6, sy - 29); g.fill();
+    // head and the crown of seven rays
+    g.fillStyle = CU; g.beginPath(); g.ellipse(x, sy - 4, 3.4, 4, 0, 0, PI * 2); g.fill(); g.fillStyle = LT; g.beginPath(); g.ellipse(x - 1, sy - 4, 1.8, 3, 0, 0, PI * 2); g.fill();
+    g.fillStyle = CU; for (let i = 0; i < 7; i++) { const a = -PI / 2 + (i - 3) * 0.36; g.beginPath(); g.moveTo(x + Math.cos(a - 0.12) * 3.4, sy - 6 + Math.sin(a - 0.12) * 3); g.lineTo(x + Math.cos(a) * 9, sy - 6 + Math.sin(a) * 8); g.lineTo(x + Math.cos(a + 0.12) * 3.4, sy - 6 + Math.sin(a + 0.12) * 3); g.fill(); }
+    glow(g, x, sy + 10, 60, 'rgba(160,255,220,0.18)');
+    return [x - 9, sy - 33];
+  }
+  // a little silhouette of the Brooklyn Bridge far up the East River
+  function brooklynBridge(g, x0, x1) {
+    const deck = HARBOR - 6, t0 = x0 + (x1 - x0) * 0.25, t1 = x0 + (x1 - x0) * 0.75, th = 22, col = 'rgba(70,70,96,0.85)';
+    g.fillStyle = col; g.fillRect(x0, deck, x1 - x0, 2);
+    for (const tx of [t0, t1]) { g.fillRect(tx - 4, deck - th, 8, th + 6); g.fillStyle = 'rgba(255,170,130,0.5)'; g.fillRect(tx - 2.5, deck - th + 6, 1.6, 7); g.fillRect(tx + 0.9, deck - th + 6, 1.6, 7); g.fillStyle = col; }
+    g.strokeStyle = col; g.lineWidth = 0.6;
+    for (const [a, b] of [[x0, t0], [t0, t1], [t1, x1]]) for (let k = 0; k < 3; k++) { g.beginPath(); g.moveTo(a, a === x0 ? deck : deck - th + 2); g.quadraticCurveTo((a + b) / 2, deck - (a === t0 ? 2 : th * 0.5) + k, b, b === x1 ? deck : deck - th + 2); g.stroke(); }
+  }
+  const FERRY = { spire: [0, 0], torch: [0, 0], lamps: [] };
+  // the white pipe rails and their stanchions (redrawn over the wake each frame)
+  function ferryRail(g) {
+    for (const y of [138, 150]) { g.fillStyle = '#dcd8d0'; g.fillRect(0, y, BW, 2); g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(0, y + 2, BW, 0.8); }
+    for (let x = 8; x < BW; x += 40) { g.fillStyle = '#a8a49c'; g.fillRect(x - 1.5, 136, 3, 30); g.fillStyle = '#f0ece4'; g.fillRect(x - 0.8, 136, 1.2, 30); }
+  }
+  function ferry(B, F) {
+    setSeed(141);
+    // dusk: deep blue overhead, the last of the sunset low over New Jersey behind the statue
+    vg(B, 0, 0, BW, HARBOR, ['#0c1230', '#22224a', '#5a3058', '#c0604a', '#f09a50']);
+    glow(B, 960, HARBOR, 360, 'rgba(255,150,80,0.32)');
+    stars(B, 60, 50);
+    // long streaks of cloud catching the sunset underneath
+    for (let i = 0; i < 16; i++) { const x = rr(0, BW), y = rr(36, 118), w = rr(60, 200), h = rr(1.5, 4); B.fillStyle = `rgba(60,36,70,${rr(0.25, 0.45)})`; B.beginPath(); B.ellipse(x, y, w, h, 0, 0, PI * 2); B.fill(); B.fillStyle = `rgba(255,${140 + (rand() * 50) | 0},110,${rr(0.2, 0.4)})`; B.beginPath(); B.ellipse(x + w * 0.1, y + h * 0.6, w * 0.8, h * 0.45, 0, 0, PI * 2); B.fill(); }
+    // far shores: low and hazy, a few lights
+    B.fillStyle = '#2a2440'; B.beginPath(); B.moveTo(0, HARBOR); for (let x = 0; x <= BW; x += 20) B.lineTo(x, HARBOR - 3 - fbmLite(x) * 6); B.lineTo(BW, HARBOR); B.fill();
+    for (let i = 0; i < 90; i++) { B.fillStyle = `rgba(255,210,150,${rr(0.3, 0.8)})`; B.fillRect(rr(0, BW), HARBOR - rr(1, 6), 1, 1); }
+    // Lower Manhattan: a wall of towers, the tallest in the middle, the Brooklyn Bridge beyond
+    brooklynBridge(B, 620, 760);
+    const towers = [[168, 14, 104], [184, 16, 92], [200, 12, 110], [214, 18, 84], [232, 14, 100], [248, 20, 78], [268, 16, 96], [286, 22, 70], [308, 14, 88], [322, 18, 64], [340, 16, 76], [356, 20, 58], [376, 14, 66], [452, 22, 50], [474, 18, 72], [494, 16, 58], [512, 24, 68], [538, 14, 80], [554, 20, 86], [576, 16, 98], [594, 20, 110], [612, 14, 118]];
+    for (const [x, w, top] of towers) tower(B, x, w, top, ['#2a3050', '#343a58', '#3a3450', '#2a2a44', '#40405a'][(rand() * 5) | 0], { lit: 0.42, glow: rand() < 0.5 });
+    // 40 Wall Street's green pyramid roof and spire, 70 Pine's stepped crown
+    tower(B, 520, 16, 58, '#3a3a52', { lit: 0.4 }); B.fillStyle = '#3a7a6a'; B.beginPath(); B.moveTo(518, 58); B.lineTo(528, 42); B.lineTo(538, 58); B.fill(); B.fillStyle = '#c8d8d0'; B.fillRect(527.4, 30, 1.2, 12);
+    tower(B, 470, 18, 56, '#4a4258', { lit: 0.45 }); B.fillStyle = '#4a4258'; B.fillRect(473, 48, 12, 8); B.fillRect(476, 40, 6, 8); B.fillStyle = '#d8c8b0'; B.fillRect(478.4, 28, 1.2, 12);
+    // the Woolworth Building's pale Gothic crown farther uptown
+    tower(B, 390, 14, 60, '#6a6478', { lit: 0.35 }); B.fillStyle = '#7a7488'; B.beginPath(); B.moveTo(391, 60); B.lineTo(397, 46); B.lineTo(403, 60); B.fill(); B.fillRect(396.4, 38, 1.2, 9);
+    FERRY.spire = oneWTC(B, 430, 34);
+    tower(B, 446, 18, 66, '#3a4462', { lit: 0.5 }); tower(B, 404, 16, 74, '#33405e', { lit: 0.45 });
+    // Battery Park's trees along the water
+    for (let x = 160; x < 630; x += 5) { B.fillStyle = shade('#14201a', rr(-0.2, 0.2)); B.beginPath(); B.arc(x, HARBOR - rr(0, 3), rr(2.5, 4.5), 0, PI * 2); B.fill(); }
+    FERRY.torch = liberty(B, 850);
+    // the harbor: dark water carrying the city's lights and the sunset
+    vg(B, 0, HARBOR, BW, FY - HARBOR, ['#3a2e4a', '#1e2240', '#121830']);
+    for (const [x, w] of towers) { for (let i = 0; i < 4; i++) { B.fillStyle = `rgba(255,200,130,${rr(0.08, 0.2)})`; B.fillRect(x + rr(0, w), HARBOR + 2 + i * 6 + rr(0, 4), rr(2, 6), 0.8); } }
+    for (let i = 0; i < 40; i++) { B.fillStyle = `rgba(255,160,90,${rr(0.1, 0.3)})`; B.fillRect(rr(820, 1180), rr(HARBOR + 2, 170), rr(4, 18), 0.8); }
+    B.fillStyle = 'rgba(160,255,220,0.25)'; for (let i = 0; i < 8; i++) B.fillRect(844 + rr(-4, 4), HARBOR + 3 + i * 3.4, rr(3, 10), 0.8);
+    // the ferry's stern rail: white pipe rails on stanchions over the orange bulwark, life rings, deck lamps
+    const bt = 166;
+    vg(B, 0, bt, BW, FY - bt, ['#f07a28', '#d05a14', '#8a3a0c']); B.fillStyle = '#ffb070'; B.fillRect(0, bt, BW, 1.2);
+    for (let x = 0; x < BW; x += 46) { B.fillStyle = 'rgba(0,0,0,0.25)'; B.fillRect(x, bt + 2, 1, FY - bt - 2); B.fillStyle = 'rgba(80,30,8,0.6)'; for (let y = bt + 4; y < FY; y += 6) B.fillRect(x + 3, y, 1, 1); }
+    B.fillStyle = '#e8e4dc'; B.fillRect(0, bt - 3, BW, 3); B.fillStyle = '#9a968e'; B.fillRect(0, bt - 1, BW, 1);
+    ferryRail(B);
+    for (const x of [300, 980]) { B.strokeStyle = '#f07a28'; B.lineWidth = 4; B.beginPath(); B.arc(x, 176, 7, 0, PI * 2); B.stroke(); B.strokeStyle = '#f0ece4'; B.lineWidth = 4; for (let k = 0; k < 4; k++) { B.beginPath(); B.arc(x, 176, 7, k * PI / 2, k * PI / 2 + 0.5); B.stroke(); } B.strokeStyle = '#6a2a08'; B.lineWidth = 0.6; B.beginPath(); B.arc(x, 176, 9, 0, PI * 2); B.stroke(); }
+    FERRY.lamps = [150, 560, 760, 1140];
+    for (const x of FERRY.lamps) { B.fillStyle = '#2a2a2a'; B.fillRect(x - 1, 118, 2, 18); B.fillStyle = '#3a3a3a'; B.fillRect(x - 3, 114, 6, 5); B.fillStyle = '#fff0c0'; B.fillRect(x - 2, 115, 4, 3); glow(B, x, 117, 26, 'rgba(255,220,150,0.6)'); }
+    // the flag at the stern
+    B.fillStyle = '#c8c4bc'; B.fillRect(1040, 60, 2, 106); R.ball(B, 1041, 59, 2, '#d8b040');
+    vignette(B, BW);
+    // the deck: painted steel plates, wet with spray, a yellow line along the stern
+    pfloor(F, 'stone', '#5e6a66', '#2e3634', { rows: 7, span: 76, wet: true });
+    F.fillStyle = 'rgba(0,0,0,0.25)'; for (let i = 0; i < 260; i++) F.fillRect(rand() * AWX, FY + 4 + rand() * (H - FY - 4), 1, 1);
+    F.fillStyle = '#d8b030'; F.fillRect(0, FY + 1, AWX, 2);
+  }
+  const fbmLite = x => (Math.sin(x * 0.031) + Math.sin(x * 0.083 + 1.3) * 0.6 + Math.sin(x * 0.17 + 2.1) * 0.3 + 1.9) / 3.8;
+
+  // =====================================================================================
+  // YOSEMITE VALLEY from Tunnel View: El Capitan in the morning sun, Half Dome far off up the valley,
+  // Cathedral Rocks and Bridalveil Fall in shadow, mist over the forest, the overlook's stone wall
+  // =====================================================================================
+  const YOSE = { fall: [736, 102, 140] };
+  // a granite wall: clipped to its outline, lit across, streaked top to bottom by old water stains
+  function graniteFace(g, pts, light, dark, haze, streaks) {
+    g.save(); g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const [x, y] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    hgf(g, x0, y0, x1 - x0, y1 - y0, [light, shade(light, -0.06), dark]);
+    for (let i = 0; i < streaks; i++) {
+      const x = rr(x0, x1), top = rr(y0, y0 + (y1 - y0) * 0.5), len = rr(10, y1 - top), w = rr(0.6, 3);
+      const gr = g.createLinearGradient(0, top, 0, top + len), dk = rand() < 0.7;
+      gr.addColorStop(0, dk ? `rgba(40,40,50,${rr(0.1, 0.35)})` : `rgba(255,255,250,${rr(0.08, 0.25)})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(x, top, w, len);
+    }
+    for (let i = 0; i < streaks / 4; i++) { g.fillStyle = `rgba(60,60,70,${rr(0.05, 0.15)})`; g.fillRect(rr(x0, x1), rr(y0, y1), rr(6, 24), rr(0.6, 1.4)); }
+    if (haze) { g.fillStyle = haze; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
+    g.restore();
+  }
+  // a conifer: a narrow spire of drooping boughs
+  function conifer(g, x, y, h, c, lit) {
+    const w = h * 0.22;
+    g.fillStyle = c; g.beginPath(); g.moveTo(x, y - h);
+    for (let i = 1; i <= 6; i++) { const t = i / 6, yy = y - h + h * 0.92 * t, ww = w * t * (0.85 + rand() * 0.3); g.lineTo(x + ww, yy); g.lineTo(x + ww * 0.55, yy - h * 0.03); }
+    for (let i = 6; i >= 1; i--) { const t = i / 6, yy = y - h + h * 0.92 * t, ww = w * t * (0.85 + rand() * 0.3); g.lineTo(x - ww * 0.55, yy - h * 0.03); g.lineTo(x - ww, yy); }
+    g.closePath(); g.fill();
+    if (lit) { g.fillStyle = lit; g.beginPath(); g.moveTo(x, y - h); g.lineTo(x - w * 0.9, y - h * 0.1); g.lineTo(x - w * 0.2, y - h * 0.1); g.closePath(); g.fill(); }
+  }
+  // a hillside thick with conifers: shaded top to bottom, trees packed in, lit on their sunny side
+  function forested(g, pts, c1, c2, n, h0, h1, tree, lit) {
+    g.save(); g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const [x, y] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    vg(g, x0, y0, x1 - x0, y1 - y0, [c1, c2]);
+    const ts = []; for (let i = 0; i < n; i++) ts.push([rr(x0, x1), rr(y0, y1 + h1 * 0.6)]); ts.sort((a, b) => a[1] - b[1]);
+    for (const [x, y] of ts) conifer(g, x, y, rr(h0, h1), shade(tree, rr(-0.22, 0.1)), lit);
+    for (let i = 0; i < (x1 - x0) / 30; i++) { const gx = rr(x0, x1), gy = rr(y0, y1 - 20); g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx + rr(-6, 6), y1); g.lineTo(gx + rr(4, 10), y1); g.closePath(); g.fill(); }
+    g.restore();
+  }
+  // the big sugar pine in the left foreground: a straight trunk, long level limbs with clumps of needles
+  function bigPine(g, x, y, h) {
+    hgf(g, x - 4, y - h, 8, h, ['#2a1a10', '#6a4428', '#3a2414']);
+    for (let i = 0; i < 18; i++) {
+      const t = i / 17, yy = y - h * (0.32 + t * 0.66), len = h * (0.24 - t * 0.12) * rr(0.7, 1.3), sd = i % 2 ? 1 : -1, ex = x + sd * len, ey = yy + rr(-4, 6);
+      R.line(g, x, yy + 3, ex, ey, '#2a1a10', 1.6);
+      for (let k = 0; k < 5; k++) { const bx = x + sd * len * rr(0.3, 1.05), by = ey + rr(-6, 4) - (bx - x) * 0.02; g.fillStyle = shade('#1e3a22', rr(-0.25, 0.08)); g.beginPath(); g.ellipse(bx, by, rr(7, 13), rr(3.5, 6), rr(-0.3, 0.3), 0, PI * 2); g.fill(); g.fillStyle = 'rgba(170,200,120,0.22)'; g.beginPath(); g.ellipse(bx - 2, by - 2, rr(4, 7), rr(1.5, 3), 0, 0, PI * 2); g.fill(); }
+    }
+  }
+  function yosemite(B, F) {
+    setSeed(171);
+    // clear morning sky, wisps of cirrus combed across it, one contrail
+    vg(B, 0, 0, BW, 140, ['#1a52b0', '#3a7ad0', '#7aaee0', '#c0d8ee']);
+    for (let i = 0; i < 40; i++) {
+      const x = rr(-100, BW), y = rr(6, 96), len = rr(60, 190), bend = rr(-16, 16), a = rr(0.03, 0.09);
+      for (let k = 0; k < 4; k++) { B.strokeStyle = `rgba(255,255,255,${a})`; B.lineWidth = 1 + k * 1.6; B.beginPath(); B.moveTo(x, y + k * 0.6); B.quadraticCurveTo(x + len * 0.5, y - len * 0.2 + bend, x + len, y - len * 0.08); B.stroke(); }
+    }
+    B.strokeStyle = 'rgba(255,255,255,0.45)'; B.lineWidth = 0.8; B.beginPath(); B.moveTo(820, 50); B.lineTo(1160, 42); B.stroke();
+    // the high country far up the valley, snow on the peaks
+    B.fillStyle = '#a8bcd4'; B.beginPath(); B.moveTo(560, 136); B.lineTo(596, 118); B.lineTo(612, 110); B.lineTo(626, 116); B.lineTo(652, 112); B.lineTo(700, 124); B.lineTo(740, 136); B.fill();
+    B.fillStyle = '#eef4fa'; B.beginPath(); B.moveTo(606, 112); B.lineTo(612, 110); B.lineTo(620, 113); B.lineTo(613, 116); B.fill();
+    // Half Dome: the long rounded back, then the sheer face cut straight down
+    B.fillStyle = '#b4c2d6'; B.beginPath(); B.moveTo(628, 136); B.quadraticCurveTo(636, 104, 672, 96); B.quadraticCurveTo(684, 94, 690, 97); B.lineTo(691, 136); B.fill();
+    B.fillStyle = 'rgba(255,255,255,0.3)'; B.beginPath(); B.moveTo(640, 118); B.quadraticCurveTo(650, 102, 672, 98); B.lineTo(676, 100); B.quadraticCurveTo(656, 106, 646, 124); B.fill();
+    hgf(B, 682, 97, 9, 39, ['rgba(120,140,170,0.2)', 'rgba(100,120,155,0.6)']);
+    // the nearer walls up the valley: blue, hazy
+    B.fillStyle = '#7a8eaa'; B.beginPath(); B.moveTo(500, 142); B.lineTo(546, 122); B.lineTo(592, 126); B.lineTo(632, 134); B.lineTo(632, 142); B.fill();
+    B.fillStyle = '#6e84a4'; B.beginPath(); B.moveTo(690, 142); B.lineTo(694, 116); B.lineTo(712, 108); B.lineTo(730, 114); B.lineTo(730, 142); B.fill();
+    // the south wall in shadow, rising to the right; Cathedral Rocks' lit peak; the cliff Bridalveil Fall drops from
+    const SW = [[790, 150]]; for (let x = 800; x <= 1280; x += 12) SW.push([x, Math.max(20 + rr(0, 6), Math.min(150, 124 - (x - 826) * 0.42) + rr(-4, 4))]); SW.push([1280, 150]);
+    graniteFace(B, SW, '#7e889e', '#3a4458', 'rgba(90,110,150,0.3)', 110);
+    forested(B, [[830, 150], [860, 118], [960, 96], [1100, 84], [1280, 70], [1280, 150]], 'rgba(40,60,70,0.5)', 'rgba(30,46,52,0.9)', 420, 4, 10, '#26363e', null);
+    graniteFace(B, [[750, 150], [758, 124], [770, 100], [784, 80], [794, 70], [804, 76], [818, 96], [830, 120], [840, 150]], '#e4e2dc', '#5a6478', 'rgba(110,130,170,0.18)', 50);
+    graniteFace(B, [[712, 150], [714, 112], [724, 100], [742, 98], [756, 108], [760, 150]], '#8a94aa', '#4a5468', 'rgba(100,120,160,0.25)', 30);
+    YOSE.fall = [736, 102, 140];
+    vg(B, YOSE.fall[0] - 1.5, YOSE.fall[1], 3, YOSE.fall[2] - YOSE.fall[1], ['rgba(255,255,255,0.9)', 'rgba(230,240,250,0.7)', 'rgba(230,240,250,0.2)']);
+    // El Capitan: the great sheer face catching the morning between the near slope and its prow on the right
+    const ELC = [[330, 150], [330, 54], [352, 42], [390, 34], [424, 34], [442, 40], [458, 56], [474, 84], [490, 114], [506, 150]];
+    graniteFace(B, ELC, '#f4f0e8', '#a0a6b4', null, 200);
+    B.save(); B.beginPath(); ELC.forEach(([x, y], i) => i ? B.lineTo(x, y) : B.moveTo(x, y)); B.closePath(); B.clip();
+    const pr = B.createLinearGradient(456, 0, 506, 0); pr.addColorStop(0, 'rgba(60,70,90,0)'); pr.addColorStop(1, 'rgba(60,70,90,0.5)'); B.fillStyle = pr; B.fillRect(440, 30, 70, 130);
+    B.fillStyle = 'rgba(40,60,40,0.55)'; for (let i = 0; i < 30; i++) B.fillRect(rr(360, 440), rr(35, 41), rr(1, 3), rr(1, 2.5));
+    B.restore();
+    // the near slope in front of El Capitan: forest and bare granite coming down from the upper left
+    const SL = [[0, 150], [0, 34], [120, 38], [250, 44], [352, 56], [392, 88], [430, 122], [452, 150]];
+    forested(B, SL, '#3a5a40', '#1e3424', 900, 5, 13, '#24402e', 'rgba(150,190,110,0.28)');
+    graniteFace(B, [[170, 66], [204, 52], [246, 54], [290, 68], [306, 88], [268, 94], [214, 86]], '#d0ccc0', '#7a7a74', 'rgba(60,90,70,0.1)', 40);
+    forested(B, [[170, 80], [214, 86], [268, 94], [306, 88], [330, 110], [180, 110]], 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 90, 5, 11, '#24402e', 'rgba(150,190,110,0.28)');
+    // the valley floor: an unbroken forest, mist lying in the meadows
+    vg(B, 0, 132, BW, FY - 132, ['#4a6a6a', '#2e4a3e', '#1a3026']);
+    for (let i = 0; i < 2600; i++) { const y = 132 + Math.pow(rand(), 0.8) * (FY - 132), k = (y - 132) / (FY - 132); conifer(B, rr(0, BW), y, (3 + k * 14) * rr(0.7, 1.3), shade(k < 0.25 ? '#3e5e60' : '#24402e', rr(-0.2, 0.08) - k * 0.15), k > 0.3 ? 'rgba(150,190,110,0.18)' : null); if (i === 700 || i === 1500) fog(B, 132 + (i === 700 ? 0 : 12), 18, 'rgba(230,238,245,0.45)'); }
+    // the tall pine on the left and a stand of firs on the right, close by
+    bigPine(B, 210, FY, 182);
+    for (const [x, h] of [[1060, 110], [1100, 140], [1150, 124], [1210, 160], [1250, 118], [120, 96], [60, 130]]) conifer(B, x, FY, h, '#18301e', 'rgba(140,180,90,0.18)');
+    // the overlook's parapet: rough granite blocks in dark mortar
+    const wt = 164;
+    B.fillStyle = '#4a443c'; B.fillRect(0, wt, BW, FY - wt);
+    for (let row = 0; row < 3; row++) for (let x = -rr(0, 20); x < BW;) { const w = rr(18, 34), y = wt + row * 7.4, h = 7; B.fillStyle = shade('#aca08c', rr(-0.16, 0.08) - row * 0.05); B.beginPath(); B.moveTo(x + 1.2, y + 1 + rr(0, 0.8)); B.lineTo(x + w - 1, y + 1); B.lineTo(x + w - 1.4, y + h - 0.4); B.lineTo(x + 1, y + h - 0.2); B.fill(); B.fillStyle = 'rgba(255,250,235,0.22)'; B.fillRect(x + 1.5, y + 1.2, w - 3, 1); B.fillStyle = 'rgba(0,0,0,0.15)'; B.fillRect(x + w - 4, y + 1, 2.6, h - 1.4); x += w; }
+    B.fillStyle = '#8a7e6c'; B.fillRect(0, wt - 3, BW, 4); B.fillStyle = '#c8bca4'; B.fillRect(0, wt - 3, BW, 1.2);
+    vignette(B, BW);
+    // the overlook: sun-warmed paving stones, needles blown across them
+    pfloor(F, 'stone', '#a89a86', '#5a5044', { rows: 7, span: 60 });
+    for (let i = 0; i < 220; i++) { F.strokeStyle = `rgba(90,60,30,${rr(0.3, 0.6)})`; F.lineWidth = 0.6; const x = rand() * AWX, y = FY + 4 + rand() * (H - FY - 6), a = rand() * PI; F.beginPath(); F.moveTo(x, y); F.lineTo(x + Math.cos(a) * 3, y + Math.sin(a) * 1.2); F.stroke(); }
   }
 
   // =====================================================================================
@@ -518,11 +971,49 @@
       }
     }
     if (id === 'house') {
-      // the whole joint session on its feet; the louder the fight, the more of them cheer
-      const hype = (info && info.hype) || 0;
-      for (const p of HOUSE_SEATS) { const cheer = p.eager < 0.25 + hype * 0.75; person(g, p.x, p.y + (cheer ? -Math.abs(Math.sin(t * 6 + p.ph)) * 2 : 0), p.h, { top: p.top, skin: p.skin, hair: p.hair, up: cheer ? 1 : 0, ph: t * 8 + p.ph, tie: p.tie }); }
-      for (let row = 0; row < 3; row++) { const y = FY - 8 - row * 22; g.fillStyle = shade('#5a3a20', -row * 0.08); g.fillRect(0, y - 4, BW, 12); g.fillStyle = '#7a5030'; g.fillRect(0, y - 4, BW, 1.6); }
-      if (hype > 0.4) for (let i = 0; i < 12; i++) { const x = (i * 113 + t * 50) % BW, y = 30 + ((t * 60 + i * 41) % 150); g.fillStyle = ['#f0eee8', '#9a1420', '#1e2a5a'][i % 3]; g.fillRect(x, y, 2, 1.4); }
+      // the members rise as the fight heats up, clapping or cheering; so do the Speaker and the Vice President.
+      // A row where everyone is seated is drawn from a cached picture.
+      const hype = info.hype || 0, rise = p => Math.max(0, Math.min(1, (hype * 1.15 - 0.02 - p.eager) * 5));
+      for (let r = HOUSE_ROWS.length - 1; r >= 0; r--) {
+        const row = HOUSE_ROWS[r], seats = HOUSE_SEATS.filter(p => p.r === r);
+        if (!seats.some(p => !p.empty && rise(p) > 0)) {
+          if (!row.cache) { row.cache = STAGES.kit.mk(BW); const c = row.cache.getContext('2d'); for (const p of seats) houseChair(c, p.x, row); for (const p of seats) if (!p.empty) member(c, p.x, row.rail, row.Hs, p, 0, 0); houseRail(c, row); }
+          g.drawImage(row.cache, 0, 0); continue;
+        }
+        for (const p of seats) houseChair(g, p.x, row);
+        for (const p of seats) if (!p.empty) { const up = rise(p); member(g, p.x, row.rail - (up > 0.5 ? Math.abs(Math.sin(t * 6 + p.ph)) * row.Hs * 0.015 : 0), row.Hs, p, up, t); }
+        houseRail(g, row);
+      }
+      for (const p of HOUSE_LEADERS) member(g, p.x, 98, 80, p, rise(p), t);
+      rostrumTop(g);
+    }
+    if (id === 'ferry') {
+      // the wake churning away behind the stern toward Manhattan, gulls riding along, the flag snapping in the wind
+      g.save(); g.beginPath(); g.rect(0, HARBOR + 1, BW, 166 - HARBOR - 1); g.clip();
+      for (let i = 0; i < 40; i++) {
+        const k = (i * 0.0731 + t * 0.09) % 1, y = 166 - (166 - HARBOR) * (1 - Math.pow(1 - k, 2.2)), half = 6 + 150 * Math.pow(1 - k, 2.2), x = CX + Math.sin(i * 12.9898) * half;
+        g.fillStyle = `rgba(235,240,250,${0.12 + 0.4 * (1 - k)})`; g.beginPath(); g.ellipse(x, y, 3 + 14 * (1 - k), 0.6 + 1.6 * (1 - k), 0, 0, PI * 2); g.fill();
+      }
+      for (let i = 0; i < 18; i++) { const x = (i * 97 + t * 14) % BW, y = HARBOR + 4 + (i * 7) % 22; g.fillStyle = 'rgba(255,220,170,0.18)'; g.fillRect(x, y, 6 + (i % 4) * 3, 0.8); }
+      g.restore();
+      ferryRail(g);
+      // the stern flag
+      const fx = 1042, fy = 61;
+      for (let i = 0; i < 13; i++) { g.fillStyle = i % 2 ? '#f0ece4' : '#b81c28'; g.beginPath(); for (let k = 0; k <= 8; k++) { const xx = fx + k * 5, w = Math.sin(t * 7 - k * 0.7) * k * 0.5; g.lineTo(xx, fy + i * 2 + w); } for (let k = 8; k >= 0; k--) { const xx = fx + k * 5, w = Math.sin(t * 7 - k * 0.7) * k * 0.5; g.lineTo(xx, fy + (i + 1) * 2 + w); } g.fill(); }
+      g.fillStyle = '#1e2a5a'; g.beginPath(); for (let k = 0; k <= 3; k++) g.lineTo(fx + k * 5.6, fy + Math.sin(t * 7 - k * 0.78) * k * 0.55); for (let k = 3; k >= 0; k--) g.lineTo(fx + k * 5.6, fy + 14 + Math.sin(t * 7 - k * 0.78) * k * 0.55); g.fill();
+      // gulls
+      for (let i = 0; i < 3; i++) { const x = (t * (22 + i * 7) + i * 400) % (BW + 200) - 100, y = 70 + i * 18 + Math.sin(t * 0.9 + i) * 10, w = Math.sin(t * 9 + i * 2) * 2.4; g.strokeStyle = '#f0ece4'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - 6, y - w); g.quadraticCurveTo(x - 3, y - 2.5, x, y); g.quadraticCurveTo(x + 3, y - 2.5, x + 6, y - w); g.stroke(); }
+      // the beacon on top of One World Trade Center, the torch's flicker
+      if ((t % 1.6) < 0.5) glow(g, FERRY.spire[0], FERRY.spire[1], 7, 'rgba(255,40,40,0.9)');
+      glow(g, FERRY.torch[0], FERRY.torch[1], 12 + Math.sin(t * 9) * 2, 'rgba(255,210,120,0.7)');
+    }
+    if (id === 'yosemite') {
+      // mist drifting over the valley floor, spray blowing off Bridalveil Fall, ravens riding the updraft
+      for (let i = 0; i < 9; i++) { const x = ((i * 173 + t * (6 + i)) % (BW + 300)) - 150, y = 134 + (i % 3) * 7; const gr = g.createRadialGradient(x, y, 0, x, y, 70); gr.addColorStop(0, 'rgba(235,242,248,0.28)'); gr.addColorStop(1, 'rgba(235,242,248,0)'); g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, 90, 9, 0, 0, PI * 2); g.fill(); }
+      const [fx, f0, f1] = YOSE.fall;
+      for (let i = 0; i < 7; i++) { const k = (t * 0.9 + i / 7) % 1; g.fillStyle = `rgba(255,255,255,${0.7 * (1 - k)})`; g.fillRect(fx - 1 + Math.sin(t * 2 + i) * 0.8 * k, f0 + (f1 - f0) * k, 1.6, 4); }
+      glow(g, fx, f1, 10 + Math.sin(t * 3) * 2, 'rgba(240,248,255,0.4)');
+      for (let i = 0; i < 2; i++) { const x = 560 + Math.cos(t * 0.4 + i * 3) * 120, y = 60 + Math.sin(t * 0.8 + i * 3) * 18, w = Math.sin(t * 6 + i) * 2; g.strokeStyle = '#141414'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x - 5, y - w); g.quadraticCurveTo(x - 2, y - 2, x, y); g.quadraticCurveTo(x + 2, y - 2, x + 5, y - w); g.stroke(); }
     }
     if (id === 'smithsonian') {
       // the old plane hanging overhead, turning slowly on its wires
@@ -547,7 +1038,11 @@
     house: { name: 'JOINT SESSION OF CONGRESS', draw: house },
     smithsonian: { name: 'THE SMITHSONIAN', draw: smithsonian },
     tidal: { name: 'THE TIDAL BASIN', draw: tidal },
+    ferry: { name: 'THE STATEN ISLAND FERRY', draw: ferry },
+    yosemite: { name: 'YOSEMITE VALLEY', draw: yosemite },
   };
-  const ROTATION = ['oval', 'rushmore', 'valleyforge', 'gettysburg', 'reflecting', 'bowling', 'rotunda', 'house', 'smithsonian', 'tidal'];
+  const ROTATION = ['oval', 'rushmore', 'valleyforge', 'gettysburg', 'reflecting', 'bowling', 'rotunda', 'house', 'smithsonian', 'tidal', 'ferry', 'yosemite'];
   STAGES.define({ defs: DEFS, fallback: 'oval', rotation: ROTATION, single: ROTATION, live });
+  // Rushmore is sculpted and lit pixel by pixel (about a second); build it while the title screen is up, not at the bell
+  setTimeout(() => STAGES.get('rushmore'), 2500);
 })();
