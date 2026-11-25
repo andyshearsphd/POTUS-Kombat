@@ -64,6 +64,18 @@ window.GAME = {
     // JFK: a tight spiral off the Hyannis Port lawn
     football: { speed: 420, vy: -50, grav: 70, dmg: 9, w: 11, h: 7, fx: 'knock', launch: [220, -300], hitSfx: 'punch', word: 'TOUCHDOWN',
       draw(g, p, s, t) { g.scale(s, 1); g.fillStyle = '#7a3a18'; g.beginPath(); g.ellipse(0, 0, 8, 4.6, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,220,180,0.25)'; g.beginPath(); g.ellipse(-1, -1.6, 5, 1.6, 0, 0, Math.PI * 2); g.fill(); const r = Math.sin(t * 40); g.strokeStyle = '#f0ece0'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-3, r * 2); g.lineTo(3, r * 2); g.stroke(); for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 1.2, r * 2 - 1); g.lineTo(i * 1.2, r * 2 + 1); g.stroke(); } g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(-12, -0.5, 3, 1); g.fillRect(-16, 1, 2, 0.8); } },
+    // Nixon: a bowling ball from the White House lane, rolled low to take the legs
+    bowling: { speed: 290, y: 7, low: true, trip: true, dmg: 9, w: 12, h: 12, fx: 'trip', cool: 1.6, hitSfx: 'thud', word: 'STRIKE!',
+      draw(g, p, s, t) { g.rotate(t * 14 * s); g.fillStyle = '#16161c'; g.beginPath(); g.arc(0, 0, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(120,130,200,0.35)'; g.beginPath(); g.arc(-2, -2.6, 3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#050508'; for (const [x, y] of [[1.6, -2], [3.4, -0.4], [2, 1.8]]) { g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill(); } } },
+    // Reagan: Star Wars. A laser from orbit, after a short targeting beep.
+    laser: { sky: { count: 1, spread: 0, delay: 0.55, speed: 1500 }, dmg: 13, w: 12, h: 30, fx: 'launch', launch: [140, -620], fire: true, cool: 2.2, sfx: 'ding', hitSfx: 'big', word: 'STAR WARS',
+      draw(g, p, s, t) { const gr = g.createLinearGradient(-6, 0, 6, 0); gr.addColorStop(0, 'rgba(255,40,40,0)'); gr.addColorStop(0.5, 'rgba(255,240,240,1)'); gr.addColorStop(1, 'rgba(255,40,40,0)'); g.fillStyle = 'rgba(255,40,60,0.45)'; g.fillRect(-7, -500, 14, 504); g.fillStyle = gr; g.fillRect(-4, -500, 8, 506); g.fillStyle = 'rgba(255,200,200,0.8)'; g.beginPath(); g.arc(0, 4, 8, 0, Math.PI * 2); g.fill(); } },
+    // Reagan: a short-range shotgun blast of jelly beans
+    jellybeans: { speed: 420, spread: [-90, -45, 0, 45, 90], life: 0.4, dmg: 2.8, w: 5, h: 4, fx: 'stun', cool: 1.2, sfx: 'shot', hitSfx: 'punch',
+      draw(g, p, s, t) { const c = ['#e83a3a', '#3ac83a', '#f0d030', '#a040e0', '#f08a20', '#f070b0'][Math.abs(Math.round(p.vy / 45 + 2)) % 6]; g.rotate(t * 20); g.fillStyle = c; g.beginPath(); g.ellipse(0, 0, 3.4, 2.2, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(-1.6, -1.4, 1.6, 0.8); } },
+    // Carter: peanuts flicked like bullets
+    peanuts: { speed: 440, burst: { n: 6, gap: 0.07, jitter: 40 }, dmg: 2.4, w: 5, h: 4, fx: 'stun', cool: 1.4, sfx: 'chomp', hitSfx: 'punch',
+      draw(g, p, s, t) { g.rotate(t * 24); g.fillStyle = '#c8a060'; g.beginPath(); g.ellipse(-1.6, 0, 2.4, 2, 0, 0, Math.PI * 2); g.ellipse(1.6, 0, 2.4, 2, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(90,60,20,0.5)'; g.fillRect(-0.3, -1.6, 0.6, 3.2); } },
     // FDR: New Deal agencies in steel letters, three at once
     letters: { speed: 300, spread: [-80, 0, 80], dmg: 5, w: 9, h: 6, fx: 'stun', hitSfx: 'clang',
       draw(g, p, s, t) { const word = p.vy < -20 ? 'WPA' : p.vy > 20 ? 'TVA' : 'CCC'; g.rotate(t * 14 * s); g.fillStyle = '#4a4e58'; g.fillRect(-10, -5, 20, 10); g.strokeStyle = '#c8ccd4'; g.lineWidth = 0.8; g.strokeRect(-10, -5, 20, 10); g.fillStyle = '#e8ecf2'; g.font = '7px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText(word, 0, 3); g.textAlign = 'left'; } },
@@ -127,6 +139,31 @@ window.GAME = {
       // sweeps the hair back, flashes the smile, points at you
       jfk: { fp: t => t < 0.9 ? { aR: [2.6, 1.2], aL: [0.3, 0.2], head: -0.08 } : { aR: [1.55, 0.05], aL: [0.3, 0.2], head: 0.05, jaw: 0.15 },
         fx(f, t) { f.st2.sweep = t < 0.9 ? Math.sin(t * 7) * 2 : 0; if (once(f, 'p', t, 1.1)) bubble(f, 'ASK NOT.'); } },
+      // Stetson on, he leans in until his face fills the screen
+      lbj: { fp: t => ({ aL: [0.5, 0.4], aR: [0.5, 0.4], head: 0.1, squat: Math.min(1, t / 2) * 6 }),
+        fx(f, t) { if (once(f, 'y', t, 2.2)) { bubble(f, 'COME HERE, SON.', 'white'); } },
+        draw(g, f, t) {
+          const u = Math.max(0, Math.min(1, (t - 0.8) / 1.6)); if (u <= 0) return;
+          const h = fj(f, 'neck'), def = ROSTER.ALL.lbj;
+          g.save(); g.translate(h[0], h[1] + 6 * u); const sc = f.d.k * (1 + u * u * 2.4); g.scale(sc, sc); g.globalAlpha = Math.min(1, u * 3);
+          def.front.head(g, { t, jaw: 0 }); g.restore();
+        } },
+      // both arms up in the double V, jowls shaking
+      nixon: { fp: t => ({ aL: [2.55, 0.12], aR: [2.55, 0.12], head: -0.05 }),
+        fx(f, t) { f.st2.jowl = Math.sin(t * 22) * 1.4; if (once(f, 'v', t, 0.5)) bubble(f, 'I AM NOT A CROOK!'); },
+        draw(g, f) { for (const side of ['handL', 'handR']) { const h = fj(f, side), sd = side === 'handL' ? -1 : 1; RIG.line(g, h[0] - 1.6 * sd, h[1] - 2, h[0] - 4 * sd, h[1] - 10, '#dcaa8c', 1.6); RIG.line(g, h[0] + 1.2 * sd, h[1] - 2, h[0] + 3 * sd, h[1] - 10, '#dcaa8c', 1.6); } } },
+      // the head tilt, the wink, "There you go again."
+      reagan: { fp: t => ({ aL: [0.3, 0.2], aR: t > 0.6 ? [1.2, 2.2] : [0.3, 0.2], head: 0.18, sway: 0.03 }),
+        fx(f, t) { f.st2.wink = t > 1.0 && t < 1.5; if (once(f, 'w', t, 1.6)) bubble(f, 'THERE YOU GO AGAIN.'); } },
+      // tosses a peanut up and catches it in that grin
+      carter: { fp: t => ({ aR: t % 2 < 0.4 ? [1.4, 1.6] : [0.4, 0.3], aL: [0.3, 0.2], head: (t % 2) > 0.4 && (t % 2) < 1.2 ? -0.2 : 0 }),
+        fx(f, t) { const ph = t % 2; f.st2.chomp = ph > 1.1 && ph < 1.4; if (once(f, 'c' + Math.floor(t / 2), ph, 1.15)) SFX.chomp(); },
+        draw(g, f, t) {
+          const ph = t % 2; if (ph < 0.4 || ph > 1.15) return;
+          const h = fj(f, 'handR'), m = fj(f, 'head'), u = (ph - 0.4) / 0.75;
+          const x = lerp(h[0], m[0], u), y = lerp(h[1], m[1] + 6, u) - Math.sin(u * PI) * 60;
+          g.fillStyle = '#c8a060'; g.beginPath(); g.ellipse(x - 1.6, y, 2.4, 2, 0, 0, PI * 2); g.ellipse(x + 1.6, y, 2.4, 2, 0, 0, PI * 2); g.fill();
+        } },
       // the Big Stick thrust skyward, spectacles glinting: "Bully!"
       teddy: { fp: t => ({ aR: [2.98, 0.05], aL: [0.6, -1.5], jaw: 0.3 }),
         fx(f, t) { if (once(f, 'b', t, 0.25)) { bubble(f, 'BULLY!'); SFX.say('bully'); } },

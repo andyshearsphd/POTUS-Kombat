@@ -577,6 +577,188 @@ FATAL.add(K => {
     };
   };
 
+  // ---------- LYNDON B. JOHNSON: All the Way ----------
+  // One punch goes in the front and out the back, and comes back holding the spine.
+  const spine = (g, x, y, a, n, k) => {
+    g.save(); g.translate(x, y); g.rotate(a);
+    for (let i = 0; i < n; i++) { const yy = i * 4.2 * k; g.fillStyle = '#e8e0cc'; g.fillRect(-2.6 * k, yy, 5.2 * k, 3.2 * k); g.fillStyle = '#c8bca4'; g.fillRect(2.4 * k, yy + 0.6 * k, 2.4 * k, 1.6 * k); g.fillStyle = 'rgba(150,0,16,0.7)'; g.fillRect(-2.6 * k, yy + 3.2 * k, 5.2 * k, 1 * k); }
+    g.fillStyle = '#8a0010'; g.beginPath(); g.ellipse(0, n * 4.2 * k, 3.4 * k, 2.4 * k, 0, 0, PI * 2); g.fill();
+    g.restore();
+  };
+  S.lbj = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let stage = 0, out = null;
+    s.at(0.6, () => api.bubble("I'M GOING ALL THE WAY.", A.x, F - 175, { size: 11, life: 1.2, fill: 'white' }));
+    s.at(1.3, () => { stage = 1; api.sfx('punch'); api.sfx('crunch'); api.sfx('splat'); api.shake(10); api.flash(); const c = J(V, 'chest'); FX.burst(c[0] + A.face * 14, c[1], 8, ['chunk', 'bone', 'guts'], 1); FX.drops(2); });
+    s.at(2.4, () => { stage = 2; api.sfx('crunch'); api.sfx('splat'); api.shake(8); const c = J(V, 'chest'); FX.burst(c[0], c[1], 8, ['chunk', 'guts'], 1); out = { t: 0 }; });
+    s.at(2.8, () => { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); FX.blood(V.x, F - 6, 30, 0, 1); });
+    s.at(3.2, () => api.bubble('ALL THE WAY WITH LBJ.', A.x, F - 175, { size: 12, life: 1.8, fill: 'gold' }));
+    s.at(5.0, () => { s.done = true; });
+    prop({ layer: 'front', draw(g) {
+      const vk = V.d.k;
+      if (stage === 1) {
+        // the fist out the back, spine bent around it
+        const c = J(V, 'chest'), bx = c[0] + A.face * 18 * vk, by = c[1] + 2;
+        g.fillStyle = '#8a0010'; g.beginPath(); g.ellipse(bx, by, 5 * vk, 6 * vk, 0, 0, PI * 2); g.fill();
+        spine(g, bx + A.face * 4, by - 12 * vk, A.face * 0.4, 6, vk * 0.9);
+        RIG.ball(g, bx + A.face * 6, by, 4.4 * k, A.def.col.hand);
+      }
+      if (stage === 2) { const h = J(A, 'handFx'); spine(g, h[0], h[1] - 4, A.face * 0.15 + PI, 9, vk); }
+    } });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 28 * k, dt, api, 110); return; }
+      if (t < 1.3) { A.scriptPose = P({ hy: 6, lean: -0.15, head: -0.1, aF: [0.6, 2.2], aB: [0.8, 1.2], fF: [14, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); return; }
+      if (stage === 1) { A.scriptPose = P({ hy: 8, lean: 0.4, head: 0.15, aF: [1.6, 0.0], aB: [0.6, 1.4], fF: [18, 0], fB: [-16, 0] }); V.scriptPose = P({ hy: 6, lean: 0.5, head: 0.6, aF: [0.8, 0.4], aB: [0.6, 0.4], fF: [8, 0], fB: [-8, 0] }); V.ro.dx = rnd(-1, 1); if (Math.random() < 0.6) { const c = J(V, 'chest'); FX.blood(c[0] + A.face * 20, c[1], 2, A.face, 0.6); } return; }
+      A.scriptPose = P({ hy: 3, lean: -0.15, head: -0.25, aF: [2.85, 0.15], aB: [0.5, 1.9], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
+      if (t < 2.8) V.scriptPose = PS.dizzy(V.t * 0.3);
+      if (Math.random() < 0.3) { const h = J(A, 'handFx'); FX.blood(h[0], h[1] - 4 + 36 * V.d.k, 1, 0, 0.2); }
+    };
+  };
+
+  // ---------- RICHARD NIXON: I Am Not a Crook ----------
+  // He sweeps the loser's organs into his briefcase, snaps it shut, and throws up the double V.
+  S.nixon = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let open = 0, shut = false;
+    const organs = [], BR = '#d8b048';
+    const ORG = [['#8a0a14', 4, 3.4], ['#a83a3a', 3.4, 2.4], ['#6a2a1a', 5, 3], ['#c87a80', 5.4, 3.6], ['#d89a8a', 6, 2.4], ['#7a1a2a', 3, 2.6], ['#c86070', 4.4, 3]];
+    const caseXY = () => { const h = J(A, 'handBx'); return [h[0] + A.face * 2, h[1] + 4]; };
+    prop({ layer: 'front', draw(g) {
+      const [x, y] = caseXY();
+      // briefcase: brown leather, brass clasps, lid swings open
+      g.fillStyle = '#4a2e18'; g.fillRect(x - 13, y, 26, 16); g.fillStyle = '#5a3a20'; g.fillRect(x - 13, y, 26, 2.4);
+      g.fillStyle = BR; g.fillRect(x - 8, y + 1, 3, 2.4); g.fillRect(x + 5, y + 1, 3, 2.4);
+      R.line(g, x - 4, y - 0.4, x - 4, y - 4, '#2a1a0a', 1.4); R.line(g, x + 4, y - 0.4, x + 4, y - 4, '#2a1a0a', 1.4); R.line(g, x - 4, y - 4, x + 4, y - 4, '#2a1a0a', 1.4);
+      if (open > 0 && !shut) { g.save(); g.translate(x - 13, y); g.rotate(-open * 1.6); g.fillStyle = '#5a3a20'; g.fillRect(0, -3, 26, 3); g.restore(); g.fillStyle = '#2a1408'; g.fillRect(x - 12, y - 0.6, 24, 2); }
+      for (const o of organs) { if (o.in) continue; g.fillStyle = o.c; g.beginPath(); g.ellipse(o.x, o.y, o.w, o.h, o.r, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.25)'; g.beginPath(); g.ellipse(o.x - o.w * 0.3, o.y - o.h * 0.3, o.w * 0.3, o.h * 0.25, o.r, 0, PI * 2); g.fill(); }
+    } });
+    s.at(0.6, () => { api.bubble('LET ME MAKE ONE THING PERFECTLY CLEAR.', A.x, F - 170, { size: 9, life: 1.5, fill: 'white' }); });
+    s.at(1.2, () => { open = 1; api.sfx('clang'); });
+    ORG.forEach((o, i) => s.at(1.5 + i * 0.17, () => {
+      const c = J(V, 'chest'); api.sfx('squish'); FX.blood(c[0], c[1] + rnd(-6, 12), 8, -A.face, 0.9);
+      organs.push({ c: o[0], w: o[1] * V.d.k, h: o[2] * V.d.k, x: c[0], y: c[1] + rnd(-6, 14), x0: c[0], y0: c[1] + rnd(-6, 14), t0: s.t, r: rnd(-1, 1), in: false });
+    }));
+    s.at(2.9, () => { shut = true; api.sfx('clang'); api.sfx('thud'); });
+    s.at(3.0, () => { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); FX.blood(V.x, F - 6, 26, 0, 1); });
+    s.at(3.4, () => { api.bubble('I AM NOT A CROOK.', A.x, F - 175, { size: 14, life: 2, fill: 'gold' }); });
+    s.at(5.4, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 34 * k, dt, api, 110); return; }
+      if (t < 3.0) V.scriptPose = t < 1.5 ? PS.dizzy(V.t) : P({ hy: 6, lean: 0.35, head: 0.5, aF: [0.6, 0.4], aB: [0.4, 0.4], fF: [8, 0], fB: [-8, 0] });
+      if (t < 2.9) {
+        const swipe = Math.sin(t * 26);
+        A.scriptPose = P({ hy: 6, lean: 0.3, head: 0.15, aF: [1.5 + swipe * 0.35, 0.2 + swipe * 0.3], aB: [0.7, 1.0], fF: [14, 0], fB: [-14, 0] });
+        if (t > 1.5 && Math.random() < 0.4) { const c = J(V, 'chest'); FX.spurt(c[0], c[1], -A.face * 0.4, 1); }
+      } else A.scriptPose = P({ hy: 3, lean: -0.1, head: -0.2, aF: [2.7, 0.1], aB: [2.6, 0.12], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
+      const [cx, cy] = caseXY();
+      for (const o of organs) { const u = ease((t - o.t0) / 0.4); o.x = lerp(o.x0, cx, u); o.y = lerp(o.y0, cy + 2, u) - Math.sin(u * PI) * 26; o.r += dt * 8; if (u >= 1) o.in = true; }
+    };
+  };
+
+  // ---------- RONALD REAGAN: Tear Down This Wall ----------
+  // "Mr. Gorbachev..." He tears the ribcage open like a wall coming down.
+  S.reagan = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let ribs = 0, ribsOut = null;
+    s.at(0.6, () => api.bubble('MR. GORBACHEV...', A.x, F - 170, { size: 12, life: 1.2, fill: 'white' }));
+    s.at(1.3, () => { api.sfx('punch'); api.sfx('crunch'); api.shake(6); });
+    s.at(1.9, () => { api.bubble('TEAR DOWN THIS WALL!', A.x, F - 175, { size: 14, life: 1.8, fill: 'gold' }); api.sfx('crunch'); api.sfx('splat'); api.sfx('scream'); api.shake(12); api.flash(); const c = J(V, 'chest'); FX.burst(c[0], c[1], 10, ['chunk', 'bone', 'guts', 'heart', 'lung'], 1.1); FX.drops(3); ribsOut = s.t; });
+    s.at(3.2, () => { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); FX.blood(V.x, F - 6, 30, 0, 1); });
+    s.at(5.0, () => { s.done = true; });
+    prop({ layer: 'front', draw(g) {
+      if (!ribsOut || V.snapPose && s.t > 3.25) return;
+      const c = J(V, 'chest'), vk = V.d.k, u = Math.min(1, (s.t - ribsOut) / 0.35);
+      // the open cavity
+      g.fillStyle = '#5a0008'; g.beginPath(); g.ellipse(c[0] + A.face * -6 * vk, c[1] + 4, 9 * vk, 12 * vk, 0, 0, PI * 2); g.fill();
+      g.fillStyle = '#8a0a14'; g.beginPath(); g.ellipse(c[0] + A.face * -6 * vk, c[1] + 2, 3.6 * vk * (1 + Math.max(0, Math.sin(s.t * 12)) * 0.2), 4 * vk, 0, 0, PI * 2); g.fill();
+      // the two halves of the ribcage swung out like gates
+      for (const sd of [-1, 1]) {
+        g.save(); g.translate(c[0] - A.face * 6 * vk + sd * 8 * vk, c[1] - 6 * vk); g.rotate(sd * u * 1.3);
+        g.strokeStyle = '#ece4d0'; g.lineWidth = 1.6 * vk; for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(-sd * 7 * vk, i * 4 * vk, 7 * vk, sd > 0 ? -0.4 : PI - 0.8, sd > 0 ? 0.8 : PI + 0.4); g.stroke(); }
+        g.strokeStyle = 'rgba(140,0,14,0.8)'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 18 * vk); g.stroke();
+        g.restore();
+      }
+    } });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 28 * k, dt, api, 110); return; }
+      if (t < 1.9) { A.scriptPose = P({ hy: 6, lean: 0.3, head: 0.1, aF: [1.6, 0.2], aB: [1.5, 0.3], fF: [15, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); V.ro.dx = t > 1.3 ? rnd(-1.5, 1.5) : 0; return; }
+      const u = Math.min(1, (t - 1.9) / 0.35);
+      A.scriptPose = P({ hy: 8, lean: -0.1, head: -0.2, aF: [1.6 + u * 0.9, 0.2], aB: [1.5 + u * 0.8, 0.3], fF: [15, 0], fB: [-15, 0] });
+      if (t < 3.2) { V.scriptPose = P({ hy: 6, lean: -0.3, head: -0.6, aF: [1.2 + Math.sin(t * 16) * 0.4, 0.4], aB: [1.0, 0.5], fF: [8, 0], fB: [-8, 0] }); V.ro.dx = rnd(-1, 1); if (Math.random() < 0.6) { const c = J(V, 'chest'); FX.spurt(c[0], c[1], rnd(-0.6, 0.6), 1.1); } }
+      if (t > 3.6) A.scriptPose = PS.win(A.t);
+    };
+  };
+
+  // ---------- JIMMY CARTER: Peanut Grinder ----------
+  // Into the peanut mill. Out comes red peanut butter, spread on toast.
+  S.carter = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let mill = 0, mx = 0, crank = 0, inMill = false, paste = 0, toast = 0, jar = 0, bite = 0;
+    const HT = 96;
+    prop({ layer: 'front', draw(g) {
+      if (mill <= 0) return;
+      const y0 = F + (1 - mill) * 140;
+      g.save(); g.beginPath(); g.rect(mx - 80, -400, 160, F + 400); g.clip();
+      // legs, body of the mill, hopper, crank, spout
+      g.fillStyle = '#3a2a18'; g.fillRect(mx - 22, y0 - 30, 5, 30); g.fillRect(mx + 17, y0 - 30, 5, 30);
+      g.fillStyle = '#6a2a1a'; g.fillRect(mx - 24, y0 - 64, 48, 36); g.fillStyle = '#8a3a22'; g.fillRect(mx - 24, y0 - 64, 48, 4);
+      g.fillStyle = '#e8d8a0'; g.fillRect(mx - 16, y0 - 54, 32, 14); g.fillStyle = '#6a2a1a'; g.font = '6px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText('PLAINS', mx, y0 - 47.6); g.font = '4px Anton, Impact, sans-serif'; g.fillText('PEANUT CO.', mx, y0 - 42.4); g.textAlign = 'left';
+      g.fillStyle = '#7a7e88'; g.beginPath(); g.moveTo(mx - 40, y0 - HT); g.lineTo(mx + 40, y0 - HT); g.lineTo(mx + 14, y0 - 64); g.lineTo(mx - 14, y0 - 64); g.closePath(); g.fill();
+      g.fillStyle = '#9a9ea8'; g.fillRect(mx - 40, y0 - HT - 3, 80, 4); g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.moveTo(mx + 10, y0 - HT); g.lineTo(mx + 40, y0 - HT); g.lineTo(mx + 14, y0 - 64); g.closePath(); g.fill();
+      const cxk = mx - A.face * 26, cyk = y0 - 56, ca = crank;
+      g.fillStyle = '#4a4e56'; g.beginPath(); g.arc(cxk, cyk, 3, 0, PI * 2); g.fill(); R.line(g, cxk, cyk, cxk + Math.cos(ca) * 12, cyk + Math.sin(ca) * 12, '#4a4e56', 2.2); R.line(g, cxk + Math.cos(ca) * 12, cyk + Math.sin(ca) * 12, cxk + Math.cos(ca) * 12 - A.face * 6, cyk + Math.sin(ca) * 12, '#8a6034', 2.6);
+      const sx = mx - A.face * 24; g.fillStyle = '#4a4e56'; g.fillRect(sx - (A.face < 0 ? 0 : 10), y0 - 36, 10, 5);
+      if (paste > 0) { g.fillStyle = '#8a1a14'; g.fillRect(sx - A.face * 6 - 2, y0 - 32, 4, 20); g.fillStyle = '#a82a1e'; g.fillRect(sx - A.face * 6 - 1, y0 - 32, 1.4, 20); }
+      if (jar) { const jx = sx - A.face * 6; g.fillStyle = 'rgba(220,235,240,0.5)'; g.fillRect(jx - 7, F - 14, 14, 14); g.fillStyle = '#8a1a14'; g.fillRect(jx - 6, F - 1 - 12 * Math.min(1, jar), 12, 12 * Math.min(1, jar)); g.fillStyle = '#c8a040'; g.fillRect(jx - 7.5, F - 15, 15, 2.4); }
+      g.restore();
+    } });
+    prop({ layer: 'front', draw(g) {
+      if (!toast) return;
+      const h = J(A, 'handFx'), x = h[0] + A.face * 2, y = h[1] - 6;
+      g.fillStyle = '#c88a40'; g.beginPath(); g.moveTo(x - 7, y + 6); g.lineTo(x + 7, y + 6); g.lineTo(x + 7, y - 4); g.quadraticCurveTo(x + 7, y - 9, x, y - 8); g.quadraticCurveTo(x - 7, y - 9, x - 7, y - 4); g.closePath(); g.fill();
+      g.fillStyle = '#e8b870'; g.fillRect(x - 5.6, y - 5, 11.2, 9.6);
+      if (toast > 1) { g.fillStyle = '#8a1a14'; g.fillRect(x - 5, y - 4.4, 10 * Math.min(1, toast - 1), 8.4); }
+      if (bite) { g.fillStyle = '#1a1014'; g.beginPath(); g.arc(x + A.face * 6, y - 6, 3.6, 0, PI * 2); g.fill(); }
+    } });
+    s.at(0.6, () => api.bubble('PLAINS, GEORGIA. FINEST PEANUTS IN THE WORLD.', A.x, F - 170, { size: 9, life: 1.5, fill: 'white' }));
+    s.at(0.9, () => { mx = V.x + A.face * 50; api.sfx('creak'); api.shake(4); });
+    s.at(1.8, () => { api.sfx('whoosh'); });
+    s.at(2.3, () => { inMill = true; V.hidden = true; api.sfx('crunch'); api.sfx('scream'); api.shake(6); FX.blood(mx, F - HT, 20, 0, 1.2); });
+    for (let i = 0; i < 6; i++) s.at(2.5 + i * 0.22, () => { api.sfx('crunch'); api.shake(3); if (Math.random() < 0.5) FX.gib(pick(['bone', 'tooth', 'chunk']), mx, F - HT, rnd(-80, 80), rnd(-200, -80)); });
+    s.at(2.8, () => { paste = 1; jar = 0.01; api.sfx('slurp'); });
+    s.at(4.0, () => { paste = 0; });
+    s.at(4.2, () => { toast = 1; api.sfx('blip'); });
+    s.at(4.6, () => api.sfx('squish'));
+    s.at(5.3, () => { bite = 1; api.sfx('chomp'); });
+    s.at(5.5, () => api.bubble('MMM. CRUNCHY.', A.x, F - 170, { size: 13, life: 1.8, fill: 'gold' }));
+    s.at(6.9, () => { toast = 0; mill = -1; });
+    s.at(7.0, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (mill < 0) return;
+      mill = t < 0.9 ? 0 : ease((t - 0.9) / 0.7);
+      if (jar && paste) jar = Math.min(1, jar + dt * 0.8);
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 30 * k, dt, api, 110); return; }
+      if (t < 1.8) { V.scriptPose = PS.dizzy(V.t); A.scriptPose = P({ hy: 8, lean: 0.4, head: 0.1, aF: [1.6, 0.4], aB: [1.5, 0.5], fF: [14, 0], fB: [-15, 0] }); return; }
+      if (!inMill) {
+        // up over his head and into the hopper
+        const u = ease((t - 1.8) / 0.5);
+        V.x = lerp(A.x + A.face * 20, mx, u); V.y = F - Math.sin(u * PI * 0.5) * (HT + 10) + u * u * 30; V.ro.noShadow = true;
+        V.scriptPose = P({ rot: A.face * -0.9 * u, hyA: 0, aF: [2.6, 0.4], aB: [2.4, 0.5], lF: [0.3, 0.3], lB: [-0.2, 0.4], head: 0.4 });
+        A.scriptPose = P({ hy: 4, lean: -0.1, head: -0.3, aF: [2.8, 0.2], aB: [2.7, 0.3], fF: [14, 0], fB: [-14, 0] });
+        return;
+      }
+      if (t < 4.2) {
+        // walk to the crank and turn it
+        walkTo(A, mx - A.face * 56, dt, api, 120);
+        if (Math.abs(A.x - (mx - A.face * 56)) < 2) { crank += dt * 9; A.scriptPose = P({ hy: 6, lean: 0.2, head: 0.1, aF: [1.7 + Math.sin(crank) * 0.35, 0.2 + Math.cos(crank) * 0.25], aB: [0.6, 1.2], fF: [13, 0], fB: [-13, 0] }); }
+        else crank += dt * 3;
+        return;
+      }
+      if (t < 5.2) { toast = t > 4.6 ? 1 + (t - 4.6) / 0.5 : 1; A.scriptPose = P({ hy: 4, lean: 0, head: 0.2, aF: [1.6, 1.0], aB: [1.4, 1.2], fF: [12, 0], fB: [-12, 0] }); return; }
+      A.scriptPose = P({ hy: 3, lean: -0.05, head: 0, aF: [2.0, 1.6], aB: [0.3, 0.2], fF: [12, 0], fB: [-12, 0], jaw: 0.3 });
+    };
+  };
+
   // ---------- ABRAHAM LINCOLN: House Divided ----------
   // One stroke of a rail-splitter's maul, straight down the middle. Neither half can stand.
   S.lincoln = (s, A, V, api) => {
