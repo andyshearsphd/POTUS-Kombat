@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>POTUS Kombat</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="POTUS Kombat">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preload" href="engine/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="engine/fonts/metal-mania.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="engine/kombat.css?v=1.1.0">
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="controls">
+  <div id="stickBase"><div id="stickKnob"></div></div>
+  <div class="btn" id="bBlock">BLOCK</div>
+  <div class="btn" id="bKick">KICK</div>
+  <div class="btn" id="bPunch">PUNCH</div>
+</div>
+<button id="pauseBtn" aria-label="Pause">II PAUSE</button>
+<div id="rotate"><div class="phone"></div>TURN YOUR PHONE SIDEWAYS<br><span style="font-size:14px;color:#d8261c">POTUS KOMBAT PLAYS IN LANDSCAPE</span></div>
+<!-- Kombat Engine 1.1.0 (engine/) + POTUS Kombat content (js/) -->
+<script src="engine/text.js?v=202611251200"></script>
+<script src="engine/rig.js?v=202611251200"></script>
+<script src="engine/fighterkit.js?v=202611251200"></script>
+<script src="js/fighters.js?v=202611251200"></script>
+<script src="engine/fx.js?v=202611251200"></script>
+<script src="engine/stagekit.js?v=202611251200"></script>
+<script src="js/stages.js?v=202611251200"></script>
+<script src="engine/audio.js?v=202611251200"></script>
+<script src="engine/fatal.js?v=202611251200"></script>
+<script src="js/fatalities.js?v=202611251200"></script>
+<script src="js/config.js?v=202611251200"></script>
+<script src="engine/game.js?v=202611251200"></script>
+<script src="engine/install.js?v=202611251200" data-name="POTUS Kombat" data-key="potus" data-accent="#c8a040"></script>
+</body>
+</html>
