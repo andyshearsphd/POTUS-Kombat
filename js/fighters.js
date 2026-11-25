@@ -25,33 +25,34 @@ const ROSTER = (() => {
   }
 
   // =====================================================================================
-  // GEORGE WASHINGTON: Continental Army general's uniform, powdered hair tied back
+  // GEORGE WASHINGTON: the black velvet suit he wore to his second inauguration: lace jabot, cut-steel
+  // buttons, black breeches, white silk stockings, dress sword, powdered hair tied back
   // =====================================================================================
-  const NAVY = '#1c3466', BUFF = '#d6be86', SK_W = '#e8c0a2';
+  const NAVY = '#1c3466', BUFF = '#d6be86', SK_W = '#e8c0a2', VELV = '#201c22', STEEL = '#c8ccd6', LACE = '#f4f0e6';
   const washington = {
     id: 'washington', name: 'GEORGE WASHINGTON', short: 'WASHINGTON', him: 'HIM', k: 1.04, term: '1789 TO 1797',
     bio: 'First in war, first in peace, first to put you in the ground.',
     d: dims({ shW: 16, chest: 16, belly: 12, back: 11.5, thighR: 7.6, shR: 6 }),
-    col: { torso: NAVY, armU: NAVY, armL: NAVY, cuff: BUFF, hand: SK_W, legU: BUFF, legL: BLACK, foot: BLACK, neck: SK_W },
-    mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'suit' },
+    col: { torso: VELV, armU: VELV, armL: VELV, cuff: LACE, hand: SK_W, legU: VELV, legL: '#ece8de', foot: BLACK, neck: SK_W },
+    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'cloth' },
     stats: { speed: 1.0, power: 1.06, weight: 1.06 },
     torsoDetail(g, d, st, L) {
-      // buff waistcoat, buff lapels with brass buttons, white stock at the throat
-      R.poly(g, [[d.chest * 0.25, -L * 1.0], [d.chest * 0.95, -L * 0.95], [d.chest * 0.95, -L * 0.05], [d.chest * 0.35, -L * 0.05]], BUFF);
-      R.poly(g, [[d.chest * 0.05, -L * 1.02], [d.chest * 0.42, -L * 0.98], [d.chest * 0.38, -L * 0.42], [d.chest * 0.12, -L * 0.5]], sh(BUFF, 0.06));
-      buttons(g, d.chest * 0.33, -L * 0.9, 4, L * 0.12);
-      buttons(g, d.chest * 0.82, -L * 0.82, 6, L * 0.13, '#e8d8a0', 0.8);
-      R.poly(g, [[d.chest * 0.55, -L * 1.04], [d.chest * 0.98, -L * 1.0], [d.chest * 0.85, -L * 0.86], [d.chest * 0.6, -L * 0.9]], SHIRT);
-      // gold epaulette with fringe on the shoulder
-      g.fillStyle = GOLD; g.beginPath(); g.ellipse(-d.back * 0.1, -L * 1.0, 6.5, 2.4, 0, 0, PI * 2); g.fill();
-      for (let i = 0; i < 6; i++) R.line(g, -d.back * 0.1 - 5 + i * 2, -L * 0.99, -d.back * 0.1 - 5.5 + i * 2.1, -L * 0.88, '#e0b850', 0.8);
-      R.line(g, -d.back * 1.0, -L * 0.15, d.chest * 0.2, -L * 0.15, 'rgba(0,0,0,0.3)', 1);
+      // velvet waistcoat with cut-steel buttons, coat edge with more steel buttons, a cascade of lace at the throat
+      R.poly(g, [[d.chest * 0.3, -L * 0.98], [d.chest * 0.95, -L * 0.95], [d.chest * 0.95, -L * 0.05], [d.chest * 0.4, -L * 0.05]], '#2c262e');
+      buttons(g, d.chest * 0.84, -L * 0.82, 7, L * 0.11, STEEL, 0.8);
+      buttons(g, d.chest * 0.32, -L * 0.9, 5, L * 0.15, STEEL, 1);
+      g.fillStyle = 'rgba(255,255,255,0.07)'; g.beginPath(); g.ellipse(d.chest * 0.2, -L * 0.6, 4, L * 0.3, 0, 0, PI * 2); g.fill();
+      R.poly(g, [[d.chest * 0.55, -L * 1.05], [d.chest * 1.0, -L * 1.0], [d.chest * 0.88, -L * 0.86], [d.chest * 0.62, -L * 0.88]], LACE);
+      for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? LACE : '#e2ddd0'; g.beginPath(); g.ellipse(d.chest * (0.86 + (i % 2) * 0.06), -L * (0.88 - i * 0.05), 3, 2, 0, 0, PI * 2); g.fill(); }
+      // dress sword hilt at the hip
+      R.line(g, -d.back * 0.4, -L * 0.12, -d.back * 0.9, -L * 0.3, STEEL, 1.6); R.ball(g, -d.back * 0.95, -L * 0.32, 1.4, STEEL);
+      R.line(g, -d.back * 1.0, -L * 0.15, d.chest * 0.2, -L * 0.15, 'rgba(255,255,255,0.06)', 1);
     },
     // coat tails behind the hips
     skirt(g, d, J) {
       const h = J.hip, kn = J.LB.knee, b = d.back;
-      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.4, kn[1] - 6], [kn[0] - b * 1.3, kn[1] - 2]], sh(NAVY, -0.15));
-      R.line(g, kn[0] - b * 1.3, kn[1] - 2, kn[0] - b * 0.4, kn[1] - 6, BUFF, 1.2);
+      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.4, kn[1] - 6], [kn[0] - b * 1.3, kn[1] - 2]], sh(VELV, -0.1));
+      R.line(g, h[0] - b * 0.6, h[1] - 2, kn[0] - b * 1.6, kn[1] + 8, '#3a3a42', 1.6);
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'swing') return;
@@ -154,9 +155,9 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // THEODORE ROOSEVELT: Rough Rider khakis, polka-dot neckerchief, pince-nez, mustache
+  // THEODORE ROOSEVELT: African safari khakis with patch pockets and cartridge loops, pith helmet, pince-nez, mustache
   // =====================================================================================
-  const KHAKI = '#a48c5c', SK_T = '#e2ae8c';
+  const KHAKI = '#b8a272', SK_T = '#e2ae8c';
   const teddy = {
     id: 'teddy', name: 'TEDDY ROOSEVELT', short: 'TEDDY', him: 'HIM', k: 0.98, term: '1901 TO 1909', throw: 'shoulder',
     bio: 'Speaks softly. Carries a big stick. Has never once spoken softly.',
@@ -165,15 +166,15 @@ const ROSTER = (() => {
     mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'cloth' }, bicep: 0.35,
     stats: { speed: 0.98, power: 1.1, weight: 1.1 },
     torsoDetail(g, d, st, L) {
-      // polka-dot neckerchief
-      R.poly(g, [[d.chest * 0.1, -L * 1.04], [d.chest * 0.95, -L * 1.02], [d.chest * 0.7, -L * 0.8]], '#1e3a7a');
-      g.fillStyle = '#f0f0f0'; for (let i = 0; i < 7; i++) g.fillRect(d.chest * (0.25 + (i % 4) * 0.17), -L * (1.0 - ((i / 4) | 0) * 0.08), 0.9, 0.9);
-      buttons(g, d.chest * 0.75, -L * 0.75, 4, L * 0.15, '#6a5a3a', 0.9);
-      g.strokeStyle = 'rgba(60,45,20,0.6)'; g.lineWidth = 0.7; g.strokeRect(d.chest * 0.2, -L * 0.75, 6, 6); g.strokeRect(d.chest * 0.2, -L * 0.75, 6, 2);
-      // cartridge belt
-      g.fillStyle = '#5a3e1e'; g.fillRect(-d.back * 1.2, -4, d.back * 1.2 + d.chest * 1.2, 4);
-      g.fillStyle = '#c8a040'; for (let i = 0; i < 8; i++) g.fillRect(-d.back * 1.0 + i * 3.4, -4.5, 1.3, 2.4);
-      g.fillStyle = BRASS; g.fillRect(d.chest * 0.75, -4.2, 3, 4);
+      // open safari collar, four patch pockets with flaps, cartridge loops, the leather belt
+      R.poly(g, [[d.chest * 0.3, -L * 1.03], [d.chest * 0.82, -L * 1.03], [d.chest * 0.58, -L * 0.84]], SK_T);
+      R.poly(g, [[d.chest * 0.16, -L * 1.06], [d.chest * 0.5, -L * 0.86], [d.chest * 0.32, -L * 0.98]], sh(KHAKI, 0.15));
+      R.poly(g, [[d.chest * 0.96, -L * 1.06], [d.chest * 0.66, -L * 0.86], [d.chest * 0.86, -L * 0.98]], sh(KHAKI, 0.15));
+      buttons(g, d.chest * 0.62, -L * 0.78, 5, L * 0.14, '#6a5a3a', 0.9);
+      g.strokeStyle = 'rgba(70,55,30,0.55)'; g.lineWidth = 0.7;
+      for (const [px, py, w, h] of [[0.68, 0.78, 6, 6], [0.68, 0.36, 6.4, 7]]) { g.strokeRect(d.chest * px, -L * py, w, h); g.strokeRect(d.chest * px, -L * py, w, 2); }
+      g.fillStyle = '#c8a040'; for (let i = 0; i < 5; i++) g.fillRect(d.chest * 0.18 + i * 1.6, -L * 0.72, 1, 3);
+      g.fillStyle = '#5a3e1e'; g.fillRect(-d.back * 1.2, -4, d.back * 1.2 + d.chest * 1.2, 4); g.fillStyle = BRASS; g.fillRect(d.chest * 0.75, -4.2, 3, 4);
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'swing') return;
@@ -193,6 +194,7 @@ const ROSTER = (() => {
           g.quadraticCurveTo(7, -22.2, 3.5, -21.6); g.quadraticCurveTo(-1, -20.5, -2.6, -16); g.quadraticCurveTo(-3.4, -12, -3.2, -9); g.closePath();
           fillLit(g, '#6a4426', 2, -22, 10, 0.16, -0.55); g.save(); g.clip(); strokes(g, 2, -22, 10, 6, 60, 8, PI + 0.3, 3, 0.3, 0.12); g.restore();
           pinceNez(g, true);
+          if (!st.noHat) pithHelmetSide(g);
           if (st.move === 'rush') {
             // the ghost of a bull moose rides along on his head
             g.save(); g.globalAlpha = 0.55; g.strokeStyle = '#e8dcc0'; g.lineWidth = 2.2; g.lineCap = 'round';
@@ -215,7 +217,7 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // FRANKLIN D. ROOSEVELT: navy suit and naval cape, pince-nez, cigarette holder, armored chair
+  // FRANKLIN D. ROOSEVELT: navy suit, naval cape and fedora (as at Yalta), pince-nez, cigarette holder, armored chair
   // =====================================================================================
   const SUITN = '#28324a', SK_F = '#e2b498';
   const fdr = {
@@ -261,6 +263,7 @@ const ROSTER = (() => {
           g.quadraticCurveTo(2.5, -23, -0.5, -20.5); g.quadraticCurveTo(-2.8, -15.5, -3, -9); g.closePath();
           fillLit(g, '#8a847e', 0, -22, 9, 0.2, -0.45); g.save(); g.clip(); strokes(g, 0, -22, 9, 6, 50, 9, PI + 0.2, 4, 0.2, 0.25); g.restore();
           pinceNez(g, false);
+          if (!st.noHat) fedoraSide(g, '#4a4a4e');
         },
         mouth(g) {
           if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.4, 1.6, 1.4, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.6, 1.2, 5); return; }
@@ -338,28 +341,33 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // ANDREW JACKSON: black coat, high white collar, a shock of upswept white hair, hickory cane
+  // ANDREW JACKSON: his general's uniform from the Battle of New Orleans: navy coat, high gold-embroidered
+  // collar, gold epaulettes, white breeches, tall boots, the upswept white hair, hickory cane
   // =====================================================================================
-  const SK_A = '#e0b496', JKBLK = '#1a1a20', JKHAIR = '#ece8e0';
+  const SK_A = '#e0b496', JKBLK = '#1a1a20', JKHAIR = '#ece8e0', JGEN = '#1c2848';
   const cane = (g, L) => { R.line(g, -6, 0, L, 0, '#5a3a1e', 2.2); R.line(g, -6, -0.6, L, -0.6, 'rgba(255,220,170,0.18)', 0.8); for (let i = 0; i < 4; i++) R.ball(g, 2 + i * 6.5, i % 2 ? 1 : -1, 1.1, '#3a2410'); g.fillStyle = '#c8a040'; g.fillRect(-8, -1.8, 3, 3.6); };
   const jackson = {
     id: 'jackson', name: 'ANDREW JACKSON', short: 'JACKSON', him: 'HIM', k: 1.08, term: '1829 TO 1837',
     bio: 'Fought over a hundred duels, by his own count. Took a bullet to the chest and kept the bullet.',
     d: dims({ thigh: 29, shin: 29, torso: 35, shW: 14, chest: 13.5, belly: 10, back: 10, thighR: 6.2, kneeR: 4.4, shR: 5.2, elbowR: 3.6 }),
-    col: { torso: JKBLK, armU: JKBLK, armL: JKBLK, cuff: SHIRT, hand: SK_A, legU: '#22222a', legL: '#22222a', foot: '#0c0c0e', neck: SHIRT },
-    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' },
+    col: { torso: JGEN, armU: JGEN, armL: JGEN, cuff: GOLD, hand: SK_A, legU: '#e8e4d8', legL: '#121214', foot: '#0c0c0e', neck: SHIRT },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'suit' },
     stats: { speed: 1.06, power: 1.04, weight: 0.92 },
     torsoDetail(g, d, st, L) {
-      // high white collar and stock, white shirt front, black coat lapels
-      R.poly(g, [[d.chest * 0.1, -L * 1.06], [d.chest * 0.95, -L * 1.04], [d.chest * 0.65, -L * 0.6], [d.chest * 0.3, -L * 0.62]], SHIRT);
-      R.poly(g, [[d.chest * 0.4, -L * 1.1], [d.chest * 0.98, -L * 1.08], [d.chest * 0.9, -L * 0.96], [d.chest * 0.45, -L * 0.98]], '#f4f2ec');
-      R.poly(g, [[d.chest * 0.05, -L * 1.03], [d.chest * 0.42, -L * 0.6], [d.chest * 0.2, -L * 0.75]], '#2a2a32');
-      R.poly(g, [[d.chest * 0.95, -L * 1.03], [d.chest * 0.62, -L * 0.55], [d.chest * 1.0, -L * 0.78]], '#2a2a32');
-      buttons(g, d.chest * 0.7, -L * 0.45, 3, L * 0.11, '#2a2a30', 0.9);
+      // high standing collar worked in gold, white stock, buff lapel facing, two rows of gilt buttons, gold epaulette
+      R.poly(g, [[d.chest * 0.1, -L * 1.1], [d.chest * 0.9, -L * 1.08], [d.chest * 0.85, -L * 0.96], [d.chest * 0.15, -L * 0.98]], JGEN);
+      g.strokeStyle = GOLD; g.lineWidth = 1; g.strokeRect(d.chest * 0.15, -L * 1.08, d.chest * 0.7, L * 0.1);
+      for (let i = 0; i < 4; i++) R.ball(g, d.chest * (0.25 + i * 0.18), -L * 1.03, 0.9, '#e8c860');
+      R.poly(g, [[d.chest * 0.55, -L * 0.98], [d.chest * 0.95, -L * 0.96], [d.chest * 0.78, -L * 0.86]], SHIRT);
+      R.poly(g, [[d.chest * 0.3, -L * 0.96], [d.chest * 0.62, -L * 0.94], [d.chest * 0.62, -L * 0.3], [d.chest * 0.38, -L * 0.36]], '#d8c89a');
+      buttons(g, d.chest * 0.32, -L * 0.86, 5, L * 0.12); buttons(g, d.chest * 0.66, -L * 0.86, 5, L * 0.12);
+      g.fillStyle = GOLD; g.beginPath(); g.ellipse(-d.back * 0.1, -L * 1.0, 7, 2.6, 0, 0, PI * 2); g.fill();
+      for (let i = 0; i < 7; i++) R.line(g, -d.back * 0.1 - 6 + i * 2, -L * 0.99, -d.back * 0.1 - 6.5 + i * 2.1, -L * 0.86, '#e0b850', 0.8);
     },
     skirt(g, d, J) {
       const h = J.hip, kn = J.LB.knee, b = d.back;
-      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.3, kn[1] - 4], [kn[0] - b * 1.3, kn[1]]], '#121218');
+      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.3, kn[1] - 4], [kn[0] - b * 1.3, kn[1]]], sh(JGEN, -0.12));
+      R.line(g, kn[0] - b * 1.3, kn[1], kn[0] - b * 0.3, kn[1] - 4, '#d8c89a', 1.2);
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'flurry') return;
@@ -397,6 +405,44 @@ const ROSTER = (() => {
   };
 
 
+  function pithHelmetSide(g) {
+    // sun helmet: long brim front and back, high dome, a band, a vent on top
+    const c = '#e2d6b2';
+    g.beginPath(); g.ellipse(2.5, -23.4, 17.4, 3, -0.06, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill();
+    g.beginPath(); g.moveTo(-8.6, -23.4); g.quadraticCurveTo(-9.6, -37, 2.5, -37.6); g.quadraticCurveTo(14.6, -37, 13.6, -23.4); g.closePath();
+    const gr = g.createLinearGradient(-9, 0, 14, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.55, c); gr.addColorStop(1, sh(c, -0.2)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#8a7650'; g.fillRect(-8.8, -27, 22.6, 2.4); R.ball(g, 2.5, -37.8, 1.4, sh(c, -0.1));
+  }
+  function pithHelmetFront(g) {
+    const c = '#e2d6b2';
+    g.beginPath(); g.ellipse(0, -23.6, 16, 3.4, 0, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill();
+    g.beginPath(); g.moveTo(-10.6, -23.6); g.quadraticCurveTo(-11.4, -37.6, 0, -38.2); g.quadraticCurveTo(11.4, -37.6, 10.6, -23.6); g.closePath();
+    const gr = g.createLinearGradient(-11, 0, 11, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#8a7650'; g.fillRect(-10.8, -27.4, 21.6, 2.4); R.ball(g, 0, -38.4, 1.4, sh(c, -0.1));
+  }
+  function fedoraSide(g, c) {
+    g.beginPath(); g.moveTo(-6.4, -24); g.lineTo(-5.6, -32.4); g.quadraticCurveTo(-1, -35.6, 3, -33.4); g.quadraticCurveTo(7, -35.8, 10.6, -32.2); g.lineTo(11.4, -24); g.closePath();
+    const gr = g.createLinearGradient(-6.4, 0, 11.4, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.55, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
+    R.line(g, 1, -34.4, 4.6, -32.6, 'rgba(0,0,0,0.3)', 0.8);
+    g.fillStyle = '#141414'; g.fillRect(-6.2, -27, 17.4, 2.6);
+    g.beginPath(); g.moveTo(-13.4, -25.6); g.quadraticCurveTo(2.5, -27, 18.4, -23.2); g.quadraticCurveTo(17.6, -21.6, 2.5, -23.6); g.quadraticCurveTo(-10, -23.2, -13.4, -25.6); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
+  }
+  function fedoraFront(g, c) {
+    g.beginPath(); g.moveTo(-18, -24.6); g.quadraticCurveTo(0, -27.6, 18, -24.6); g.quadraticCurveTo(17, -22, 0, -23.6); g.quadraticCurveTo(-17, -22, -18, -24.6); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
+    g.beginPath(); g.moveTo(-9.4, -24.6); g.lineTo(-8.8, -34.6); g.quadraticCurveTo(-4.4, -37.6, 0, -35); g.quadraticCurveTo(4.4, -37.6, 8.8, -34.6); g.lineTo(9.4, -24.6); g.closePath();
+    const gr = g.createLinearGradient(-9.4, 0, 9.4, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.3)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#141414'; g.fillRect(-9.2, -27.8, 18.4, 2.6);
+  }
+  // a loud Hawaiian print: hibiscus, plumeria and palm leaves on teal
+  function aloha(g, x0, y0, w, h) {
+    let sd = 7; const rn = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+    for (let i = 0; i < w * h / 26; i++) {
+      const x = x0 + rn() * w, y = y0 + rn() * h, kind = rn();
+      if (kind < 0.35) { g.fillStyle = '#2a6a3a'; g.beginPath(); g.ellipse(x, y, 3.4, 1.2, rn() * 3, 0, PI * 2); g.fill(); }
+      else if (kind < 0.7) { g.fillStyle = rn() < 0.5 ? '#e8506a' : '#f08a3a'; for (let p = 0; p < 5; p++) { const a = p * PI * 0.4; g.beginPath(); g.ellipse(x + Math.cos(a) * 1.4, y + Math.sin(a) * 1.4, 1.5, 1, a, 0, PI * 2); g.fill(); } g.fillStyle = '#f8e060'; g.fillRect(x - 0.4, y - 0.4, 0.8, 0.8); }
+      else { g.fillStyle = '#f4f0e6'; for (let p = 0; p < 5; p++) { const a = p * PI * 0.4; g.beginPath(); g.ellipse(x + Math.cos(a) * 1, y + Math.sin(a) * 1, 1.1, 0.7, a, 0, PI * 2); g.fill(); } g.fillStyle = '#f8d040'; g.fillRect(x - 0.3, y - 0.3, 0.6, 0.6); }
+    }
+  }
   // ---- hats: side-view painters work in head space (face toward +x, crown near y -28) ----
   function cowboyHatSide(g, c) {
     // crown with the center crease and pinched front, band, brim curled up at both ends
@@ -618,9 +664,9 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // HARRY S. TRUMAN: double-breasted grey suit, bow tie, round glasses, the plain-spoken grin
+  // HARRY S. TRUMAN: Key West vacation clothes: a loud Hawaiian shirt, cream slacks, white shoes, round glasses, the grin
   // =====================================================================================
-  const SK_HT = '#e6b498', HSUIT = '#565a64';
+  const SK_HT = '#e6b498', HSUIT = '#565a64', HAW = '#1e7a8a';
   const signDraw = (g, x, y, a, s = 1) => {
     g.save(); g.translate(x, y); g.rotate(a); g.scale(s, s);
     g.fillStyle = '#3a2412'; g.fillRect(-14, -6, 28, 12); g.fillStyle = '#5a3a1e'; g.fillRect(-14, -6, 28, 2);
@@ -631,17 +677,16 @@ const ROSTER = (() => {
     id: 'truman', name: 'HARRY S. TRUMAN', short: 'TRUMAN', him: 'HIM', k: 0.98, term: '1945 TO 1953',
     bio: 'Haberdasher from Missouri. He did not give them hell. He told the truth and they thought it was hell.',
     d: dims({ shW: 15.5, chest: 15.5, belly: 12, back: 11.5 }),
-    col: { torso: HSUIT, armU: HSUIT, armL: HSUIT, cuff: SHIRT, hand: SK_HT, legU: HSUIT, legL: HSUIT, foot: '#1a120c', neck: SK_HT },
-    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' },
+    col: { torso: HAW, armU: HAW, armL: SK_HT, cuff: SK_HT, hand: SK_HT, legU: '#e4dcc4', legL: '#e4dcc4', foot: '#f0ece4', neck: SK_HT },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'skin', legU: 'cloth', legL: 'cloth' },
     stats: { speed: 1.04, power: 1.04, weight: 1.0 },
     torsoDetail(g, d, st, L) {
-      R.poly(g, [[d.chest * 0.15, -L * 1.03], [d.chest * 0.85, -L * 1.03], [d.chest * 0.55, -L * 0.72]], SHIRT);
-      // bow tie (polka dot) and a pocket square
-      g.fillStyle = '#1a2a5a'; g.beginPath(); g.ellipse(d.chest * 0.62, -L * 0.98, 3.4, 1.7, 0, 0, PI * 2); g.fill(); g.fillStyle = '#f0f0f0'; g.fillRect(d.chest * 0.55, -L * 0.99, 0.8, 0.8); g.fillRect(d.chest * 0.7, -L * 0.97, 0.8, 0.8);
-      R.poly(g, [[d.chest * 0.08, -L * 1.03], [d.chest * 0.62, -L * 0.5], [d.chest * 0.2, -L * 0.75]], sh(HSUIT, 0.12));
-      R.poly(g, [[d.chest * 0.92, -L * 1.03], [d.chest * 0.7, -L * 0.58], [d.chest * 1.0, -L * 0.78]], sh(HSUIT, 0.12));
-      buttons(g, d.chest * 0.5, -L * 0.42, 2, L * 0.16, '#2a2a30', 1); buttons(g, d.chest * 0.85, -L * 0.42, 2, L * 0.16, '#2a2a30', 1);
-      R.poly(g, [[-d.back * 0.6, -L * 0.82], [-d.back * 0.1, -L * 0.82], [-d.back * 0.3, -L * 0.74]], '#f0ece4');
+      // the print, an open camp collar, coconut buttons, worn untucked
+      aloha(g, -d.back * 1.3, -L * 1.05, d.back * 1.3 + d.chest * 1.3, L * 1.12);
+      R.poly(g, [[d.chest * 0.3, -L * 1.03], [d.chest * 0.82, -L * 1.03], [d.chest * 0.58, -L * 0.8]], SK_HT);
+      R.poly(g, [[d.chest * 0.14, -L * 1.06], [d.chest * 0.52, -L * 0.82], [d.chest * 0.3, -L * 0.98]], sh(HAW, 0.15));
+      R.poly(g, [[d.chest * 0.96, -L * 1.06], [d.chest * 0.66, -L * 0.82], [d.chest * 0.86, -L * 0.98]], sh(HAW, 0.15));
+      buttons(g, d.chest * 0.62, -L * 0.7, 4, L * 0.16, '#8a6a3a', 0.9);
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'parry') return;
@@ -671,24 +716,25 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // JOHN F. KENNEDY: slim navy suit, narrow tie, the thick swept hair and the smile
+  // JOHN F. KENNEDY: Hyannis Port sailing clothes: blue oxford shirt, sleeves rolled, khakis, boat shoes, sunglasses
   // =====================================================================================
-  const SK_JK = '#e2aa86', JSUIT = '#1e2638', JHAIRK = '#6a4428';
+  const SK_JK = '#e2aa86', JSUIT = '#1e2638', JHAIRK = '#6a4428', OXF = '#b8cce4';
   const jfk = {
     id: 'jfk', name: 'JOHN F. KENNEDY', short: 'JFK', him: 'HIM', k: 1.04, term: '1961 TO 1963',
     bio: 'Ask not what your country can do for you. Ask what he can do to you.',
     d: dims({ thigh: 28, shin: 27, shW: 15.5, chest: 15, belly: 11, back: 11, thighR: 7, shR: 5.6 }),
-    col: { torso: JSUIT, armU: JSUIT, armL: JSUIT, cuff: SHIRT, hand: SK_JK, legU: JSUIT, legL: JSUIT, foot: '#0c0c0e', neck: SK_JK },
-    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' }, bicep: 0.2,
+    col: { torso: OXF, armU: OXF, armL: SK_JK, cuff: sh(OXF, -0.05), hand: SK_JK, legU: '#c8b890', legL: '#c8b890', foot: '#6a4428', neck: SK_JK },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'skin', legU: 'cloth', legL: 'cloth' },
     stats: { speed: 1.08, power: 1.0, weight: 0.98 },
     torsoDetail(g, d, st, L) {
-      R.poly(g, [[d.chest * 0.15, -L * 1.03], [d.chest * 0.85, -L * 1.03], [d.chest * 0.55, -L * 0.6]], SHIRT);
-      R.poly(g, [[d.chest * 0.5, -L * 0.98], [d.chest * 0.62, -L * 0.98], [d.chest * 0.6, -L * 0.6], [d.chest * 0.55, -L * 0.56], [d.chest * 0.5, -L * 0.6]], '#14182a');
-      g.fillStyle = '#c8a040'; g.fillRect(d.chest * 0.5, -L * 0.74, 2, 0.8);
-      R.poly(g, [[d.chest * 0.1, -L * 1.03], [d.chest * 0.46, -L * 0.55], [d.chest * 0.22, -L * 0.76]], sh(JSUIT, 0.14));
-      R.poly(g, [[d.chest * 0.9, -L * 1.03], [d.chest * 0.64, -L * 0.52], [d.chest * 0.98, -L * 0.76]], sh(JSUIT, 0.14));
-      buttons(g, d.chest * 0.62, -L * 0.42, 2, L * 0.14, '#14182a', 0.9);
-      R.poly(g, [[-d.back * 0.6, -L * 0.8], [-d.back * 0.1, -L * 0.8], [-d.back * 0.35, -L * 0.72]], '#f0ece4');
+      // open button-down collar, placket, chest pocket, a woven belt
+      R.poly(g, [[d.chest * 0.3, -L * 1.03], [d.chest * 0.82, -L * 1.03], [d.chest * 0.58, -L * 0.82]], SK_JK);
+      R.poly(g, [[d.chest * 0.16, -L * 1.06], [d.chest * 0.5, -L * 0.84], [d.chest * 0.32, -L * 0.98]], sh(OXF, 0.12));
+      R.poly(g, [[d.chest * 0.96, -L * 1.06], [d.chest * 0.66, -L * 0.84], [d.chest * 0.86, -L * 0.98]], sh(OXF, 0.12));
+      R.line(g, d.chest * 0.6, -L * 0.8, d.chest * 0.6, -L * 0.04, 'rgba(60,80,110,0.4)', 0.8); buttons(g, d.chest * 0.6, -L * 0.72, 4, L * 0.16, '#f4f2ee', 0.7);
+      g.strokeStyle = 'rgba(60,80,110,0.45)'; g.lineWidth = 0.7; g.strokeRect(d.chest * 0.72, -L * 0.74, 5, 5.4);
+      g.strokeStyle = 'rgba(60,80,110,0.25)'; g.lineWidth = 0.4; for (let i = 0; i < 8; i++) { g.beginPath(); g.moveTo(-d.back + i * 4, -L); g.lineTo(-d.back + i * 4, 0); g.stroke(); }
+      g.fillStyle = '#2a3a6a'; g.fillRect(-d.back * 1.2, -4, d.back * 1.2 + d.chest * 1.2, 3.6); g.fillStyle = '#a82a2a'; for (let i = 0; i < 6; i++) g.fillRect(-d.back + i * 5, -3.2, 2.4, 2);
     },
     head(g, st) {
       humanHead(g, st, {
@@ -699,6 +745,9 @@ const ROSTER = (() => {
           g.beginPath(); g.moveTo(-7, -9); g.bezierCurveTo(-10.5, -21, -6, -30, 2, -30.4); g.bezierCurveTo(9, -30.6, 13, -27, 12, -22.6); g.quadraticCurveTo(8.6, -24.6, 5, -23.4); g.quadraticCurveTo(1.4, -22.4, -1.4, -18); g.quadraticCurveTo(-3, -13, -3, -9); g.closePath();
           fillLit(g, JHAIRK, 2, -25, 11, 0.24, -0.45); g.save(); g.clip(); strokes(g, 2, -26, 10, 5, 80, 82, 0.15, 7, 0.25, 0.25); g.restore();
           R.line(g, -2, -29, 6, -28.4, 'rgba(255,220,180,0.25)', 0.8);
+          if (!st.dead) { // wayfarer sunglasses
+            g.fillStyle = '#121216'; g.beginPath(); g.moveTo(6.8, -14.2); g.lineTo(12.4, -14.4); g.lineTo(11.8, -10.8); g.lineTo(7.4, -10.6); g.closePath(); g.fill(); g.beginPath(); g.moveTo(3.2, -14); g.lineTo(5.6, -14.1); g.lineTo(5.4, -11); g.lineTo(3.6, -11); g.fill();
+            R.line(g, 3.2, -13.6, -1.6, -12.6, '#121216', 0.9); g.fillStyle = 'rgba(160,190,230,0.35)'; g.fillRect(8, -13.6, 2, 1); }
         },
         mouth(g) {
           if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.4, 1.5, 1.3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.6, 1.2, 5); return; }
@@ -713,23 +762,24 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // LYNDON B. JOHNSON: six foot four in a charcoal suit, big ears, long nose, slicked grey hair
+  // LYNDON B. JOHNSON: six foot four in ranch khakis and a Stetson, big ears, long nose, slicked grey hair
   // =====================================================================================
-  const SK_LB = '#dca88a', LSUIT = '#2c2e36', LHAIR = '#8a8680';
+  const SK_LB = '#dca88a', LSUIT = '#2c2e36', LHAIR = '#8a8680', RKH = '#b8a47a';
   const lbj = {
     id: 'lbj', name: 'LYNDON B. JOHNSON', short: 'LBJ', him: 'HIM', k: 1.12, term: '1963 TO 1969',
     bio: 'Gets so close you can count his fillings. By the time he lets go, you have voted for it.',
     d: dims({ thigh: 30, shin: 30, torso: 37, shW: 16.5, chest: 16, belly: 13.5, back: 12, thighR: 7.2, shR: 6, upper: 21, fore: 20 }),
-    col: { torso: LSUIT, armU: LSUIT, armL: LSUIT, cuff: SHIRT, hand: SK_LB, legU: LSUIT, legL: LSUIT, foot: '#1a120c', neck: SK_LB },
-    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' }, bicep: 0.2,
+    col: { torso: RKH, armU: RKH, armL: RKH, cuff: sh(RKH, -0.08), hand: SK_LB, legU: sh(RKH, -0.06), legL: sh(RKH, -0.06), foot: '#5a3418', neck: SK_LB },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'cloth' },
     stats: { speed: 0.98, power: 1.1, weight: 1.12 },
     torsoDetail(g, d, st, L) {
-      R.poly(g, [[d.chest * 0.15, -L * 1.03], [d.chest * 0.85, -L * 1.03], [d.chest * 0.55, -L * 0.62]], SHIRT);
-      R.poly(g, [[d.chest * 0.48, -L * 0.98], [d.chest * 0.64, -L * 0.98], [d.chest * 0.62, -L * 0.56], [d.chest * 0.56, -L * 0.52], [d.chest * 0.5, -L * 0.56]], '#5a1a1e');
-      g.fillStyle = 'rgba(255,255,255,0.15)'; for (let i = 0; i < 5; i++) g.fillRect(d.chest * 0.5, -L * 0.92 + i * 4.6, 2.6, 0.6);
-      R.poly(g, [[d.chest * 0.1, -L * 1.03], [d.chest * 0.46, -L * 0.52], [d.chest * 0.22, -L * 0.76]], sh(LSUIT, 0.14));
-      R.poly(g, [[d.chest * 0.9, -L * 1.03], [d.chest * 0.64, -L * 0.5], [d.chest * 0.98, -L * 0.76]], sh(LSUIT, 0.14));
-      buttons(g, d.chest * 0.64, -L * 0.42, 2, L * 0.14, '#1a1a20', 0.9);
+      // open-collared work shirt, two flap pockets, belt with a ranch buckle
+      R.poly(g, [[d.chest * 0.3, -L * 1.03], [d.chest * 0.82, -L * 1.03], [d.chest * 0.58, -L * 0.84]], SK_LB);
+      R.poly(g, [[d.chest * 0.16, -L * 1.06], [d.chest * 0.5, -L * 0.86], [d.chest * 0.32, -L * 0.98]], sh(RKH, 0.14));
+      R.poly(g, [[d.chest * 0.96, -L * 1.06], [d.chest * 0.66, -L * 0.86], [d.chest * 0.86, -L * 0.98]], sh(RKH, 0.14));
+      buttons(g, d.chest * 0.6, -L * 0.76, 5, L * 0.14, '#6a5a3a', 0.8);
+      g.strokeStyle = 'rgba(70,55,30,0.5)'; g.lineWidth = 0.7; g.strokeRect(d.chest * 0.7, -L * 0.74, 6, 6); g.strokeRect(d.chest * 0.7, -L * 0.74, 6, 2);
+      g.fillStyle = '#4a2e16'; g.fillRect(-d.back * 1.2, -5, d.back * 1.2 + d.chest * 1.2, 4.4); g.fillStyle = '#c8ccd4'; g.fillRect(d.chest * 0.58, -6, 6, 6.4); g.fillStyle = GOLD; g.fillRect(d.chest * 0.58 + 2, -4, 2, 2.4);
     },
     head(g, st) {
       humanHead(g, st, {
@@ -742,6 +792,7 @@ const ROSTER = (() => {
           g.beginPath(); g.ellipse(-1.6, -10.6, 3.4, 5.2, 0.15, 0, PI * 2); fillLit(g, sh(SK_LB, -0.06), -1.6, -10.6, 5); g.fillStyle = 'rgba(70,25,15,0.4)'; g.beginPath(); g.ellipse(-1.2, -10.4, 1.6, 3, 0.15, 0, PI * 2); g.fill();
           g.fillStyle = 'rgba(70,25,15,0.25)'; g.beginPath(); g.ellipse(5, -3.6, 3.4, 4.4, 0, 0, PI * 2); g.fill();
           R.line(g, 6.6, -16.2, 9.6, -16.4, 'rgba(70,25,15,0.35)', 0.5);
+          if (!st.noHat) cowboyHatSide(g, '#c8b48a');
         },
         mouth(g) {
           if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.2, 1.5, 1.3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.4, 1.2, 5); return; }
@@ -858,27 +909,27 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // JIMMY CARTER: Habitat work clothes (denim shirt, khakis, tool belt), sandy hair, the big grin
+  // JIMMY CARTER: the beige cardigan from his 1977 fireside talk, white shirt and tie, grey slacks, sandy hair, the big grin
   // =====================================================================================
-  const SK_JC = '#e6b090', DENIM = '#4a6a9a', KHK = '#b8a47a', JCHAIR = '#b89a6a';
+  const SK_JC = '#e6b090', DENIM = '#4a6a9a', KHK = '#b8a47a', JCHAIR = '#b89a6a', CARD = '#c8ac80';
   const hammer = (g, L) => { R.line(g, -4, 0, L, 0, '#8a6034', 2.2); g.fillStyle = '#5a5e66'; g.fillRect(L - 2, -6, 4, 9); g.beginPath(); g.moveTo(L - 2, -6); g.quadraticCurveTo(L - 9, -7, L - 12, -2); g.lineTo(L - 9, -3); g.quadraticCurveTo(L - 6, -5, L - 2, -4); g.fill(); g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(L + 1, -6, 1, 9); };
   const carter = {
     id: 'carter', name: 'JIMMY CARTER', short: 'CARTER', him: 'HIM', k: 0.98, term: '1977 TO 1981',
     bio: 'Peanut farmer from Plains, Georgia. Builds houses. Will also build you a coffin.',
     d: dims({ shW: 15, chest: 15, belly: 11, back: 11 }),
-    col: { torso: DENIM, armU: DENIM, armL: DENIM, cuff: sh(DENIM, -0.1), hand: SK_JC, legU: KHK, legL: KHK, foot: '#5a3a1e', neck: SK_JC },
+    col: { torso: CARD, armU: CARD, armL: CARD, cuff: SHIRT, hand: SK_JC, legU: '#5a5a62', legL: '#5a5a62', foot: '#2a1e14', neck: SK_JC },
     mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'cloth' },
     stats: { speed: 1.06, power: 0.98, weight: 0.98 },
     torsoDetail(g, d, st, L) {
-      // open collar, pocket, rolled sleeves feel, leather tool belt
-      R.poly(g, [[d.chest * 0.3, -L * 1.03], [d.chest * 0.8, -L * 1.03], [d.chest * 0.55, -L * 0.85]], SK_JC);
-      R.poly(g, [[d.chest * 0.2, -L * 1.04], [d.chest * 0.5, -L * 0.88], [d.chest * 0.32, -L * 0.98]], sh(DENIM, 0.2));
-      R.poly(g, [[d.chest * 0.9, -L * 1.04], [d.chest * 0.6, -L * 0.88], [d.chest * 0.8, -L * 0.98]], sh(DENIM, 0.2));
-      buttons(g, d.chest * 0.55, -L * 0.8, 5, L * 0.15, '#e8e4d8', 0.7);
-      g.strokeStyle = 'rgba(230,220,200,0.4)'; g.lineWidth = 0.6; g.strokeRect(d.chest * 0.65, -L * 0.75, 5, 5);
-      g.fillStyle = '#6a4220'; g.fillRect(-d.back * 1.2, -5, d.back * 1.2 + d.chest * 1.2, 5); g.fillStyle = BRASS; g.fillRect(d.chest * 0.55, -5, 3, 5);
-      g.fillStyle = '#5a3818'; g.fillRect(-d.back * 0.9, -4, 6, 9); g.fillRect(d.chest * 0.7, -4, 5, 8);
-      if (st.move !== 'flurry') { R.line(g, -d.back * 0.6, -2, -d.back * 0.7, 12, '#8a6034', 2); g.fillStyle = '#5a5e66'; g.fillRect(-d.back * 0.7 - 3, 10, 6, 3); }
+      // the cardigan's deep V over a white shirt and tie, its buttons, pockets and knit texture
+      R.poly(g, [[d.chest * 0.18, -L * 1.03], [d.chest * 0.92, -L * 1.03], [d.chest * 0.6, -L * 0.42]], SHIRT);
+      R.poly(g, [[d.chest * 0.52, -L * 0.98], [d.chest * 0.66, -L * 0.98], [d.chest * 0.64, -L * 0.5], [d.chest * 0.59, -L * 0.46], [d.chest * 0.54, -L * 0.5]], '#2a3a5a');
+      R.poly(g, [[d.chest * 0.4, -L * 1.03], [d.chest * 0.8, -L * 1.03], [d.chest * 0.6, -L * 0.94]], SHIRT);
+      R.line(g, d.chest * 0.18, -L * 1.03, d.chest * 0.6, -L * 0.42, sh(CARD, -0.18), 2.2); R.line(g, d.chest * 0.92, -L * 1.03, d.chest * 0.6, -L * 0.42, sh(CARD, -0.18), 2.2);
+      buttons(g, d.chest * 0.62, -L * 0.36, 3, L * 0.12, '#6a5030', 1);
+      g.strokeStyle = 'rgba(90,70,40,0.25)'; g.lineWidth = 0.5; for (let i = 0; i < 10; i++) { g.beginPath(); g.moveTo(-d.back + i * 3.2, -L * 0.9); g.lineTo(-d.back + i * 3.2, 0); g.stroke(); }
+      g.strokeStyle = 'rgba(90,70,40,0.45)'; g.lineWidth = 0.7; g.strokeRect(d.chest * 0.7, -L * 0.3, 6, 5);
+      g.fillStyle = sh(CARD, -0.1); g.fillRect(-d.back * 1.2, -4, d.back * 1.2 + d.chest * 1.2, 4); g.fillStyle = 'rgba(90,70,40,0.3)'; for (let i = 0; i < 14; i++) g.fillRect(-d.back * 1.2 + i * 2.4, -4, 0.6, 4);
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'flurry') return;
@@ -917,12 +968,13 @@ const ROSTER = (() => {
   const FRONT = {
     washington: {
       detail: (g, d, G) => {
-        R.poly(g, [[-G.shx * 0.5, G.sY], [G.shx * 0.5, G.sY], [G.shx * 0.42, G.hipY], [-G.shx * 0.42, G.hipY]], BUFF);
-        for (const sd of [-1, 1]) R.poly(g, [[sd * G.shx * 0.5, G.sY], [sd * G.shx * 0.95, G.sY + 2], [sd * G.shx * 0.6, G.sY + 22], [sd * G.shx * 0.42, G.sY + 20]], sh(BUFF, 0.08));
-        buttons(g, 0, G.sY + 8, 6, 4.5);
-        R.poly(g, [[-4, G.sY - 1], [4, G.sY - 1], [0, G.sY + 6]], SHIRT);
+        R.poly(g, [[-G.shx * 0.5, G.sY], [G.shx * 0.5, G.sY], [G.shx * 0.42, G.hipY], [-G.shx * 0.42, G.hipY]], '#2c262e');
+        for (const sd of [-1, 1]) buttons(g, sd * G.shx * 0.48, G.sY + 6, 5, 5, STEEL, 1);
+        buttons(g, 0, G.sY + 12, 6, 4, STEEL, 0.8);
+        R.poly(g, [[-4.6, G.sY - 1], [4.6, G.sY - 1], [3, G.sY + 10], [0, G.sY + 12], [-3, G.sY + 10]], LACE);
+        for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? LACE : '#e2ddd0'; g.beginPath(); g.ellipse((i % 2 ? 1.4 : -1.4), G.sY + 2 + i * 2.4, 2.8, 1.6, 0, 0, PI * 2); g.fill(); }
+        R.line(g, -G.hx * 2.2, G.hipY - 2, -G.hx * 2.7, G.hipY - 12, STEEL, 1.6); R.ball(g, -G.hx * 2.75, G.hipY - 12.6, 1.4, STEEL);
       },
-      overHead(g, d, G) { for (const sd of [-1, 1]) { g.fillStyle = GOLD; g.beginPath(); g.ellipse(sd * G.shx * 0.95, G.sY + 1, 5, 2.4, 0, 0, PI * 2); g.fill(); for (let i = 0; i < 5; i++) R.line(g, sd * G.shx * 0.95 - 4 + i * 2, G.sY + 2, sd * G.shx * 0.95 - 4 + i * 2, G.sY + 7, '#e0b850', 0.8); } },
       head(g, st) {
         humanFront(g, st, { skin: SK_W, w: 8.8, chin: 1.6, eyeC: '#5a6a8a', browC: 'rgba(150,140,130,0.9)',
           back(g) { g.beginPath(); g.ellipse(0, -17, 13, 12, 0, 0, PI * 2); fillLit(g, '#d8d4cc', 0, -17, 13, 0.2, -0.4); },
@@ -952,13 +1004,19 @@ const ROSTER = (() => {
       },
     },
     teddy: {
-      detail: (g, d, G) => { R.poly(g, [[-5, G.sY - 1], [5, G.sY - 1], [0, G.sY + 9]], '#1e3a7a'); g.fillStyle = '#f0f0f0'; for (let i = 0; i < 5; i++) g.fillRect(-3 + (i % 3) * 3, G.sY + 1 + ((i / 3) | 0) * 3, 0.9, 0.9); buttons(g, 0, G.sY + 12, 4, 5, '#6a5a3a', 0.9); belt(g, G, '#5a3e1e', BRASS); },
+      detail: (g, d, G) => {
+        R.poly(g, [[-3.6, G.sY - 1], [3.6, G.sY - 1], [0, G.sY + 7]], SK_T); for (const sd of [-1, 1]) R.poly(g, [[sd * 1.6, G.sY - 1], [sd * 7, G.sY - 1], [sd * 3.4, G.sY + 7]], sh(KHAKI, 0.15));
+        buttons(g, 0, G.sY + 9, 4, 5, '#6a5a3a', 0.9);
+        g.strokeStyle = 'rgba(70,55,30,0.55)'; g.lineWidth = 0.7; for (const sd of [-1, 1]) for (const y of [G.sY + 8, G.sY + 22]) { g.strokeRect(sd * 6 - 3.4, y, 6.8, 6.4); g.strokeRect(sd * 6 - 3.4, y, 6.8, 2); }
+        belt(g, G, '#5a3e1e', BRASS);
+      },
       head(g, st) {
         humanFront(g, st, { skin: SK_T, w: 9.2, chin: 0.8, eyeC: '#3a4a6a', browC: 'rgba(90,58,32,0.95)',
           back(g) { g.beginPath(); g.ellipse(0, -18, 11.5, 10.5, 0, 0, PI * 2); fillLit(g, '#5a3a20', 0, -18, 11, 0.14, -0.55); },
           front(g, jaw) {
             g.beginPath(); g.moveTo(-9, -15); g.quadraticCurveTo(-9.5, -27, 0, -27.5); g.quadraticCurveTo(9.5, -27, 9, -15); g.quadraticCurveTo(6, -22, -1, -22.5); g.quadraticCurveTo(-6, -22, -9, -15); g.closePath(); fillLit(g, '#6a4426', 0, -22, 10, 0.16, -0.55);
             pinceNezF(g, true);
+            if (!st.noHat) pithHelmetFront(g);
             if (!st.dead) { g.fillStyle = '#2a0606'; g.fillRect(-3.4, -5.2, 6.8, 2.6 + jaw); g.fillStyle = '#f2ecda'; g.fillRect(-3.2, -5.2, 6.4, 1.6); }
             g.beginPath(); g.moveTo(-6, -6); g.quadraticCurveTo(0, -8.8, 6, -6); g.quadraticCurveTo(6.4, -4.4, 4.8, -4.6); g.quadraticCurveTo(0, -6.2, -4.8, -4.6); g.quadraticCurveTo(-6.4, -4.4, -6, -6); fillLit(g, '#6e4626', 0, -6, 6, 0.12, -0.5);
           }, mouth() {} });
@@ -973,6 +1031,7 @@ const ROSTER = (() => {
           front(g, jaw) {
             g.beginPath(); g.moveTo(-9, -15); g.quadraticCurveTo(-9.5, -27, 0, -27.5); g.quadraticCurveTo(9.5, -27, 9, -15); g.quadraticCurveTo(5, -24, 0, -24.5); g.quadraticCurveTo(-5, -24, -9, -15); g.closePath(); fillLit(g, '#8a847e', 0, -23, 10, 0.2, -0.45);
             pinceNezF(g, false);
+            if (!st.noHat) fedoraFront(g, '#4a4a4e');
             if (!st.dead) { g.fillStyle = '#2a0606'; g.beginPath(); g.moveTo(-3.6, -4.4); g.quadraticCurveTo(0, -1, 3.6, -4.4); g.quadraticCurveTo(0, -3.6, -3.6, -4.4); g.fill(); g.fillStyle = '#f2ecda'; g.fillRect(-2.8, -4.3, 5.6, 1.1); R.line(g, 2.6, -3.6, 12, -11, '#141414', 1.1); R.line(g, 12, -11, 14.6, -13.3, '#f4f0e6', 1.2); R.ball(g, 15, -13.6, 0.9, '#ff5a20'); }
           }, mouth() {} });
       },
@@ -996,11 +1055,13 @@ const ROSTER = (() => {
   };
   FRONT.jackson = {
     detail: (g, d, G) => {
-      R.poly(g, [[-5, G.sY - 4], [5, G.sY - 4], [4, G.sY + 2], [-4, G.sY + 2]], '#f4f2ec');
-      R.poly(g, [[-4.5, G.sY], [4.5, G.sY], [2.5, G.sY + 16], [-2.5, G.sY + 16]], SHIRT);
-      buttons(g, 0, G.sY + 20, 3, 4, '#2a2a30', 0.9);
+      R.poly(g, [[-6, G.sY - 5], [6, G.sY - 5], [5, G.sY + 1], [-5, G.sY + 1]], JGEN); g.strokeStyle = GOLD; g.lineWidth = 1; g.strokeRect(-5.6, G.sY - 4.6, 11.2, 5);
+      R.poly(g, [[-3, G.sY], [3, G.sY], [0, G.sY + 5]], SHIRT);
+      R.poly(g, [[-G.shx * 0.42, G.sY + 1], [G.shx * 0.42, G.sY + 1], [G.shx * 0.3, G.hipY - 4], [-G.shx * 0.3, G.hipY - 4]], '#d8c89a');
+      buttons(g, -G.shx * 0.36, G.sY + 5, 5, 4.6); buttons(g, G.shx * 0.36, G.sY + 5, 5, 4.6);
     },
-    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.1, G.hipY - 4], [G.hx * 2.1, G.hipY - 4], [G.hx * 2.4, G.hipY + 14 * G.k], [-G.hx * 2.4, G.hipY + 14 * G.k]], '#121218'),
+    overHead(g, d, G) { for (const sd of [-1, 1]) { g.fillStyle = GOLD; g.beginPath(); g.ellipse(sd * G.shx * 0.95, G.sY + 1, 5.4, 2.6, 0, 0, PI * 2); g.fill(); for (let i = 0; i < 6; i++) R.line(g, sd * G.shx * 0.95 - 5 + i * 2, G.sY + 2, sd * G.shx * 0.95 - 5 + i * 2, G.sY + 8, '#e0b850', 0.8); } },
+    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.1, G.hipY - 4], [G.hx * 2.1, G.hipY - 4], [G.hx * 2.4, G.hipY + 14 * G.k], [-G.hx * 2.4, G.hipY + 14 * G.k]], sh(JGEN, -0.12)),
     head(g, st) {
       humanFront(g, st, { skin: SK_A, w: 7.8, chin: 2.8, eyeC: '#4a6a8a', browC: 'rgba(200,195,185,0.95)', angry: 1,
         back(g) { g.beginPath(); g.ellipse(0, -17, 11.5, 11, 0, 0, PI * 2); fillLit(g, JKHAIR, 0, -17, 11, 0.18, -0.45); },
@@ -1097,9 +1158,9 @@ const ROSTER = (() => {
   };
   FRONT.truman = {
     detail: (g, d, G) => {
-      R.poly(g, [[-4, G.sY - 1], [4, G.sY - 1], [0, G.sY + 8]], SHIRT); g.fillStyle = '#1a2a5a'; g.beginPath(); g.ellipse(-2.6, G.sY + 1.5, 2.8, 1.5, 0, 0, PI * 2); g.ellipse(2.6, G.sY + 1.5, 2.8, 1.5, 0, 0, PI * 2); g.fill();
-      for (const sd of [-1, 1]) R.poly(g, [[sd * 4, G.sY], [sd * G.shx * 0.7, G.sY + 2], [sd * 2, G.sY + 22]], sh(HSUIT, 0.12));
-      buttons(g, -3, G.sY + 24, 2, 6, '#2a2a30', 1); buttons(g, 3, G.sY + 24, 2, 6, '#2a2a30', 1);
+      aloha(g, -G.shx * 1.1, G.sY - 2, G.shx * 2.2, G.hipY - G.sY + 6);
+      R.poly(g, [[-3.6, G.sY - 1], [3.6, G.sY - 1], [0, G.sY + 8]], SK_HT); for (const sd of [-1, 1]) R.poly(g, [[sd * 1.6, G.sY - 1], [sd * 7.4, G.sY - 1], [sd * 3.6, G.sY + 8]], sh(HAW, 0.15));
+      buttons(g, 0, G.sY + 11, 4, 5.4, '#8a6a3a', 0.9);
     },
     head(g, st) {
       humanFront(g, st, { skin: SK_HT, w: 8.6, chin: 1.6, eyeC: '#4a5a6a', browC: 'rgba(120,110,100,0.9)',
@@ -1113,9 +1174,9 @@ const ROSTER = (() => {
   };
   FRONT.jfk = {
     detail: (g, d, G) => {
-      R.poly(g, [[-4, G.sY - 1], [4, G.sY - 1], [0, G.sY + 14]], SHIRT); R.poly(g, [[-1, G.sY], [1, G.sY], [1.3, G.sY + 14], [0, G.sY + 16], [-1.3, G.sY + 14]], '#14182a');
-      for (const sd of [-1, 1]) R.poly(g, [[sd * 4, G.sY], [sd * G.shx * 0.7, G.sY + 2], [sd * 2.4, G.sY + 18]], sh(JSUIT, 0.14));
-      buttons(g, 0, G.sY + 20, 2, 5, '#14182a', 0.9);
+      R.poly(g, [[-3.6, G.sY - 1], [3.6, G.sY - 1], [0, G.sY + 7]], SK_JK); for (const sd of [-1, 1]) R.poly(g, [[sd * 1.6, G.sY - 1], [sd * 7, G.sY - 1], [sd * 3.4, G.sY + 7]], sh(OXF, 0.12));
+      R.line(g, 0, G.sY + 7, 0, G.hipY - 2, 'rgba(60,80,110,0.4)', 0.8); buttons(g, 0, G.sY + 10, 4, 5, '#f4f2ee', 0.7);
+      belt(g, G, '#2a3a6a', '#c8ccd4');
     },
     head(g, st) {
       humanFront(g, st, { skin: SK_JK, w: 8.6, chin: 1.4, eyeC: '#4a6a7a', browC: 'rgba(90,60,35,0.95)',
@@ -1124,6 +1185,7 @@ const ROSTER = (() => {
           const sw = st.sweep || 0;
           g.beginPath(); g.moveTo(-9, -13); g.quadraticCurveTo(-11, -30, 0, -31); g.quadraticCurveTo(11, -31, 9.4, -15); g.quadraticCurveTo(7, -23, 0 + sw, -23.4); g.quadraticCurveTo(-4, -24.6, -6.4, -21); g.quadraticCurveTo(-8, -18, -9, -13); g.closePath();
           fillLit(g, JHAIRK, 0, -25, 11, 0.24, -0.45); g.save(); g.clip(); strokes(g, 0, -27, 9, 4, 60, 83, 0.2, 7, 0.25, 0.25); g.restore();
+          if (!st.dead) { g.fillStyle = '#121216'; for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(sd * 1, -14.4); g.lineTo(sd * 6.4, -14.6); g.lineTo(sd * 5.8, -10.8); g.lineTo(sd * 1.4, -10.8); g.closePath(); g.fill(); } R.line(g, -1, -13.8, 1, -13.8, '#121216', 1); }
           if (!st.dead) { g.fillStyle = '#2a0606'; g.beginPath(); g.moveTo(-3.8, -4.6); g.quadraticCurveTo(0, -1, 3.8, -4.6); g.quadraticCurveTo(0, -3.8, -3.8, -4.6); g.fill(); g.fillStyle = '#f6f2e6'; g.fillRect(-3, -4.5, 6, 1.2); }
         }, mouth() {} });
     },
@@ -1134,7 +1196,12 @@ const ROSTER = (() => {
     buttons(g, 0, G.sY + 20, 2, 5, sh(c, -0.3), 0.9);
   };
   FRONT.lbj = {
-    detail: suitFront(LSUIT, '#5a1a1e'),
+    detail: (g, d, G) => {
+      R.poly(g, [[-3.6, G.sY - 1], [3.6, G.sY - 1], [0, G.sY + 7]], SK_LB); for (const sd of [-1, 1]) R.poly(g, [[sd * 1.6, G.sY - 1], [sd * 7, G.sY - 1], [sd * 3.4, G.sY + 7]], sh(RKH, 0.14));
+      buttons(g, 0, G.sY + 9, 5, 5, '#6a5a3a', 0.8);
+      g.strokeStyle = 'rgba(70,55,30,0.5)'; g.lineWidth = 0.7; for (const sd of [-1, 1]) { g.strokeRect(sd * 6.6 - 3.4, G.sY + 8, 6.8, 6.4); g.strokeRect(sd * 6.6 - 3.4, G.sY + 8, 6.8, 2); }
+      belt(g, G, '#4a2e16', '#c8ccd4');
+    },
     head(g, st) {
       humanFront(g, st, { skin: SK_LB, w: 8.6, chin: 2.8, eyeC: '#3a3a3a', browC: 'rgba(60,55,50,0.95)',
         back(g) { for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(sd * 9.6, -11.5, 2.8, 4.8, 0, 0, PI * 2); fillLit(g, sh(SK_LB, -0.08), sd * 9.6, -11.5, 4.8); } },
@@ -1190,10 +1257,11 @@ const ROSTER = (() => {
   };
   FRONT.carter = {
     detail: (g, d, G) => {
-      R.poly(g, [[-3.6, G.sY - 1], [3.6, G.sY - 1], [0, G.sY + 6]], SK_JC);
-      for (const sd of [-1, 1]) R.poly(g, [[sd * 1.4, G.sY - 1], [sd * 6, G.sY - 1], [sd * 3, G.sY + 6]], sh(DENIM, 0.2));
-      buttons(g, 0, G.sY + 8, 5, 4.4, '#e8e4d8', 0.7);
-      belt(g, G, '#6a4220', BRASS); g.fillStyle = '#5a3818'; g.fillRect(-G.shx * 0.8, G.hipY, 6, 8); g.fillRect(G.shx * 0.5, G.hipY, 6, 8);
+      R.poly(g, [[-G.shx * 0.5, G.sY - 1], [G.shx * 0.5, G.sY - 1], [0, G.sY + 22]], SHIRT);
+      R.poly(g, [[-1.3, G.sY], [1.3, G.sY], [1.6, G.sY + 16], [0, G.sY + 18], [-1.6, G.sY + 16]], '#2a3a5a');
+      R.line(g, -G.shx * 0.5, G.sY - 1, 0, G.sY + 22, sh(CARD, -0.18), 2.2); R.line(g, G.shx * 0.5, G.sY - 1, 0, G.sY + 22, sh(CARD, -0.18), 2.2);
+      buttons(g, 0, G.sY + 25, 3, 4.6, '#6a5030', 1);
+      g.strokeStyle = 'rgba(90,70,40,0.45)'; g.lineWidth = 0.7; for (const sd of [-1, 1]) g.strokeRect(sd * 7 - 3, G.hipY - 12, 6, 5);
     },
     head(g, st) {
       humanFront(g, st, { skin: SK_JC, w: 8.6, chin: 1.4, eyeC: '#4a6a8a', browC: 'rgba(130,100,60,0.9)',
