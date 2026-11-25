@@ -12,6 +12,8 @@ window.GAME = {
 
   // ---------- the announcer: an old newsreel narrator, crackling over the radio ----------
   calls: { flawless: 'LANDSLIDE VICTORY', choose: 'choose your president' },
+  // recorded robot announcer, built by tools/make_voice.py (rerun it after adding a fighter or a spoken line)
+  voiceClips: 'voice/',
   voice: { pitch: 0.85, rate: 1.12, prefer: /Daniel|Fred|Alex|Google US English|Male/i, radio: true },
 
   // ---------- music: industrial remixes of public-domain tunes ----------
