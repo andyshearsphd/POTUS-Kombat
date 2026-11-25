@@ -58,6 +58,235 @@ FATAL.add(K => {
     };
   };
 
+  // ---------- THOMAS JEFFERSON: Wall of Separation ----------
+  // A brick wall slams through at the belt line. Top half goes one way, bottom half stays put.
+  S.jefferson = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let f = null, pose = null, hh = 0, cutY = 0, cutX = 0, top = null, wall = null;
+    const WW = 54, WH = 26;
+    s.at(0.6, () => api.bubble('A WALL OF SEPARATION.', A.x, F - 160, { size: 11, life: 1.4, fill: 'white' }));
+    s.at(1.0, () => {
+      hh = api.hurtH(V); cutY = F - hh * 0.5; cutX = V.x;
+      wall = prop({ layer: 'front', x: A.x - A.face * 260, y: cutY, vy: 0, landed: false, draw(g, p) {
+        const x0 = p.x - WW / 2, y0 = p.y - WH / 2;
+        g.fillStyle = '#7a2a1c'; g.fillRect(x0, y0, WW, WH);
+        for (let r = 0; r < 4; r++) for (let c = -1; c < 7; c++) { const bx = x0 + c * 9 + (r % 2 ? 4.5 : 0), by = y0 + r * 6.5; if (bx < x0 - 4 || bx > x0 + WW - 4) continue; g.fillStyle = ['#9a3a24', '#8a3220', '#a8442a'][(r + c + 3) % 3]; g.fillRect(Math.max(x0, bx), by + 0.6, Math.min(8.2, x0 + WW - Math.max(x0, bx)), 5.4); }
+        g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1; g.strokeRect(x0, y0, WW, WH);
+        g.fillStyle = 'rgba(255,220,180,0.15)'; g.fillRect(x0, y0, WW, 1.5);
+      } });
+      api.sfx('whoosh');
+    });
+    s.at(1.2, () => {
+      api.sfx('big'); api.sfx('crunch'); api.sfx('splat'); api.shake(12); api.flash();
+      f = still(V); pose = R.resolve(V.d, PS.dizzy(V.t)); V.hidden = true;
+      top = prop({ layer: 'back', u: 0, fall: 0, draw(g, p) {
+        // bottom half, still standing (then toppling)
+        g.save(); g.translate(cutX, F); g.rotate(-A.face * p.fall * 1.45); g.translate(-cutX, -F);
+        g.beginPath(); g.rect(cutX - 150, cutY, 300, 400); g.clip(); drawStill(g, f, pose);
+        g.fillStyle = '#8a0010'; g.beginPath(); g.ellipse(cutX, cutY + 1, 11 * V.d.k, 3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#e8e0d0'; g.fillRect(cutX - 1.5, cutY - 0.5, 3, 2);
+        g.restore();
+        // top half, flying off and landing on its back
+        const u = p.u, dx = A.face * (30 + u * 70), dy = lerp(0, F - cutY - 14, u) - Math.sin(u * PI) * 70;
+        g.save(); g.translate(cutX + dx, cutY + dy); g.rotate(A.face * u * 1.55); g.translate(-cutX, -cutY);
+        g.beginPath(); g.rect(cutX - 150, cutY - 400, 300, 400); g.clip(); drawStill(g, f, pose);
+        g.fillStyle = '#8a0010'; g.beginPath(); g.ellipse(cutX, cutY - 1, 11 * V.d.k, 3, 0, 0, PI * 2); g.fill();
+        g.fillStyle = '#c86070'; for (let i = 0; i < 3; i++) g.fillRect(cutX - 6 + i * 4, cutY - 1, 2.4, 3 + i);
+        g.restore();
+      } });
+      FX.burst(cutX, cutY, 10, ['guts', 'chunk', 'kidney', 'liver', 'bone'], 1.2); FX.drops(3);
+    });
+    s.at(1.95, () => { api.sfx('thud'); FX.blood(cutX + A.face * 100, F - 6, 24, 0, 0.9); api.shake(5); });
+    s.at(2.4, () => { wall.falling = true; });
+    s.at(2.9, () => api.sfx('thud'));
+    s.at(3.2, () => api.bubble('CHURCH AND STATE. TOP AND BOTTOM.', A.x, F - 160, { size: 10, life: 1.8, fill: 'gold' }));
+    s.at(5.0, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 70 * k, dt, api, 120); return; }
+      A.scriptPose = t < 1.0 ? P({ hy: 4, lean: -0.1, head: -0.15, aF: [2.7, 0.3], aB: [0.4, 0.3], fF: [12, 0], fB: [-12, 0] })
+        : t < 2.0 ? P({ hy: 6, lean: 0.25, head: 0.1, aF: [1.6, 0.05], aB: [0.6, 0.6], fF: [14, 0], fB: [-14, 0] }) : PS.stance(A.t);
+      if (!f) V.scriptPose = PS.dizzy(V.t);
+      if (wall) {
+        if (t < 1.2) wall.x = lerp(A.x - A.face * 260, cutX, (t - 1.0) / 0.2);
+        else if (!wall.falling) wall.x = lerp(cutX, cutX + A.face * 26, (t - 1.2) / 0.3);
+        else if (!wall.landed) { wall.vy += 1400 * dt; wall.y += wall.vy * dt; if (wall.y >= F - WH / 2) { wall.y = F - WH / 2; wall.landed = true; api.shake(6); FX.dust(wall.x, F, 16); } }
+      }
+      if (top) {
+        top.u = ease((t - 1.2) / 0.75);
+        top.fall = t < 2.6 ? 0 : ease((t - 2.6) / 0.5);
+        if (t < 2.6 && Math.random() < 0.7) FX.spurt(cutX, cutY, rnd(-0.4, 0.4), 1.2);
+        if (t > 3.1 && t < 3.2) FX.blood(cutX - A.face * 30, F - 4, 14, 0, 0.6);
+      }
+    };
+  };
+
+  // ---------- ANDREW JACKSON: Old Hickory ----------
+  // The cane goes into the floor and erupts into a hickory tree. The branches find the loser.
+  S.jackson = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let planted = false, grow = 0, treeX = 0, lift = 0;
+    const branches = [[-0.9, 0.55, 46], [0.8, 0.45, 50], [-0.4, 0.75, 40], [0.5, 0.8, 38], [-1.2, 0.35, 34], [1.15, 0.6, 36], [0.1, 0.95, 44]];
+    const spears = [[0.55, -0.35], [0.4, 0.4], [0.75, 0.15], [0.25, -0.1]];
+    prop({ layer: 'back', draw(g) {
+      if (!planted) return;
+      if (grow <= 0) { R.line(g, treeX, F + 2, treeX - A.face * 4, F - 34, '#5a3a1e', 2.4); return; }
+      const H = 190 * grow, w = 5 + grow * 9;
+      // roots ripping up the floor
+      for (let i = -3; i <= 3; i++) R.line(g, treeX, F, treeX + i * 14 * grow, F + 3, '#3a2410', 2.4);
+      g.fillStyle = '#4a3018'; g.beginPath(); g.moveTo(treeX - w, F); g.quadraticCurveTo(treeX - w * 0.5, F - H * 0.5, treeX - 2, F - H); g.lineTo(treeX + 2, F - H); g.quadraticCurveTo(treeX + w * 0.5, F - H * 0.5, treeX + w, F); g.fill();
+      g.strokeStyle = 'rgba(20,10,4,0.5)'; g.lineWidth = 0.8; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(treeX - w * 0.6 + i * w * 0.24, F); g.lineTo(treeX - 1 + i * 0.4, F - H * 0.9); g.stroke(); }
+      for (const [a, at, len] of branches) {
+        const by = F - H * at, L = len * grow, ex = treeX + Math.sin(a) * L, ey = by - Math.cos(a) * L * 0.8;
+        R.line(g, treeX, by, ex, ey, '#4a3018', 3 * grow + 0.5);
+        for (let i = 0; i < 4; i++) { const lx = lerp(treeX, ex, 0.4 + i * 0.18), ly = lerp(by, ey, 0.4 + i * 0.18); g.fillStyle = ['#3a5a1e', '#4a6a24', '#2e4a18'][i % 3]; g.beginPath(); g.ellipse(lx + 3, ly - 3, 5 * grow, 2.4 * grow, a, 0, PI * 2); g.fill(); }
+      }
+    } });
+    // the spikes that come out through the body, drawn in front of it
+    prop({ layer: 'front', draw(g) {
+      if (grow < 0.55) return;
+      const hh = api.hurtH(V), u = Math.min(1, (grow - 0.55) / 0.3);
+      for (const [rel, dx] of spears) {
+        const y = V.y - hh * rel, x0 = treeX + dx * 10, x1 = x0 + dx * 30 * u, y1 = y - 22 * u;
+        R.line(g, x0, y + 10, x1, y1, '#4a3018', 2.6); R.line(g, x1 - 1, y1 + 4, x1, y1, '#8a0010', 2.2);
+        if (u > 0.9 && Math.random() < 0.08) FX.blood(x1, y1 + 2, 1, dx, 0.3);
+      }
+    } });
+    s.at(0.6, () => api.bubble('OLD HICKORY NEVER BENDS.', A.x, F - 165, { size: 11, life: 1.3, fill: 'white' }));
+    s.at(1.15, () => { planted = true; treeX = V.x - A.face * 6; api.sfx('thud'); api.shake(6); FX.dust(treeX, F, 12); });
+    s.at(1.4, () => api.sfx('creak'));
+    s.at(1.8, () => { api.sfx('crunch'); api.sfx('big'); api.shake(10); api.flash(); });
+    s.at(2.15, () => { api.sfx('splat'); api.sfx('scream'); FX.burst(V.x, V.y - api.hurtH(V) * 0.5, 8, ['guts', 'chunk', 'bone'], 1); FX.drops(3); });
+    s.at(3.4, () => api.bubble('TOUGH AS HICKORY. YOU WERE NOT.', A.x, F - 120, { size: 10, life: 1.8, fill: 'gold' }));
+    s.at(5.0, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 56 * k, dt, api, 120); return; }
+      if (t < 1.15) A.scriptPose = P({ hy: 4, lean: -0.15, head: -0.15, aF: [2.9, 0.2], aB: [0.5, 0.4], fF: [12, 0], fB: [-12, 0] });
+      else if (t < 1.8) A.scriptPose = P({ hy: 10, lean: 0.45, head: 0.2, aF: [1.0, 0.1], aB: [0.6, 0.5], fF: [14, 0], fB: [-14, 0] });
+      else A.scriptPose = P({ hy: 3, lean: -0.15, head: -0.25, aF: [0.4, 0.2], aB: [0.3, 1.9], fF: [12, 0], fB: [-12, 0] });
+      grow = t < 1.8 ? 0 : ease((t - 1.8) / 0.55);
+      lift = t < 2.0 ? 0 : ease((t - 2.0) / 0.5) * 70;
+      V.y = F - lift; V.ro.noShadow = lift > 4;
+      V.scriptPose = t < 2.0 ? PS.dizzy(V.t) : P({ hy: 2, lean: -0.5, head: -0.9, aF: [-0.4, 0.4], aB: [0.6, 0.3], lF: [0.3, 0.6], lB: [-0.2, 0.7] });
+      V.ro.dx = t > 2.0 && t < 2.6 ? rnd(-1.5, 1.5) : 0;
+      if (t > 2.1 && Math.random() < 0.3) FX.blood(V.x + rnd(-6, 6), V.y - rnd(10, 60), 2, 0, 0.4);
+    };
+  };
+
+  // ---------- ULYSSES S. GRANT: Unconditional Surrender ----------
+  // He accepts the loser's sword. Then their arms, their legs and their head, stacked neatly on a table.
+  S.grant = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, D = V.d, C = V.def.col;
+    let sword = null, tableX = 0, hh = 0;
+    const parts = [];
+    const swordDraw = (g, x, y, a) => { g.save(); g.translate(x, y); g.rotate(a); R.line(g, -6, 0, 30, 0, '#d8dce4', 1.8); R.line(g, -6, -0.5, 30, -0.5, 'rgba(255,255,255,0.6)', 0.5); R.line(g, -6, -4, -6, 4, '#c8a040', 1.6); R.line(g, -12, 0, -6, 0, '#3a2410', 2.2); R.ball(g, -13, 0, 1.4, '#c8a040'); g.restore(); };
+    // the pile: table, torso, two legs, two arms, then the head on top
+    const piece = (g, p) => {
+      g.save(); g.translate(p.x, p.y); g.rotate(p.rot);
+      if (p.kind === 'torso') { R.seg(g, [-16 * D.k / 1.1, 0], [16 * D.k / 1.1, 0], D.chest * 0.75, D.belly * 0.7, C.torso, (V.def.mat && V.def.mat.torso) || 'cloth', { seed: 3 }); R.ball(g, -16, 0, 4, '#8a0010'); R.ball(g, 16, 0, 3.4, '#8a0010'); }
+      else if (p.kind === 'leg') { R.seg(g, [-D.thigh * 0.5, 0], [D.thigh * 0.5, 0], D.thighR, D.kneeR, C.legU, 'cloth', { seed: 7 }); R.seg(g, [D.thigh * 0.5, 0], [D.thigh * 0.5 + D.shin * 0.9, 0], D.kneeR, D.ankleR, C.legL || C.legU, 'cloth', { seed: 8 }); R.ball(g, D.thigh * 0.5 + D.shin * 0.9 + 3, -1, D.ankleR * 1.3, C.foot || '#111'); R.ball(g, -D.thigh * 0.5, 0, D.thighR * 0.8, '#8a0010'); R.ball(g, -D.thigh * 0.5, 0, D.thighR * 0.3, '#e8e0d0'); }
+      else if (p.kind === 'arm') { R.seg(g, [-D.upper * 0.5, 0], [D.upper * 0.5, 0], D.shR * 0.9, D.elbowR, C.armU, 'cloth', { seed: 9 }); R.seg(g, [D.upper * 0.5, 0], [D.upper * 0.5 + D.fore * 0.85, 0], D.elbowR, D.wristR, C.armL || C.armU, 'cloth', { seed: 10 }); R.ball(g, D.upper * 0.5 + D.fore * 0.85 + 2, 0, D.fist * 0.9, C.hand); R.ball(g, -D.upper * 0.5, 0, D.shR * 0.7, '#8a0010'); }
+      else if (p.kind === 'head') R.drawHeadAt(g, { def: V.def, d: V.d }, 0, 0, 0, 1, { dead: true, t: 0 });
+      g.restore();
+    };
+    s.at(0.6, () => api.bubble('NO TERMS EXCEPT UNCONDITIONAL SURRENDER.', A.x, F - 160, { size: 9, life: 1.6, fill: 'white' }));
+    s.at(1.2, () => { sword = prop({ layer: 'front', st: 'held', x: 0, y: 0, a: 0, draw(g, p) { if (!p.gone) swordDraw(g, p.x, p.y, p.a); } }); api.sfx('clang'); });
+    s.at(1.9, () => { sword.st = 'fly'; api.sfx('whoosh'); });
+    s.at(2.25, () => { sword.st = 'grant'; api.sfx('ding'); api.bubble('ACCEPTED.', A.x, F - 160, { size: 11, fill: 'gold' }); });
+    for (const [i, at] of [[0, 2.7], [1, 2.85], [2, 3.0], [3, 3.15]]) s.at(at, () => { api.sfx('slash'); api.shake(3); FX.blood(V.x, F - api.hurtH(V) * (0.3 + (i % 2) * 0.35), 14, -A.face, 1); });
+    s.at(3.3, () => {
+      hh = api.hurtH(V); V.hidden = true; api.sfx('splat'); api.sfx('crunch'); api.flash(); api.shake(9);
+      tableX = V.x + A.face * 20;
+      prop({ layer: 'back', draw(g) {
+        g.fillStyle = '#4a2e16'; g.fillRect(tableX - 40, F - 28, 80, 5); g.fillStyle = '#6a4424'; g.fillRect(tableX - 40, F - 28, 80, 1.6);
+        for (const sx of [-34, 30]) { g.fillStyle = '#3a2410'; g.fillRect(tableX + sx, F - 23, 4, 23); }
+      } });
+      const T = F - 28;
+      const plan = [['torso', 0, -D.belly * 0.6, 0], ['leg', -4, -D.belly * 1.25 - D.thighR, 0.06], ['leg', 4, -D.belly * 1.25 - D.thighR * 3, -0.05], ['arm', -2, -D.belly * 1.25 - D.thighR * 4 - D.shR, 0.08], ['arm', 2, -D.belly * 1.25 - D.thighR * 4 - D.shR * 2.6, -0.06], ['head', 0, -D.belly * 1.25 - D.thighR * 4 - D.shR * 3.4 - 3 * D.k, 0]];
+      plan.forEach(([kind, dx, dy, rot], i) => {
+        const p = { kind, x: V.x, y: F - hh * (kind === 'head' ? 0.9 : kind === 'leg' ? 0.25 : 0.6), rot: rnd(-1, 1), x0: 0, y0: 0, tx: tableX + dx, ty: T + dy, trot: rot, at: 3.3 + i * 0.28, done: false };
+        p.x0 = p.x; p.y0 = p.y; parts.push(p);
+      });
+      prop({ layer: 'front', draw(g) { for (const p of parts) piece(g, p); } });
+      FX.burst(V.x, F - hh * 0.5, 8, ['guts', 'chunk', 'bone'], 1); FX.drops(3);
+    });
+    s.at(5.2, () => api.bubble('SURRENDER ACCEPTED.', A.x, F - 150, { size: 12, life: 1.6, fill: 'gold' }));
+    s.at(6.4, () => { sword.gone = true; });
+    s.at(6.6, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 46 * k, dt, api, 110); return; }
+      if (t < 3.3) V.scriptPose = t > 1.2 && t < 2.0 ? P({ hy: 6, lean: 0.25, head: 0.35, aF: [1.5, 0.05], aB: [0.4, 0.4], fF: [10, 0], fB: [-10, 0] }) : PS.dizzy(V.t);
+      if (t < 2.25) A.scriptPose = P({ hy: 2, lean: -0.05, head: -0.1, aF: t > 1.9 ? [1.4, 0.3] : [0.3, 0.2], aB: [0.3, 1.9], fF: [10, 0], fB: [-10, 0] });
+      else if (t < 3.3) A.scriptPose = P({ hy: 6, lean: 0.3, head: 0.1, aF: [Math.floor((t - 2.6) / 0.15) % 2 ? 2.6 : 1.0, 0.1], aB: [0.6, 0.5], fF: [14, 0], fB: [-14, 0] });
+      else A.scriptPose = P({ hy: 2, lean: -0.05, head: -0.1, aF: [0.3, 0.15], aB: [0.3, 1.9], fF: [10, 0], fB: [-10, 0] });
+      if (sword) {
+        const hv = J(V, 'handFx'), ha = J(A, 'handFx'), e = J(A, 'elbowF');
+        if (sword.st === 'held') { sword.x = hv[0]; sword.y = hv[1]; sword.a = A.face > 0 ? PI : 0; }
+        else if (sword.st === 'fly') { const u = ease((t - 1.9) / 0.35); sword.x = lerp(hv[0], ha[0], u); sword.y = lerp(hv[1], ha[1], u) - Math.sin(u * PI) * 20; sword.a += dt * 14; }
+        else { sword.x = ha[0]; sword.y = ha[1]; sword.a = Math.atan2(ha[1] - e[1], ha[0] - e[0]); }
+      }
+      for (const p of parts) {
+        if (t < p.at) { p.x += (p.x - V.x) * dt * 0.5; continue; }
+        const u = ease((t - p.at) / 0.5); p.x = lerp(p.x0, p.tx, u); p.y = lerp(p.y0, p.ty, u) - Math.sin(u * PI) * 60; p.rot = lerp(p.rot, p.trot, u);
+        if (u >= 1 && !p.done) { p.done = true; api.sfx('thud'); FX.blood(p.tx, p.ty + 4, 6, 0, 0.4); }
+      }
+    };
+  };
+
+  // ---------- GROVER CLEVELAND: Sheriff's Drop ----------
+  // As sheriff of Erie County he pulled the lever himself. A gallows rises, the trap drops, the head stays up.
+  S.cleveland = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR;
+    let rise = 0, open = false, noose = false, popped = false, gx = 0, fallV = 0, headP = null;
+    const PH = 40, beam = 150;
+    s.at(0.6, () => api.bubble('BY ORDER OF THE SHERIFF OF ERIE COUNTY.', A.x, F - 160, { size: 9, life: 1.5, fill: 'white' }));
+    s.at(0.9, () => { gx = V.x; api.sfx('creak'); api.shake(4); });
+    s.at(1.9, () => { noose = true; api.sfx('whoosh'); });
+    s.at(2.2, () => api.bubble('ANY LAST WORDS? NO? GOOD.', A.x, F - 150, { size: 10, life: 1.2, fill: 'gold' }));
+    s.at(3.4, () => { open = true; api.sfx('clang'); api.sfx('thud'); });
+    s.at(4.5, () => api.bubble('CASE CLOSED.', A.x, F - 150, { size: 13, life: 1.6, fill: 'gold' }));
+    s.at(6.0, () => { s.done = true; });
+    const ropeTop = () => F - (PH + beam) * rise;
+    prop({ layer: 'back', draw(g) {
+      if (rise <= 0) return;
+      const top = F - PH * rise, bt = ropeTop();
+      // platform, posts, crossbeam, brace
+      for (const sx of [-36, 30]) { g.fillStyle = '#4a3420'; g.fillRect(gx + sx, bt, 6, F - bt); g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(gx + sx + 4, bt, 2, F - bt); }
+      g.fillStyle = '#5a3e24'; g.fillRect(gx - 40, bt - 6, 80, 7); R.line(g, gx + 30, bt + 18, gx + 12, bt, '#4a3420', 3);
+      g.fillStyle = '#5a3e24'; g.fillRect(gx - 48, top, 96, 6); g.fillStyle = '#6e4c2c'; g.fillRect(gx - 48, top, 96, 1.5);
+      for (let i = 0; i < 4; i++) { g.fillStyle = '#3a2814'; g.fillRect(gx - 44 + i * 26, top + 6, 3, F - top - 6); }
+      // trap door
+      g.fillStyle = '#1a1008'; g.fillRect(gx - 14, top, 28, 6);
+      if (!open) { g.fillStyle = '#6a4828'; g.fillRect(gx - 14, top, 28, 6); g.strokeStyle = 'rgba(0,0,0,0.5)'; g.strokeRect(gx - 14, top, 28, 6); }
+      else { g.fillStyle = '#6a4828'; g.fillRect(gx - 14, top, 4, 24); g.fillRect(gx + 10, top, 4, 24); }
+      // steps and the lever at the side, toward the sheriff
+      const lx = gx - A.face * 46; g.fillStyle = '#3a2814'; g.fillRect(lx - 2, top - 2, 4, 6);
+      R.line(g, lx, top, lx + (open ? -A.face * 12 : A.face * 10), top - 22, '#7a7e88', 2); R.ball(g, lx + (open ? -A.face * 12 : A.face * 10), top - 22, 2, '#2a2a2e');
+      if (noose && !popped) { const n = J(V, 'neck'); R.line(g, gx, bt + 1, n[0], n[1] - 2, '#c8b080', 1.4); }
+      if (popped && headP) { R.line(g, gx, bt + 1, headP.x, headP.y - 4, '#c8b080', 1.4); }
+    } });
+    prop({ layer: 'front', draw(g) {
+      if (noose && !popped) { const n = J(V, 'neck'); g.strokeStyle = '#c8b080'; g.lineWidth = 2; g.beginPath(); g.ellipse(n[0], n[1], 6, 3, 0, 0, PI * 2); g.stroke(); for (let i = 0; i < 5; i++) R.line(g, n[0] - 3 + i * 1.5, n[1] - 4 - i * 2.4, n[0] - 3 + i * 1.5, n[1] - 6 - i * 2.4, '#a89060', 1.6); }
+      if (popped && headP) { R.drawHeadAt(g, { def: V.def, d: V.d }, headP.x, headP.y, Math.sin(s.t * 3) * 0.25, 1, { dead: true, t: 0 }); g.strokeStyle = '#c8b080'; g.lineWidth = 2; g.beginPath(); g.ellipse(headP.x, headP.y + 2, 6, 3, 0, 0, PI * 2); g.stroke(); }
+    } });
+    s.tick = (t, dt) => {
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 92 * k, dt, api, 120); return; }
+      rise = t < 0.9 ? 0 : ease((t - 0.9) / 0.9);
+      if (!open) { V.y = F - PH * rise; V.scriptPose = t > 1.9 ? P({ hy: 0, lean: 0, head: 0.15, aF: [0.1, 0.1], aB: [0.05, 0.1], fF: [3, 0], fB: [-3, 0] }) : PS.dizzy(V.t); V.ro.noShadow = rise > 0.1; }
+      A.scriptPose = t < 3.2 ? PS.stance(A.t) : t < 3.7 ? P({ hy: 6, lean: 0.3, head: 0.1, aF: [1.5, 0.2], aB: [0.6, 0.6], fF: [12, 0], fB: [-12, 0] }) : P({ hy: 2, lean: -0.1, head: -0.15, aF: [0.3, 1.9], aB: [0.3, 1.9], fF: [10, 0], fB: [-10, 0] });
+      if (open && !popped) {
+        fallV += 1300 * dt; V.y += fallV * dt;
+        if (V.y > F - PH + 26) {
+          popped = true; const n = J(V, 'neck'); headP = { x: n[0], y: n[1] - 6 };
+          V.ro.noHead = true; api.sfx('crunch'); api.sfx('splat'); api.shake(10); api.flash();
+          FX.burst(n[0], n[1], 6, ['chunk', 'bone'], 0.8); FX.drops(2);
+        }
+      } else if (popped) {
+        if (V.y < F) { fallV += 1300 * dt; V.y = Math.min(F, V.y + fallV * dt); if (V.y >= F) { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); FX.blood(V.x, F - 4, 20, 0, 0.8); } }
+        if (t < 4.6 && Math.random() < 0.5) { const n = J(V, 'neck'); FX.spurt(n[0], n[1], rnd(-0.5, 0.5), 1); }
+        if (headP && Math.random() < 0.1) FX.blood(headP.x, headP.y + 6, 1, 0, 0.2);
+      }
+    };
+  };
+
   // ---------- ABRAHAM LINCOLN: House Divided ----------
   // One stroke of a rail-splitter's maul, straight down the middle. Neither half can stand.
   S.lincoln = (s, A, V, api) => {

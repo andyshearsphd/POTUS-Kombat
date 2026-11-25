@@ -279,7 +279,224 @@ const ROSTER = (() => {
     fatals: [{ id: 'fdr', name: 'NEW DEAL' }],
   };
 
-  const FIGHTERS = [washington, lincoln, teddy, fdr];
+  // =====================================================================================
+  // THOMAS JEFFERSON: brown coat, red waistcoat, white cravat, sandy-red hair going gray, tied back
+  // =====================================================================================
+  const SK_J = '#e8b89a', JCOAT = '#4a3424', JVEST = '#8a2a1e', JHAIR = '#b88a6a';
+  const jefferson = {
+    id: 'jefferson', name: 'THOMAS JEFFERSON', short: 'JEFFERSON', him: 'HIM', k: 1.07, term: '1801 TO 1809',
+    bio: 'Wrote that all men are created equal. Then he bought half a continent to fight in.',
+    d: dims({ thigh: 29, shin: 28, torso: 35, shW: 14.5, chest: 14.5, belly: 11, back: 10.5, thighR: 6.8, shR: 5.4 }),
+    col: { torso: JCOAT, armU: JCOAT, armL: JCOAT, cuff: SHIRT, hand: SK_J, legU: '#5a4430', legL: '#e8e2d4', foot: BLACK, neck: SK_J },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'cloth' },
+    stats: { speed: 1.04, power: 0.98, weight: 0.98 },
+    torsoDetail(g, d, st, L) {
+      // red waistcoat under open lapels, white cravat
+      R.poly(g, [[d.chest * 0.2, -L * 1.0], [d.chest * 0.9, -L * 0.98], [d.chest * 0.92, -L * 0.1], [d.chest * 0.3, -L * 0.1]], JVEST);
+      buttons(g, d.chest * 0.62, -L * 0.82, 6, L * 0.12, '#d8c8a0', 0.8);
+      R.poly(g, [[d.chest * 0.05, -L * 1.02], [d.chest * 0.4, -L * 0.98], [d.chest * 0.32, -L * 0.4], [d.chest * 0.1, -L * 0.5]], sh(JCOAT, 0.12));
+      R.poly(g, [[d.chest * 0.45, -L * 1.06], [d.chest * 1.0, -L * 1.02], [d.chest * 0.88, -L * 0.82], [d.chest * 0.6, -L * 0.84]], SHIRT);
+      R.poly(g, [[d.chest * 0.62, -L * 0.86], [d.chest * 0.84, -L * 0.84], [d.chest * 0.76, -L * 0.7]], '#f4f0e6');
+      R.line(g, -d.back * 1.0, -L * 0.12, d.chest * 0.2, -L * 0.12, 'rgba(0,0,0,0.3)', 1);
+    },
+    skirt(g, d, J) {
+      const h = J.hip, kn = J.LB.knee, b = d.back;
+      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.3, kn[1] - 8], [kn[0] - b * 1.2, kn[1] - 4]], sh(JCOAT, -0.15));
+    },
+    frontHand(g, d, J, st) {
+      if (st.move !== 'cgrab') return;
+      // the deed to Louisiana, unrolled at arm's length
+      held(g, J, 6, (g, L) => {
+        g.fillStyle = '#e8dcb8'; g.fillRect(L - 2, -9, 12, 18); g.fillStyle = 'rgba(90,60,30,0.5)'; for (let i = 0; i < 5; i++) g.fillRect(L, -6 + i * 3, 8, 0.6);
+        g.fillStyle = '#c8b48a'; g.fillRect(L - 3, -10, 14, 2.4); g.fillRect(L - 3, 8, 14, 2.4);
+      });
+    },
+    head(g, st) {
+      humanHead(g, st, {
+        skin: SK_J, chin: 2.2, nose: 1.1, eyeC: '#6a7a6a', browC: 'rgba(150,100,70,0.9)', cleanJaw: 1,
+        back(g) {
+          g.beginPath(); g.ellipse(-3, -16, 13, 12.5, 0, 0, PI * 2); fillLit(g, JHAIR, -3, -16, 13, 0.2, -0.5);
+          g.save(); g.clip(); strokes(g, -3, -16, 12, 11, 110, 11, PI + 0.3, 4, 0.22, 0.25); g.restore();
+          R.line(g, -10, -9, -12, 0, sh(JHAIR, -0.1), 3); R.poly(g, [[-10.4, -7], [-13.6, -9.4], [-13, -4.8]], '#141414');
+        },
+        front(g) {
+          g.beginPath(); g.moveTo(-7, -8); g.bezierCurveTo(-10.5, -20, -4, -29, 3, -29); g.bezierCurveTo(9, -29, 12, -25.5, 11.2, -21.5);
+          g.quadraticCurveTo(7.5, -23.5, 4, -22.5); g.quadraticCurveTo(0, -21, -2.4, -16); g.quadraticCurveTo(-3.2, -12, -3, -8); g.closePath();
+          fillLit(g, sh(JHAIR, 0.06), 2, -23, 12, 0.22, -0.45);
+          g.save(); g.clip(); strokes(g, 2, -23, 11, 7, 90, 12, PI + 0.1, 4, 0.2, 0.3); g.restore();
+          g.fillStyle = 'rgba(200,170,150,0.35)'; for (let i = 0; i < 6; i++) g.fillRect(-1 + i * 1.6, -26 + (i % 2), 1, 3);
+        },
+        mouth(g) {
+          if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.6, 1.5, 1.3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.8, 1.2, 5); return; }
+          g.strokeStyle = 'rgba(100,35,30,0.9)'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(8.6, -5.2); g.quadraticCurveTo(10, -4.6, 11.4, -5.4); g.stroke();
+        },
+      });
+    },
+    sp1: { kind: 'cgrab', name: 'LOUISIANA PURCHASE', mod: { hold: 'pull', range: 230, dmg: 12 } },
+    sp2: { kind: 'proj', name: 'POLYGRAPH DOUBLE', proj: { kind: 'polygraph' } },
+    fatals: [{ id: 'jefferson', name: 'WALL OF SEPARATION' }],
+  };
+
+  // =====================================================================================
+  // ANDREW JACKSON: black coat, high white collar, a shock of upswept white hair, hickory cane
+  // =====================================================================================
+  const SK_A = '#e0b496', JKBLK = '#1a1a20', JKHAIR = '#ece8e0';
+  const cane = (g, L) => { R.line(g, -6, 0, L, 0, '#5a3a1e', 2.2); R.line(g, -6, -0.6, L, -0.6, 'rgba(255,220,170,0.18)', 0.8); for (let i = 0; i < 4; i++) R.ball(g, 2 + i * 6.5, i % 2 ? 1 : -1, 1.1, '#3a2410'); g.fillStyle = '#c8a040'; g.fillRect(-8, -1.8, 3, 3.6); };
+  const jackson = {
+    id: 'jackson', name: 'ANDREW JACKSON', short: 'JACKSON', him: 'HIM', k: 1.08, term: '1829 TO 1837',
+    bio: 'Fought over a hundred duels, by his own count. Took a bullet to the chest and kept the bullet.',
+    d: dims({ thigh: 29, shin: 29, torso: 35, shW: 14, chest: 13.5, belly: 10, back: 10, thighR: 6.2, kneeR: 4.4, shR: 5.2, elbowR: 3.6 }),
+    col: { torso: JKBLK, armU: JKBLK, armL: JKBLK, cuff: SHIRT, hand: SK_A, legU: '#22222a', legL: '#22222a', foot: '#0c0c0e', neck: SHIRT },
+    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' },
+    stats: { speed: 1.06, power: 1.04, weight: 0.92 },
+    torsoDetail(g, d, st, L) {
+      // high white collar and stock, white shirt front, black coat lapels
+      R.poly(g, [[d.chest * 0.1, -L * 1.06], [d.chest * 0.95, -L * 1.04], [d.chest * 0.65, -L * 0.6], [d.chest * 0.3, -L * 0.62]], SHIRT);
+      R.poly(g, [[d.chest * 0.4, -L * 1.1], [d.chest * 0.98, -L * 1.08], [d.chest * 0.9, -L * 0.96], [d.chest * 0.45, -L * 0.98]], '#f4f2ec');
+      R.poly(g, [[d.chest * 0.05, -L * 1.03], [d.chest * 0.42, -L * 0.6], [d.chest * 0.2, -L * 0.75]], '#2a2a32');
+      R.poly(g, [[d.chest * 0.95, -L * 1.03], [d.chest * 0.62, -L * 0.55], [d.chest * 1.0, -L * 0.78]], '#2a2a32');
+      buttons(g, d.chest * 0.7, -L * 0.45, 3, L * 0.11, '#2a2a30', 0.9);
+    },
+    skirt(g, d, J) {
+      const h = J.hip, kn = J.LB.knee, b = d.back;
+      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.3, kn[1] - 4], [kn[0] - b * 1.3, kn[1]]], '#121218');
+    },
+    frontHand(g, d, J, st) {
+      if (st.move !== 'flurry') return;
+      // Hickory Cane Beatdown: the cane cracks down again and again
+      const A = J.AF, a = Math.atan2(A.wr[1] - A.el[1], A.wr[0] - A.el[0]) + Math.sin((st.mt || 0) * 46) * 0.9 - 0.4;
+      g.save(); g.translate(A.wr[0], A.wr[1]); g.rotate(a); cane(g, 30); g.restore();
+      g.save(); g.globalAlpha = 0.3; g.strokeStyle = '#f0e8d0'; g.lineWidth = 1.2; g.beginPath(); g.arc(A.wr[0], A.wr[1], 28, a - 0.9, a + 0.2); g.stroke(); g.restore();
+    },
+    head(g, st) {
+      humanHead(g, st, {
+        skin: SK_A, chin: 3.2, nose: 1.8, eyeC: '#4a6a8a', browC: 'rgba(200,195,185,0.95)',
+        back(g) { g.beginPath(); g.ellipse(-3, -17, 12.5, 12, 0, 0, PI * 2); fillLit(g, JKHAIR, -3, -17, 13, 0.18, -0.45); g.save(); g.clip(); strokes(g, -3, -17, 12, 11, 100, 21, PI * 1.3, 5, 0.2, 0.3); g.restore(); },
+        front(g) {
+          // the famous upswept shock, standing straight up off the forehead
+          const wind = st.wind || 0;
+          g.beginPath(); g.moveTo(-7, -9); g.bezierCurveTo(-11, -20, -9, -30, -4 + wind, -36);
+          g.quadraticCurveTo(2 + wind, -38, 7 + wind, -33); g.quadraticCurveTo(11, -28, 10.6, -22.5);
+          g.quadraticCurveTo(7, -24, 4, -23); g.quadraticCurveTo(0.5, -21.5, -2, -17); g.quadraticCurveTo(-3.2, -12, -3, -9); g.closePath();
+          fillLit(g, JKHAIR, 1, -27, 13, 0.22, -0.4);
+          g.save(); g.clip(); strokes(g, 1, -28, 10, 9, 110, 22, -PI * 0.55, 6, 0.18, 0.35); g.restore();
+          // the dueling scar across the brow
+          R.line(g, 3.5, -19.5, 7.5, -17.6, 'rgba(150,60,50,0.55)', 0.7);
+          g.fillStyle = 'rgba(60,20,10,0.25)'; g.beginPath(); g.ellipse(5.4, -6.2, 3.2, 3, 0, 0, PI * 2); g.fill();
+        },
+        mouth(g) {
+          if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.4, 1.5, 1.3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.6, 1.2, 5); return; }
+          // the grim downturned line
+          g.strokeStyle = 'rgba(90,30,25,0.95)'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(8.6, -4.4); g.quadraticCurveTo(10, -5.4, 11.4, -4.6); g.stroke();
+        },
+      });
+    },
+    sp1: { kind: 'flurry', name: 'HICKORY CANE BEATDOWN', mod: { dmg: 2.8, t: [0.07, 0.7, 0.24] }, ai: [0, 80] },
+    sp2: { kind: 'cgrab', name: 'SPOILS SYSTEM', mod: { hold: 'drain', dmg: 13 } },
+    fatals: [{ id: 'jackson', name: 'OLD HICKORY' }],
+  };
+
+  // =====================================================================================
+  // ULYSSES S. GRANT: rumpled Union frock coat, shoulder straps, short brown beard, cigar
+  // =====================================================================================
+  const SK_G = '#d8a684', UBLUE = '#1e2a48', GBEARD = '#5a3a22';
+  const grant = {
+    id: 'grant', name: 'ULYSSES S. GRANT', short: 'GRANT', him: 'HIM', k: 1.0, term: '1869 TO 1877',
+    bio: 'Unconditional Surrender Grant. Twenty cigars a day and not one retreat.',
+    d: dims({ shW: 16, chest: 16, belly: 13, back: 12, thighR: 7.4, shR: 6, upper: 19, fore: 18 }),
+    col: { torso: UBLUE, armU: UBLUE, armL: UBLUE, cuff: '#2a3658', hand: SK_G, legU: '#2a3450', legL: '#141414', foot: '#0c0c0c', neck: SK_G },
+    mat: { torso: 'cloth', armU: 'cloth', armL: 'cloth', legU: 'cloth', legL: 'suit' },
+    stats: { speed: 0.98, power: 1.08, weight: 1.06 },
+    torsoDetail(g, d, st, L) {
+      // double row of brass buttons, half unbuttoned at the top, shoulder strap with stars
+      R.poly(g, [[d.chest * 0.25, -L * 1.03], [d.chest * 0.85, -L * 1.03], [d.chest * 0.55, -L * 0.82]], '#e8e2d4');
+      R.poly(g, [[d.chest * 0.55, -L * 0.82], [d.chest * 0.95, -L * 0.96], [d.chest * 0.85, -L * 0.7]], sh(UBLUE, 0.15));
+      buttons(g, d.chest * 0.42, -L * 0.74, 6, L * 0.11); buttons(g, d.chest * 0.82, -L * 0.7, 6, L * 0.11);
+      g.fillStyle = '#141c34'; g.fillRect(-d.back * 0.5, -L * 1.02, 11, 4.5); g.strokeStyle = GOLD; g.lineWidth = 0.8; g.strokeRect(-d.back * 0.5, -L * 1.02, 11, 4.5);
+      g.fillStyle = '#e8d070'; for (let i = 0; i < 3; i++) g.fillRect(-d.back * 0.5 + 2 + i * 3.2, -L * 1.02 + 1.6, 1.3, 1.3);
+      // rumples
+      g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 0.8; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(-d.back * 0.6 + i * 5, -L * 0.5 + i * 3); g.quadraticCurveTo(-d.back * 0.3 + i * 5, -L * 0.42 + i * 3, -d.back * 0.1 + i * 5, -L * 0.48 + i * 3); g.stroke(); }
+      g.fillStyle = '#c8a040'; g.fillRect(-d.back * 1.1, -4, d.back * 1.1 + d.chest * 1.1, 2.4);
+    },
+    skirt(g, d, J) {
+      const h = J.hip, kF = J.LF.knee, kB = J.LB.knee, mid = [(kF[0] + kB[0]) / 2, (kF[1] + kB[1]) / 2], w = d.hipW;
+      R.poly(g, [[h[0] - w * 1.2, h[1] - 6], [h[0] + w * 1.2, h[1] - 6], [mid[0] + w * 1.3 + (kF[0] - kB[0]) * 0.25, h[1] + (mid[1] - h[1]) * 0.7], [mid[0] - w * 1.4, h[1] + (mid[1] - h[1]) * 0.75]], sh(UBLUE, -0.1));
+    },
+    head(g, st) {
+      humanHead(g, st, {
+        skin: SK_G, chin: 1.6, nose: 0.9, eyeC: '#4a5a7a', browC: 'rgba(70,45,25,0.95)',
+        back(g) { g.beginPath(); g.ellipse(-3, -16, 11.5, 11, 0, 0, PI * 2); fillLit(g, GBEARD, -3, -16, 12, 0.15, -0.55); g.save(); g.clip(); strokes(g, -3, -16, 11, 10, 80, 31, PI, 4, 0.3, 0.12); g.restore(); },
+        front(g) {
+          g.beginPath(); g.moveTo(-7, -9); g.bezierCurveTo(-10, -20, -5, -27.5, 2, -27.5); g.bezierCurveTo(8, -27.5, 11, -25, 10.6, -21.5);
+          g.quadraticCurveTo(6.5, -23, 2.5, -22); g.quadraticCurveTo(-1.5, -20.5, -2.8, -15.5); g.quadraticCurveTo(-3.4, -12, -3.2, -9); g.closePath();
+          fillLit(g, GBEARD, 2, -22, 10, 0.15, -0.55); g.save(); g.clip(); strokes(g, 2, -22, 10, 6, 60, 32, PI + 0.3, 3, 0.3, 0.12); g.restore();
+        },
+        beard(g) {
+          // short, full beard and mustache
+          g.beginPath(); g.moveTo(-1.6, -10); g.quadraticCurveTo(-3, 0, 3, 4.2); g.quadraticCurveTo(9, 6.4, 12, 1.4); g.quadraticCurveTo(12.6, -2, 12.2, -4.2);
+          g.quadraticCurveTo(13.2, -6.4, 12.4, -7.6); g.quadraticCurveTo(10, -8.6, 7.6, -7.4); g.quadraticCurveTo(5, -7, 3, -9); g.quadraticCurveTo(1, -9.6, -1.6, -10); g.closePath();
+          fillLit(g, GBEARD, 5, -2, 9, 0.12, -0.55); g.save(); g.clip(); strokes(g, 5, -2, 9, 7, 90, 33, 1.6, 2, 0.35, 0.12); g.restore();
+          if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4.4, 1.4, 1.2, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.6, 1.2, 5); return; }
+          // the cigar
+          R.line(g, 10.6, -5, 17.4, -4.2, '#5a3418', 1.8); R.line(g, 10.6, -5.5, 17.4, -4.7, 'rgba(255,200,140,0.2)', 0.5); R.ball(g, 17.8, -4.2, 0.9, '#ff6a20');
+        },
+        mouth() {},
+      });
+    },
+    sp1: { kind: 'proj', name: 'VICKSBURG BARRAGE', proj: { kind: 'mortar' } },
+    sp2: { kind: 'cloud', name: 'CIGAR CLOUD', mod: { dmg: 6 } },
+    fatals: [{ id: 'grant', name: 'UNCONDITIONAL SURRENDER' }],
+  };
+
+  // =====================================================================================
+  // GROVER CLEVELAND: big man in a black frock coat, gold watch chain, walrus mustache
+  // =====================================================================================
+  const SK_C = '#e8b29a', CHAIR = '#6a5a4a';
+  const cleveland = {
+    id: 'cleveland', name: 'GROVER CLEVELAND', short: 'CLEVELAND', him: 'HIM', k: 1.06, term: '1885 TO 1889, 1893 TO 1897',
+    bio: 'Big Steve. Twenty-two and twenty-four. Vetoed everything, including your face.',
+    d: dims({ shW: 17.5, chest: 17.5, belly: 18, back: 13.5, hipW: 12.5, thighR: 8.6, kneeR: 5.6, shR: 6.6, elbowR: 4.6, wristR: 3.5, upper: 19, fore: 18 }),
+    col: { torso: '#18181e', armU: '#18181e', armL: '#18181e', cuff: SHIRT, hand: SK_C, legU: '#2a2a30', legL: '#2a2a30', foot: '#0c0c0e', neck: SK_C },
+    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit' }, bicep: 0.3,
+    stats: { speed: 0.92, power: 1.12, weight: 1.22 },
+    torsoDetail(g, d, st, L) {
+      R.poly(g, [[d.chest * 0.12, -L * 1.03], [d.chest * 0.88, -L * 1.03], [d.chest * 0.55, -L * 0.62]], SHIRT);
+      g.fillStyle = BLACK; g.beginPath(); g.ellipse(d.chest * 0.62, -L * 0.98, 3, 1.5, 0, 0, PI * 2); g.fill();
+      // black waistcoat over the belly, with the gold watch chain
+      R.poly(g, [[d.chest * 0.2, -L * 0.75], [d.chest * 0.95, -L * 0.8], [d.belly * 1.02, -L * 0.3], [d.chest * 0.9, -L * 0.02], [d.chest * 0.3, -L * 0.02]], '#24242c');
+      buttons(g, d.chest * 0.8, -L * 0.62, 4, L * 0.13, '#3a3a44', 0.9);
+      g.strokeStyle = GOLD; g.lineWidth = 0.8; g.beginPath(); g.moveTo(d.chest * 0.82, -L * 0.36); g.quadraticCurveTo(d.chest * 0.5, -L * 0.24, d.chest * 0.25, -L * 0.34); g.stroke(); R.ball(g, d.chest * 0.25, -L * 0.34, 1.4, GOLD);
+      R.poly(g, [[d.chest * 0.08, -L * 1.03], [d.chest * 0.42, -L * 0.55], [d.chest * 0.2, -L * 0.72]], '#2a2a32');
+    },
+    skirt(g, d, J) {
+      const h = J.hip, kn = J.LB.knee, b = d.back;
+      R.poly(g, [[h[0] - b * 1.0, h[1] - 6], [h[0] - b * 0.2, h[1] - 4], [kn[0] - b * 0.3, kn[1] - 6], [kn[0] - b * 1.2, kn[1] - 2]], '#121218');
+    },
+    head(g, st) {
+      humanHead(g, st, {
+        skin: SK_C, chin: 3.6, nose: 0.8, eyeC: '#4a5a6a', browC: 'rgba(80,65,50,0.9)', cleanJaw: 1,
+        back(g) { g.beginPath(); g.ellipse(-3, -15, 12, 11, 0, 0, PI * 2); fillLit(g, CHAIR, -3, -15, 12, 0.18, -0.5); g.save(); g.clip(); strokes(g, -3, -15, 11, 10, 60, 41, PI, 3, 0.3, 0.14); g.restore(); },
+        front(g) {
+          // thin hair combed across the dome, heavy jowls
+          g.beginPath(); g.moveTo(-7, -9); g.bezierCurveTo(-9.5, -18, -6, -25.5, 1, -26); g.bezierCurveTo(5, -26.2, 7.5, -25, 7.8, -23.4);
+          g.quadraticCurveTo(4, -23.8, 0.5, -22.6); g.quadraticCurveTo(-2.4, -18, -3, -9); g.closePath(); fillLit(g, CHAIR, 0, -21, 9, 0.18, -0.5);
+          g.fillStyle = 'rgba(80,30,20,0.2)'; g.beginPath(); g.ellipse(6, -1, 5.5, 3, 0.2, 0, PI * 2); g.fill();
+          g.fillStyle = 'rgba(255,220,200,0.12)'; g.beginPath(); g.ellipse(4, -24, 5, 2, 0, 0, PI * 2); g.fill();
+        },
+        mouth(g) {
+          if (st.dead) { g.fillStyle = '#2a0404'; g.beginPath(); g.ellipse(10.4, -4, 1.5, 1.3, 0, 0, PI * 2); g.fill(); g.fillStyle = '#8a0010'; g.fillRect(9.8, -3.2, 1.2, 5); }
+          // the walrus mustache, hiding the mouth
+          g.beginPath(); g.moveTo(6.8, -8); g.quadraticCurveTo(10.6, -9.2, 13.6, -7.4); g.quadraticCurveTo(14.4, -4.4, 12.8, -3); g.quadraticCurveTo(10.6, -4.6, 8, -4); g.quadraticCurveTo(6.4, -5, 6.8, -8); g.closePath();
+          fillLit(g, '#6a5644', 10, -6, 5, 0.14, -0.5); g.save(); g.clip(); strokes(g, 10, -6, 4, 2.5, 30, 42, 1.4, 1.8, 0.35, 0.15); g.restore();
+        },
+      });
+    },
+    sp1: { kind: 'proj', name: 'GOLD STANDARD', proj: { kind: 'goldbar' } },
+    sp2: { kind: 'sneak', name: 'NONCONSECUTIVE', mod: { dmg: 12, steal: 0 } },
+    fatals: [{ id: 'cleveland', name: "SHERIFF'S DROP" }],
+  };
+
+  const FIGHTERS = [washington, jefferson, jackson, lincoln, grant, cleveland, teddy, fdr];
   const BOSSES = [];
 
   // ---------- front views for the victory poses ----------
@@ -347,6 +564,80 @@ const ROSTER = (() => {
       },
     },
   };
-  const PORTRAIT = { washington: [0.5, 0.9, 0.86], lincoln: [0.48, 1.05, 0.78], teddy: [0.5, 0.88, 0.9], fdr: [0.42, 0.9, 0.86] };
+  FRONT.jefferson = {
+    detail: (g, d, G) => {
+      R.poly(g, [[-G.shx * 0.45, G.sY], [G.shx * 0.45, G.sY], [G.shx * 0.4, G.hipY - 2], [-G.shx * 0.4, G.hipY - 2]], JVEST);
+      buttons(g, 0, G.sY + 9, 6, 4.2, '#d8c8a0', 0.8);
+      R.poly(g, [[-5, G.sY - 2], [5, G.sY - 2], [3, G.sY + 7], [0, G.sY + 9], [-3, G.sY + 7]], SHIRT);
+      for (const sd of [-1, 1]) R.poly(g, [[sd * G.shx * 0.45, G.sY], [sd * G.shx * 0.9, G.sY + 2], [sd * G.shx * 0.55, G.sY + 20], [sd * G.shx * 0.42, G.sY + 18]], sh(JCOAT, 0.12));
+    },
+    head(g, st) {
+      humanFront(g, st, { skin: SK_J, w: 8.6, chin: 1.8, eyeC: '#6a7a6a', browC: 'rgba(150,100,70,0.9)',
+        back(g) { g.beginPath(); g.ellipse(0, -17, 12.5, 12, 0, 0, PI * 2); fillLit(g, JHAIR, 0, -17, 12, 0.2, -0.45); },
+        front(g, jaw) {
+          g.beginPath(); g.moveTo(-9, -12); g.quadraticCurveTo(-10, -27.5, 0, -28.5); g.quadraticCurveTo(10, -27.5, 9, -12); g.quadraticCurveTo(7, -22, 0, -22.5); g.quadraticCurveTo(-7, -22, -9, -12); g.closePath(); fillLit(g, sh(JHAIR, 0.06), 0, -22, 10, 0.2, -0.4);
+          if (!st.dead) { g.strokeStyle = 'rgba(100,35,30,0.9)'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(-2.6, -4.2); g.quadraticCurveTo(0, -3.2, 2.6, -4.2); g.stroke(); }
+        }, mouth() {} });
+    },
+  };
+  FRONT.jackson = {
+    detail: (g, d, G) => {
+      R.poly(g, [[-5, G.sY - 4], [5, G.sY - 4], [4, G.sY + 2], [-4, G.sY + 2]], '#f4f2ec');
+      R.poly(g, [[-4.5, G.sY], [4.5, G.sY], [2.5, G.sY + 16], [-2.5, G.sY + 16]], SHIRT);
+      buttons(g, 0, G.sY + 20, 3, 4, '#2a2a30', 0.9);
+    },
+    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.1, G.hipY - 4], [G.hx * 2.1, G.hipY - 4], [G.hx * 2.4, G.hipY + 14 * G.k], [-G.hx * 2.4, G.hipY + 14 * G.k]], '#121218'),
+    head(g, st) {
+      humanFront(g, st, { skin: SK_A, w: 7.8, chin: 2.8, eyeC: '#4a6a8a', browC: 'rgba(200,195,185,0.95)', angry: 1,
+        back(g) { g.beginPath(); g.ellipse(0, -17, 11.5, 11, 0, 0, PI * 2); fillLit(g, JKHAIR, 0, -17, 11, 0.18, -0.45); },
+        front(g, jaw) {
+          const w = st.wind || 0;
+          g.beginPath(); g.moveTo(-8.6, -14); g.bezierCurveTo(-10, -26, -7 + w, -38, 0 + w, -38); g.bezierCurveTo(7 + w, -38, 10, -26, 8.6, -14); g.quadraticCurveTo(6, -23, 0, -23.5); g.quadraticCurveTo(-6, -23, -8.6, -14); g.closePath();
+          fillLit(g, JKHAIR, 0, -28, 12, 0.22, -0.4); g.save(); g.clip(); strokes(g, w * 0.5, -30, 8, 7, 80, 23, -PI / 2 + w * 0.05, 6, 0.16, 0.35); g.restore();
+          if (!st.dead) { g.strokeStyle = 'rgba(90,30,25,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(-2.8, -3.4); g.quadraticCurveTo(0, -4.6, 2.8, -3.4); g.stroke(); }
+        }, mouth() {} });
+    },
+  };
+  FRONT.grant = {
+    detail: (g, d, G) => {
+      R.poly(g, [[-3.5, G.sY - 1], [3.5, G.sY - 1], [0, G.sY + 7]], '#e8e2d4');
+      buttons(g, -3.6, G.sY + 8, 6, 4.4); buttons(g, 3.6, G.sY + 8, 6, 4.4);
+      for (const sd of [-1, 1]) { g.fillStyle = '#141c34'; g.fillRect(sd * G.shx * 0.95 - 5, G.sY - 1, 10, 4); g.strokeStyle = GOLD; g.lineWidth = 0.7; g.strokeRect(sd * G.shx * 0.95 - 5, G.sY - 1, 10, 4); }
+      belt(g, G, '#c8a040');
+    },
+    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.3, G.hipY - 4], [G.hx * 2.3, G.hipY - 4], [G.hx * 2.6, G.hipY + 16 * G.k], [-G.hx * 2.6, G.hipY + 16 * G.k]], sh(UBLUE, -0.1)),
+    head(g, st) {
+      humanFront(g, st, { skin: SK_G, w: 8.8, chin: 1.4, eyeC: '#4a5a7a', browC: 'rgba(70,45,25,0.95)',
+        back(g) { g.beginPath(); g.ellipse(0, -17, 11.5, 10.5, 0, 0, PI * 2); fillLit(g, GBEARD, 0, -17, 11, 0.15, -0.55); },
+        front(g, jaw) {
+          g.beginPath(); g.moveTo(-9, -15); g.quadraticCurveTo(-9.5, -27, 0, -27.5); g.quadraticCurveTo(9.5, -27, 9, -15); g.quadraticCurveTo(4, -23, -2, -22.6); g.quadraticCurveTo(-7, -22, -9, -15); g.closePath(); fillLit(g, GBEARD, 0, -22, 10, 0.15, -0.55);
+          g.beginPath(); g.moveTo(-8.4, -10); g.quadraticCurveTo(-9, 2, 0, 5); g.quadraticCurveTo(9, 2, 8.4, -10); g.lineTo(6.4, -9); g.quadraticCurveTo(5, -7, 0, -7.4); g.quadraticCurveTo(-5, -7, -6.4, -9); g.closePath(); fillLit(g, GBEARD, 0, -3, 9, 0.12, -0.55);
+          g.fillStyle = '#2a0606'; g.fillRect(-2.2, -4.6, 4.4, 1.2 + jaw);
+          if (!st.dead && !st.noCigar) { R.line(g, 1.4, -4, 7, -2.6, '#5a3418', 1.8); R.ball(g, 7.4, -2.5, 0.9, st.lit === false ? '#3a2a1a' : '#ff6a20'); }
+        }, mouth() {} });
+    },
+  };
+  FRONT.cleveland = {
+    detail: (g, d, G) => {
+      R.poly(g, [[-4, G.sY - 1], [4, G.sY - 1], [0, G.sY + 9]], SHIRT); g.fillStyle = BLACK; g.beginPath(); g.ellipse(-2.4, G.sY + 1.5, 2.6, 1.5, 0, 0, PI * 2); g.ellipse(2.4, G.sY + 1.5, 2.6, 1.5, 0, 0, PI * 2); g.fill();
+      bellyWaist(g, G);
+    },
+    head(g, st) {
+      humanFront(g, st, { skin: SK_C, w: 9.8, chin: 3.4, eyeC: '#4a5a6a', browC: 'rgba(80,65,50,0.9)',
+        back(g) { g.beginPath(); g.ellipse(0, -16, 11.5, 10, 0, 0, PI * 2); fillLit(g, CHAIR, 0, -16, 11, 0.18, -0.5); },
+        front(g, jaw) {
+          g.beginPath(); g.moveTo(-9.5, -15); g.quadraticCurveTo(-9, -26, 0, -26); g.quadraticCurveTo(7, -26, 9, -20); g.quadraticCurveTo(3, -23.6, -4, -22); g.quadraticCurveTo(-8, -20, -9.5, -15); g.closePath(); fillLit(g, CHAIR, 0, -21, 10, 0.18, -0.5);
+          g.fillStyle = 'rgba(80,30,20,0.18)'; g.beginPath(); g.ellipse(0, 2.4, 7, 2.2, 0, 0, PI * 2); g.fill();
+          g.beginPath(); g.moveTo(-7.5, -4.2); g.quadraticCurveTo(-4, -8.6, 0, -6.8); g.quadraticCurveTo(4, -8.6, 7.5, -4.2); g.quadraticCurveTo(6.6, -2, 4.6, -2.8); g.quadraticCurveTo(0, -4.6, -4.6, -2.8); g.quadraticCurveTo(-6.6, -2, -7.5, -4.2); g.closePath(); fillLit(g, '#6a5644', 0, -5, 7, 0.14, -0.5);
+        }, mouth() {} });
+    },
+  };
+  // Cleveland's waistcoat and watch chain over the belly, front on
+  function bellyWaist(g, G) {
+    g.fillStyle = '#24242c'; g.beginPath(); g.ellipse(0, (G.sY + G.hipY) / 2 + 5, G.shx * 0.62, (G.hipY - G.sY) * 0.44, 0, 0, PI * 2); g.fill();
+    buttons(g, 0, G.sY + 12, 4, 5, '#3a3a44', 0.9);
+    g.strokeStyle = GOLD; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-G.shx * 0.45, G.sY + 20); g.quadraticCurveTo(0, G.sY + 27, G.shx * 0.45, G.sY + 20); g.stroke(); R.ball(g, G.shx * 0.45, G.sY + 20, 1.4, GOLD);
+  }
+  const PORTRAIT = { washington: [0.5, 0.9, 0.86], jefferson: [0.5, 0.92, 0.84], jackson: [0.5, 1.0, 0.78], lincoln: [0.48, 1.05, 0.78], grant: [0.5, 0.9, 0.88], cleveland: [0.5, 0.86, 0.88], teddy: [0.5, 0.88, 0.9], fdr: [0.42, 0.9, 0.86] };
   return KIT.roster(FIGHTERS, BOSSES, { front: FRONT, portrait: PORTRAIT });
 })();
