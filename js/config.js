@@ -15,17 +15,19 @@ window.GAME = {
   voice: { pitch: 0.85, rate: 1.12, prefer: /Daniel|Fred|Alex|Google US English|Male/i, radio: true },
 
   // ---------- music: industrial remixes of public-domain tunes ----------
-  // Transcribed by ear from memory, so a note here and there may need fixing.
+  // Transcribed from public-domain scores (Yankee Doodle: Agay, Best Loved Songs of the American People;
+  // Hail to the Chief: James Sanderson, about 1810). Note lengths are in sixteenths.
   tunes: [
-    // Yankee Doodle (traditional, 1700s)
-    { name: 'Yankee Doodle', bpm: 136, chords: 'C G C G C F G C',
-      notes: 'C5/2 C5/2 D5/2 E5/2 C5/2 E5/2 D5/2 G4/2 C5/2 C5/2 D5/2 E5/2 C5/4 B4/4 C5/2 C5/2 D5/2 E5/2 F5/2 E5/2 D5/2 C5/2 B4/2 G4/2 A4/2 B4/2 C5/4 C5/4' },
-    // Hail to the Chief (James Sanderson, about 1812)
-    { name: 'Hail to the Chief', bpm: 128, chords: 'Bb Gm F Bb',
-      notes: 'F4/3 G4/1 A4/4 Bb4/6 A4/2 G4/4 F4/3 G4/1 F4/4 D4/4 C4/4 Bb3/4 F4/4 Bb4/4 C5/4 D5/4 C5/4 Bb4/4' },
+    // Yankee Doodle (traditional, 1700s): the verse, then the chorus ("Yankee Doodle keep it up...")
+    { name: 'Yankee Doodle', bpm: 136, chords: 'C G C G F C F G',
+      notes: 'C5/2 C5/2 D5/2 E5/2 C5/2 E5/2 D5/2 G4/2 C5/2 C5/2 D5/2 E5/2 C5/4 B4/4 C5/2 C5/2 D5/2 E5/2 F5/2 E5/2 D5/2 C5/2 B4/2 G4/2 A4/2 B4/2 C5/4 C5/4 ' +
+        'A4/3 B4/1 A4/2 G4/2 A4/2 B4/2 C5/4 G4/3 A4/1 G4/2 F4/2 E4/2 F4/2 G4/2 r/2 A4/3 B4/1 A4/2 G4/2 A4/2 B4/2 C5/2 A4/2 G4/2 C5/2 B4/2 D5/2 C5/4 C5/2 r/2' },
+    // Hail to the Chief (James Sanderson, about 1810), in B flat: A section twice, B section twice
+    { name: 'Hail to the Chief', bpm: 112, chords: 'Bb Bb Bb F Bb Bb Eb Bb Bb Bb Bb F Bb Bb Eb Bb Bb F Bb F Gm Bb Eb Bb Bb F Bb F Gm Bb Eb Bb',
+      notes: 'F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 C5/3 Bb4/1 C5/2 D5/2 C5/2 Bb4/2 A4/2 G4/2 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 A4/1 G4/2 Bb4/2 D4/2 F4/2 F4/4 Bb4/3 C5/1 Bb4/4 r/4 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 C5/3 Bb4/1 C5/2 D5/2 C5/2 Bb4/2 A4/2 G4/2 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 A4/1 G4/2 Bb4/2 D4/2 F4/2 F4/4 Bb4/3 C5/1 Bb4/4 Bb4/2 C5/2 D5/4 D5/3 D5/1 D5/4 Eb5/2 D5/2 C5/3 B4/1 C5/2 D5/2 C5/2 A4/2 F4/4 D5/4 D5/3 D5/1 Eb5/2 D5/2 C5/2 Bb4/2 C5/4 F5/3 F5/1 F5/2 Eb5/2 D5/2 C5/2 Bb4/4 Bb4/3 A4/1 G4/3 A4/1 Bb4/2 G4/2 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 G4/3 A4/1 Bb4/2 G4/2 F4/3 G4/1 F4/2 D4/2 F4/4 Bb4/3 C5/1 Bb4/4 Bb4/2 C5/2 D5/4 D5/3 D5/1 D5/4 Eb5/2 D5/2 C5/3 B4/1 C5/2 D5/2 C5/2 A4/2 F4/4 D5/4 D5/3 D5/1 Eb5/2 D5/2 C5/2 Bb4/2 C5/4 F5/3 F5/1 F5/2 Eb5/2 D5/2 C5/2 Bb4/4 Bb4/3 A4/1 G4/3 A4/1 Bb4/2 G4/2 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 G4/3 A4/1 Bb4/2 G4/2 F4/3 G4/1 F4/2 D4/2 F4/4 Bb4/3 C5/1 Bb4/4 r/4' },
   ],
-  menuTune: { name: 'Hail to the Chief', bpm: 96, chords: 'Bb Gm F Bb',
-    notes: 'F4/3 G4/1 A4/4 Bb4/6 A4/2 G4/4 F4/3 G4/1 F4/4 D4/4 C4/4 Bb3/4 F4/4 Bb4/4 C5/4 D5/4 C5/4 Bb4/4' },
+  menuTune: { name: 'Hail to the Chief', bpm: 92, chords: 'Bb Bb Bb F Bb Bb Eb Bb Bb Bb Bb F Bb Bb Eb Bb Bb F Bb F Gm Bb Eb Bb Bb F Bb F Gm Bb Eb Bb',
+    notes: 'F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 C5/3 Bb4/1 C5/2 D5/2 C5/2 Bb4/2 A4/2 G4/2 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 A4/1 G4/2 Bb4/2 D4/2 F4/2 F4/4 Bb4/3 C5/1 Bb4/4 r/4 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 C5/3 Bb4/1 C5/2 D5/2 C5/2 Bb4/2 A4/2 G4/2 F4/4 G4/3 A4/1 Bb4/4 A4/2 G4/2 F4/3 G4/1 F4/2 D4/2 C4/4 Bb3/4 F4/4 Bb4/3 A4/1 G4/2 Bb4/2 D4/2 F4/2 F4/4 Bb4/3 C5/1 Bb4/4 Bb4/2 C5/2 D5/4 D5/3 D5/1 D5/4 Eb5/2 D5/2 C5/3 B4/1 C5/2 D5/2 C5/2 A4/2 F4/4 D5/4 D5/3 D5/1 Eb5/2 D5/2 C5/2 Bb4/2 C5/4 F5/3 F5/1 F5/2 Eb5/2 D5/2 C5/2 Bb4/4 Bb4/3 A4/1 G4/3 A4/1 Bb4/2 G4/2 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 G4/3 A4/1 Bb4/2 G4/2 F4/3 G4/1 F4/2 D4/2 F4/4 Bb4/3 C5/1 Bb4/4 Bb4/2 C5/2 D5/4 D5/3 D5/1 D5/4 Eb5/2 D5/2 C5/3 B4/1 C5/2 D5/2 C5/2 A4/2 F4/4 D5/4 D5/3 D5/1 Eb5/2 D5/2 C5/2 Bb4/2 C5/4 F5/3 F5/1 F5/2 Eb5/2 D5/2 C5/2 Bb4/4 Bb4/3 A4/1 G4/3 A4/1 Bb4/2 G4/2 F4/4 Bb4/3 C5/1 D5/4 C5/2 Bb4/2 G4/3 A4/1 Bb4/2 G4/2 F4/3 G4/1 F4/2 D4/2 F4/4 Bb4/3 C5/1 Bb4/4 r/4' },
 
   // ---------- projectiles thrown by the presidents ----------
   projectiles: {
