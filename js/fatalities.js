@@ -290,47 +290,108 @@ FATAL.add(K => {
   // ---------- WILLIAM HOWARD TAFT: Fore! ----------
   // The first golfing president pops the head off, tees it up and drives it off the screen.
   S.taft = (s, A, V, api) => {
-    const PS = api.PS, k = A.d.k, F = api.FLOOR;
-    let head = null, tee = null, club = 0, clubA = 0, spurting = false;
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, D = A.d, fc = A.face;
+    let head = null, tee = null, club = null, golf = false, spurting = false, fj = null, fp = null, gripW = null;
     const drawHead = (g, x, y, rot) => R.drawHeadAt(g, { def: V.def, d: V.d }, x, y, rot, 1, { dead: true, t: 0 });
+    // ---- the swing, seen face-on like a golf broadcast. Target is toward the loser (fc). ----
+    // geometry of the face-on body (matches the engine's drawFront)
+    const geo = hy => { const Lg = (D.thigh + D.shin) * 0.96, hipY = -Lg + hy * k, sY = hipY - D.torso, shx = Math.max(D.shW, D.chest * 0.8); return { sY, shx, S: [0, sY + D.shR * 0.6 + 6 * k], Rh: (D.upper + D.fore) * 0.82 }; };
+    // two-bone arm solve: shoulder to a hand target, elbows bent down and out; returns the [a0, a1] the rig wants
+    const armTo = (sd, G, T) => {
+      const s0 = [sd * G.shx * 0.95, G.sY + D.shR * 0.6], u = D.upper, f = D.fore;
+      let dx = T[0] - s0[0], dy = T[1] - s0[1], dist = Math.hypot(dx, dy); const m = Math.min(u + f - 0.01, Math.max(Math.abs(u - f) + 0.01, dist));
+      const phi = Math.atan2(dy, dx), al = Math.acos(Math.max(-1, Math.min(1, (u * u + m * m - f * f) / (2 * u * m))));
+      const e1 = [s0[0] + Math.cos(phi + al) * u, s0[1] + Math.sin(phi + al) * u], e2 = [s0[0] + Math.cos(phi - al) * u, s0[1] + Math.sin(phi - al) * u];
+      const el = e1[1] > e2[1] ? e1 : e2, Tm = [s0[0] + dx / dist * m, s0[1] + dy / dist * m];
+      const a0 = Math.atan2((el[0] - s0[0]) * sd, el[1] - s0[1]), b = Math.atan2((Tm[0] - el[0]) * sd, Tm[1] - el[1]);
+      return [a0, b - a0];
+    };
+    // keyframes: [time from T0, hand angle th (0 = hands straight down, + toward target), wrist cock, crouch, body sway, head tilt, trail heel lift]
+    const T0 = 3.0, KF = [
+      [0.00, 0.10, 0.00, 7, 0.00, 0.00, 0], // address
+      [0.32, -0.95, -0.35, 7, -0.02, 0.00, 0], // takeaway
+      [0.58, -2.25, -1.55, 6, -0.05, 0.05, 0], // top: hands over the back shoulder, club wrapped behind the head
+      [0.66, -2.28, -1.6, 6, -0.05, 0.05, 0], // the pause at the top
+      [0.75, -0.85, -1.35, 7, 0.00, 0.03, 0], // downswing with the wrists still cocked (lag)
+      [0.79, 0.10, 0.00, 7, 0.02, 0.00, 0], // impact
+      [0.87, 1.45, 0.55, 5, 0.05, -0.10, 2], // extension through
+      [1.02, 2.45, 1.30, 3, 0.08, -0.30, 5], // high finish, belly out, watching it fly
+    ];
+    const swing = t => {
+      const u = t - T0; let i = 0; while (i < KF.length - 2 && u > KF[i + 1][0]) i++;
+      const A0 = KF[i], A1 = KF[i + 1], f = Math.max(0, Math.min(1, (u - A0[0]) / (A1[0] - A0[0]))), e = i === 3 || i === 4 || i === 5 ? f * f : ease(f);
+      const v = j => A0[j] + (A1[j] - A0[j]) * e; return { th: v(1), ck: v(2), hy: v(3), sw: v(4), hd: v(5), heel: v(6), seg: i };
+    };
+    const poseAt = w => {
+      const G = geo(w.hy), th = w.th * fc, H = [G.S[0] + Math.sin(th) * G.Rh, G.S[1] + Math.cos(th) * G.Rh];
+      // the lead hand sits just above the trail hand on the grip
+      const lead = fc, aL = armTo(-1, G, [H[0] + (lead < 0 ? 0 : 0), H[1] - (lead < 0 ? 2 : 0) * k]), aR = armTo(1, G, [H[0], H[1] - (lead > 0 ? 2 : 0) * k]);
+      return { aL, aR, hy: w.hy, spread: 9, sway: w.sw * fc, head: w.hd * fc, liftL: fc > 0 ? w.heel : 0, liftR: fc < 0 ? w.heel : 0, jaw: 0, _club: th + w.ck * fc };
+    };
     s.at(0.6, () => api.bubble('HOLD STILL. I PLAY TO A TWENTY.', A.x, F - 165, { size: 10, life: 1.2, fill: 'white' }));
     s.at(1.3, () => {
       api.sfx('crunch'); api.sfx('scream'); api.shake(8); api.flash(); V.ro.noHead = true; spurting = true;
       head = prop({ layer: 'front', x: 0, y: 0, rot: 0, vx: 0, vy: 0, st: 'hand', draw(g, p) { drawHead(g, p.x, p.y, p.rot); } });
       FX.burst(J(V, 'neck')[0], J(V, 'neck')[1], 6, ['chunk', 'bone'], 1);
     });
-    s.at(1.8, () => { V.x += A.face * 86; V.scriptPose = PS.down(V); V.snapPose = true; spurting = false; api.sfx('thud'); FX.blood(V.x, F - 6, 22, 0, 0.9); });
-    s.at(2.0, () => { tee = prop({ layer: 'back', x: A.x + A.face * 40 * k, draw(g, p) { g.fillStyle = '#f0ece0'; g.fillRect(p.x - 0.8, F - 8, 1.6, 8); g.fillRect(p.x - 3, F - 9, 6, 1.4); } }); });
-    s.at(2.5, () => { head.st = 'tee'; api.sfx('thud'); club = 1; });
-    s.at(3.5, () => { head.st = 'fly'; head.vx = A.face * 520; head.vy = -460; api.sfx('big'); api.sfx('clang'); api.shake(6); FX.blood(head.x, head.y - 10, 20, A.face, 1.2); });
-    s.at(3.7, () => { api.bubble('FORE!', A.x, F - 175, { size: 24, life: 1.6, fill: 'gold' }); api.say('fore'); });
-    s.at(5.2, () => { s.done = true; });
-    prop({ layer: 'front', draw(g) {
-      if (!club) return;
-      // the driver: shaft from the hands, the wooden head at the end
-      const h = J(A, 'handFx'), L = 46 * k, ex = h[0] + Math.cos(clubA) * L, ey = h[1] + Math.sin(clubA) * L;
-      R.line(g, h[0], h[1], ex, ey, '#b8bcc4', 1.4); g.save(); g.translate(ex, ey); g.rotate(clubA); g.fillStyle = '#5a3418'; g.beginPath(); g.ellipse(2, 2, 5, 3, 0.4, 0, PI * 2); g.fill(); g.restore();
-      R.line(g, h[0], h[1], h[0] - Math.cos(clubA) * 6, h[1] - Math.sin(clubA) * 6, '#1a1a1a', 2.6);
+    s.at(1.8, () => { V.x += fc * 96; V.scriptPose = PS.down(V); V.snapPose = true; spurting = false; api.sfx('thud'); FX.blood(V.x, F - 6, 22, 0, 0.9); });
+    s.at(2.4, () => {
+      // turn to face the camera and take his stance; the ball goes where the club bottoms out
+      golf = true; A.hidden = true;
+      const w = { th: 0.10, ck: 0, hy: 7, sw: 0, hd: 0, heel: 0 }, G = geo(w.hy), th = w.th * fc, gx = A.x + G.S[0] + Math.sin(th) * G.Rh, gy = A.y + G.S[1] + Math.cos(th) * G.Rh;
+      const L = (F - 5 - gy) / Math.cos(th);
+      tee = prop({ layer: 'back', x: gx + Math.sin(th) * L, draw(g, p) { g.fillStyle = '#f0ece0'; g.fillRect(p.x - 0.8, F - 8, 1.6, 8); g.fillRect(p.x - 3, F - 9, 6, 1.4); } });
+      club = { st: 'held', L, ang: th, x: 0, y: 0, rot: 0, vx: 0, vy: 0, spin: 0, trail: [] };
+      api.sfx('whoosh');
+    });
+    s.at(2.6, () => { head.st = 'tee'; api.sfx('thud'); });
+    s.at(T0 + 0.79, () => { head.st = 'fly'; head.vx = fc * 600; head.vy = -440; api.sfx('big'); api.sfx('clang'); api.shake(6); FX.blood(head.x, head.y - 10, 20, fc, 1.2); });
+    s.at(T0 + 0.95, () => { api.bubble('FORE!', A.x, F - 185, { size: 24, life: 1.6, fill: 'gold' }); api.say('fore'); });
+    // he admires the shot, then flips the driver away; it clatters down and stays on the floor
+    s.at(4.9, () => { const [gx, gy] = gripW; club.st = 'free'; club.x = gx; club.y = gy; club.rot = club.ang; club.vx = -fc * 150; club.vy = -280; club.spin = -fc * 10; api.sfx('whoosh'); });
+    s.at(5.75, () => { golf = false; A.hidden = false; A.scriptPose = PS.stance(A.t); head.draw = () => {}; });
+    s.at(5.8, () => { s.done = true; });
+    // the club: grip at the hands, persimmon driver head at the end
+    const drawClub = (g, gx, gy, ang, L) => {
+      const dx = Math.sin(ang), dy = Math.cos(ang), ex = gx + dx * L, ey = gy + dy * L;
+      R.line(g, gx, gy, ex, ey, '#c8ccd4', 1.3); R.line(g, gx - dx * 3, gy - dy * 3, gx + dx * L * 0.18, gy + dy * L * 0.18, '#1a1a1a', 2.4);
+      g.save(); g.translate(ex, ey); g.rotate(-ang); g.fillStyle = '#5a3418'; g.beginPath(); g.ellipse(fc * 2.5, 1, 5, 3.2, 0, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(255,220,170,0.35)'; g.fillRect(fc > 0 ? 0 : -5, -1.6, 5, 1); g.restore();
+    };
+    prop({ layer: 'back', draw(g) {
+      if (!golf || !fp) return;
+      const behind = club && club.st === 'held' && Math.cos(club.ang) < -0.2;
+      if (behind) drawClub(g, gripW[0], gripW[1], club.ang, club.L);
+      R.digi(g, A.x, A.y, gg => { fj = R.drawFront(gg, { def: A.def, d: A.d, x: A.x, y: A.y, t: A.t, st: A.st2 }, fp); }, { box: [20, 0, 340, 330] });
+      if (fj) gripW = [(fj.handL[0] + fj.handR[0]) / 2, (fj.handL[1] + fj.handR[1]) / 2 + 2 * k];
+      if (club && club.st === 'held' && !behind) {
+        if (club.trail.length > 1) { g.strokeStyle = 'rgba(235,235,245,0.4)'; g.lineWidth = 3; g.beginPath(); club.trail.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); }
+        drawClub(g, gripW[0], gripW[1], club.ang, club.L);
+      }
     } });
+    prop({ layer: 'back', draw(g) { if (club && club.st === 'free') drawClub(g, club.x, club.y, club.rot, club.L); } });
     s.tick = (t, dt) => {
-      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 30 * k, dt, api, 110); return; }
+      if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - fc * 30 * k, dt, api, 110); return; }
       if (t < 1.3) { A.scriptPose = P({ hy: 6, lean: 0.35, head: 0.1, aF: [1.75, 0.25], aB: [1.6, 0.3], fF: [15, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); V.ro.dx = t > 0.9 ? rnd(-2, 2) : 0; return; }
-      if (spurting) { const n = J(V, 'neck'); FX.spurt(n[0], n[1], -A.face * 0.3, 1.2); }
-      if (head.st === 'hand') { const h = J(A, 'handFx'); head.x = h[0]; head.y = h[1] + 10; head.rot = Math.sin(t * 16) * 0.1; A.scriptPose = P({ hy: 4, lean: -0.1, head: -0.15, aF: [2.4, 0.3], aB: [0.6, 1.8], fF: [13, 0], fB: [-14, 0] }); return; }
-      if (head.st === 'tee') {
-        head.x = tee.x; head.y = F - 4; head.rot = 0;
-        // address the ball, back swing, then the drive
-        const back = t < 2.9 ? 0 : t < 3.4 ? ease((t - 2.9) / 0.5) : Math.max(0, 1 - (t - 3.4) / 0.1);
-        clubA = A.face > 0 ? PI * 0.5 - back * 2.6 : PI * 0.5 + back * 2.6;
-        A.scriptPose = P({ hy: 10, lean: 0.35, head: 0.4, aF: [0.5 + back * 2.0, 0.2], aB: [0.6 + back * 1.9, 0.3], fF: [16, 0], fB: [-14, 0] });
-        return;
+      if (spurting) { const n = J(V, 'neck'); FX.spurt(n[0], n[1], -fc * 0.3, 1.2); }
+      if (t >= 5.75) { if (head.st === 'fly') { head.vy += 600 * dt; head.x += head.vx * dt; head.y += head.vy * dt; } return; }
+      if (!golf) { const h = J(A, 'handFx'); head.x = h[0]; head.y = h[1] + 10; head.rot = Math.sin(t * 16) * 0.1; A.scriptPose = P({ hy: 4, lean: -0.1, head: -0.15, aF: [2.4, 0.3], aB: [0.6, 1.8], fF: [13, 0], fB: [-14, 0] }); return; }
+      // body pose for this moment
+      let w;
+      if (t < 2.6) w = { th: 1.1, ck: 0.3, hy: 2, sw: 0, hd: 0, heel: 0 };           // still holding the head out, about to set it down
+      else if (t < T0) { const wg = Math.sin((t - 2.6) * 14) * (t > 2.75 ? 1 : 0); w = { th: 0.10 + wg * 0.06, ck: wg * 0.15, hy: 7, sw: 0, hd: 0, heel: 0 }; } // waggle
+      else if (club.st === 'held') w = swing(t);
+      else w = { th: Math.max(0, 0.6 - (t - 4.9) * 2) + 0.1, ck: 0, hy: 0, sw: 0, hd: -0.1, heel: 0 };
+      fp = poseAt(w);
+      if (club.st === 'held') {
+        club.ang = t < 2.6 ? fp._club : t < T0 ? club.ang + (fp._club - club.ang) * Math.min(1, dt * 20) : fp._club;
+        if (t > T0 + 0.66 && t < T0 + 0.84 && gripW) { club.trail.push([gripW[0] + Math.sin(club.ang) * club.L, gripW[1] + Math.cos(club.ang) * club.L]); if (club.trail.length > 8) club.trail.shift(); } else club.trail.length = 0;
+      } else {
+        club.vy += 900 * dt; club.x += club.vx * dt; club.y += club.vy * dt; club.rot += club.spin * dt;
+        if (club.y > F - 4) { club.y = F - 4; club.vy = 0; club.vx *= 0.4; club.spin = 0; club.rot = fc > 0 ? -PI / 2 : PI / 2; if (!club.landed) { club.landed = true; api.sfx('clang'); } }
       }
-      if (head.st === 'fly') {
-        head.vy += 600 * dt; head.x += head.vx * dt; head.y += head.vy * dt; head.rot += dt * 20;
-        if (Math.random() < 0.8) FX.blood(head.x, head.y, 1, 0, 0.2);
-        clubA = A.face > 0 ? -PI * 0.75 : PI * 1.75;
-        A.scriptPose = P({ hy: 6, lean: -0.1, head: -0.3, aF: [2.9, 0.3], aB: [2.7, 0.4], fF: [14, 0], fB: [-12, -2] });
-      }
+      if (head.st === 'hand' && gripW) { head.x = gripW[0] + fc * 6; head.y = gripW[1] + 8; }
+      if (head.st === 'tee') { head.x = tee.x; head.y = F - 4; head.rot = 0; }
+      if (head.st === 'fly') { head.vy += 600 * dt; head.x += head.vx * dt; head.y += head.vy * dt; head.rot += dt * 20; if (Math.random() < 0.8) FX.blood(head.x, head.y, 1, 0, 0.2); }
     };
   };
 

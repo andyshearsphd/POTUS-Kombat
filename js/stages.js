@@ -132,38 +132,123 @@
   }
 
   // =====================================================================================
-  // MOUNT RUSHMORE: on the ledge under the four granite faces at sunset
+  // MOUNT RUSHMORE: the ledge below the memorial on a bright day. Washington, Jefferson,
+  // Roosevelt and Lincoln carved in pale granite, the talus slope and ponderosa pines below.
   // =====================================================================================
+  const GRAN = '#cfc6b6';
+  // granite texture: blotches, pink-beige streaks and vertical fractures
+  function granite(g, x, y, w, h, c, n = 1) {
+    for (let i = 0; i < w * h / 60 * n; i++) { g.fillStyle = rand() < 0.5 ? 'rgba(60,50,44,0.10)' : 'rgba(255,246,232,0.10)'; g.beginPath(); g.ellipse(x + rand() * w, y + rand() * h, rr(1.5, 6), rr(1, 4), rr(-1, 1), 0, PI * 2); g.fill(); }
+    for (let i = 0; i < w / 40 * n; i++) { const sx = x + rand() * w, sy = y + rand() * h * 0.5, l = rr(10, h * 0.6); g.strokeStyle = rand() < 0.6 ? 'rgba(190,140,120,0.2)' : 'rgba(70,60,56,0.14)'; g.lineWidth = rr(0.6, 2.2); g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(sx + rr(-6, 6), sy + l / 2, sx + rr(-8, 8), sy + l); g.stroke(); }
+    speckle(g, x, y, w, h, w * h / 8, 0.18, 0.12);
+  }
+  // one carved head, lit from the upper left. o: { turn (+ looks to our right), tilt, hair, beard, stache, specs, dark, scale of features }
+  function carved(g, x, y, h, o) {
+    const w = h * 0.5, tn = o.turn || 0, c = o.dark ? shade(GRAN, -0.1 * o.dark) : GRAN, fx = x + tn * w * 0.25;
+    const L = a => `rgba(255,250,242,${a})`, Dk = a => `rgba(46,38,34,${a})`;
+    g.save(); g.translate(x, y); g.rotate(o.tilt || 0); g.translate(-x, -y);
+    // the head emerges from the rock: soft shadow around it so it reads as relief
+    { const rg = g.createRadialGradient(x + w * 0.25, y, w * 0.6, x + w * 0.25, y, w * 1.4); rg.addColorStop(0, Dk(0.22)); rg.addColorStop(1, Dk(0)); g.fillStyle = rg; g.fillRect(x - w * 1.4, y - h * 0.8, w * 3, h * 1.6); }
+    // skull and hair mass
+    const crown = y - h * 0.5;
+    g.beginPath(); g.moveTo(fx - w * 1.0, y + h * 0.05); g.quadraticCurveTo(fx - w * 1.12, crown + h * 0.02, fx - w * 0.1, crown - h * 0.04); g.quadraticCurveTo(fx + w * 1.0, crown, fx + w * 1.02, y + h * 0.02); g.lineTo(fx + w * 0.7, y + h * 0.3); g.lineTo(fx - w * 0.8, y + h * 0.3); g.closePath();
+    const hg = g.createLinearGradient(fx - w, 0, fx + w, 0); hg.addColorStop(0, shade(c, 0.02)); hg.addColorStop(0.45, shade(c, -0.04)); hg.addColorStop(1, shade(c, -0.4)); g.fillStyle = hg; g.fill();
+    // hair carving
+    g.save(); g.clip(); g.lineWidth = 1.1;
+    if (o.hair === 'wig') { for (let i = 0; i < 6; i++) { const x0 = fx - w * 0.2 + i * w * 0.18; g.strokeStyle = Dk(0.22); g.beginPath(); g.moveTo(x0, crown + h * 0.16); g.quadraticCurveTo(x0 - w * 0.35, crown + h * 0.04, x0 - w * 0.75, crown + h * 0.1); g.stroke(); } }
+    else if (o.hair === 'swept') { for (let i = 0; i < 8; i++) { const x0 = fx - w * 0.7 + i * w * 0.2; g.strokeStyle = Dk(0.28); g.beginPath(); g.moveTo(x0, crown + h * 0.25); g.quadraticCurveTo(x0 - w * 0.2, crown + h * 0.08, x0 - w * 0.45, crown + h * 0.02); g.stroke(); } }
+    else { for (let i = 0; i < 10; i++) { g.strokeStyle = Dk(0.22); const x0 = fx - w * 0.9 + i * w * 0.2; g.beginPath(); g.moveTo(x0, crown + h * 0.04); g.lineTo(x0 + w * 0.08, crown + h * 0.24); g.stroke(); } }
+    g.restore();
+    if (o.hair === 'wig') for (const sd of [-1, 1]) for (let i = 0; i < 2; i++) { const cx = fx + sd * w * 0.92, cy = y - h * 0.08 + i * h * 0.1; g.fillStyle = shade(c, sd < 0 ? 0.04 : -0.32); g.beginPath(); g.ellipse(cx, cy, w * 0.2, h * 0.045, 0, 0, PI * 2); g.fill(); g.fillStyle = Dk(0.4); g.fillRect(cx - w * 0.2, cy + h * 0.035, w * 0.4, 1); }
+    // the face: high forehead, cheekbones, a strong jaw tapering to the chin
+    const fh = y - h * 0.3, chin = y + h * 0.5;
+    g.beginPath(); g.moveTo(fx - w * 0.6, fh); g.quadraticCurveTo(fx, fh - h * 0.07, fx + w * 0.6, fh);
+    g.quadraticCurveTo(fx + w * 0.72, y + h * 0.02, fx + w * 0.62, y + h * 0.24); g.quadraticCurveTo(fx + w * 0.42, chin - h * 0.02, fx + w * 0.08, chin);
+    g.quadraticCurveTo(fx - w * 0.3, chin + h * 0.01, fx - w * 0.6, y + h * 0.26); g.quadraticCurveTo(fx - w * 0.74, y + h * 0.02, fx - w * 0.6, fh); g.closePath();
+    const fg = g.createLinearGradient(fx - w * 0.75, 0, fx + w * 0.75, 0); fg.addColorStop(0, shade(c, 0.1)); fg.addColorStop(0.35 - tn * 0.1, shade(c, 0.14)); fg.addColorStop(0.62, shade(c, -0.06)); fg.addColorStop(1, shade(c, -0.45)); g.fillStyle = fg; g.fill();
+    g.save(); g.clip(); granite(g, fx - w, fh - 6, w * 2, h, c, 0.5);
+    // the brow overhang: one dark band across both eyes
+    const ey = y - h * 0.1, sk = o.deep ? 0.62 : 0.5;
+    g.fillStyle = Dk(sk * 0.55); g.beginPath(); g.ellipse(fx + w * 0.04, ey + h * 0.01, w * 0.6, h * 0.06, 0, 0, PI * 2); g.fill();
+    g.restore();
+    g.fillStyle = L(0.35); g.beginPath(); g.ellipse(fx - w * 0.1, ey - h * 0.07, w * 0.5, h * 0.025, 0, 0, PI * 2); g.fill();
+    for (const sd of [-1, 1]) {
+      const sx = fx + sd * w * (sd > 0 ? 0.3 - tn * 0.06 : 0.3 + tn * 0.04);
+      g.fillStyle = Dk(sk); g.beginPath(); g.ellipse(sx, ey, w * 0.18, h * 0.045, 0, 0, PI * 2); g.fill();
+      // the carved pupil: a hole with a peg of stone that catches the light
+      g.fillStyle = Dk(0.85); g.beginPath(); g.arc(sx + w * 0.02, ey + h * 0.004, h * 0.016, 0, PI * 2); g.fill();
+      g.fillStyle = L(0.85); g.beginPath(); g.arc(sx + w * 0.01, ey - h * 0.002, h * 0.007, 0, PI * 2); g.fill();
+      g.fillStyle = L(0.2); g.beginPath(); g.ellipse(sx - w * 0.02, ey + h * 0.05, w * 0.14, h * 0.018, 0, 0, PI * 2); g.fill();
+      if (o.specs) { g.strokeStyle = Dk(0.6); g.lineWidth = 0.9; g.beginPath(); g.ellipse(sx, ey + h * 0.005, w * 0.2, h * 0.06, 0, 0, PI * 2); g.stroke(); }
+    }
+    if (o.specs) R.line(g, fx - w * 0.1, ey - 1, fx + w * 0.1, ey - 1, Dk(0.6), 0.9);
+    // the nose: a long ridge, bright on the lit side, casting a shadow to the right
+    const nt = y + h * 0.12;
+    g.fillStyle = L(0.4); g.beginPath(); g.moveTo(fx - w * 0.04, ey + h * 0.02); g.lineTo(fx - w * 0.12, nt); g.lineTo(fx + w * 0.02, nt + h * 0.015); g.lineTo(fx + w * 0.02, ey + h * 0.02); g.fill();
+    g.fillStyle = Dk(0.5); g.beginPath(); g.moveTo(fx + w * 0.03, ey + h * 0.03); g.lineTo(fx + w * 0.2, nt + h * 0.01); g.lineTo(fx + w * 0.03, nt + h * 0.03); g.fill();
+    g.fillStyle = Dk(0.6); g.beginPath(); g.ellipse(fx + w * 0.04, nt + h * 0.035, w * 0.15, h * 0.02, 0, 0, PI * 2); g.fill();
+    // cheekbone highlights and the shadow side of the face
+    g.fillStyle = L(0.22); g.beginPath(); g.ellipse(fx - w * 0.36, y + h * 0.02, w * 0.16, h * 0.08, 0.3, 0, PI * 2); g.fill();
+    g.fillStyle = Dk(0.22); g.beginPath(); g.ellipse(fx + w * 0.42, y + h * 0.08, w * 0.16, h * 0.14, -0.2, 0, PI * 2); g.fill();
+    // nasolabial folds
+    g.strokeStyle = Dk(0.35); g.lineWidth = 1;
+    for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(fx + sd * w * 0.18, nt + h * 0.02); g.quadraticCurveTo(fx + sd * w * 0.3, nt + h * 0.1, fx + sd * w * 0.26, nt + h * 0.18); g.stroke(); }
+    if (o.stache) { g.fillStyle = shade(c, -0.12); g.beginPath(); g.moveTo(fx - w * 0.3, nt + h * 0.09); g.quadraticCurveTo(fx, nt + h * 0.035, fx + w * 0.3, nt + h * 0.09); g.quadraticCurveTo(fx + w * 0.2, nt + h * 0.13, fx, nt + h * 0.1); g.quadraticCurveTo(fx - w * 0.2, nt + h * 0.13, fx - w * 0.3, nt + h * 0.09); g.fill(); g.fillStyle = Dk(0.5); g.fillRect(fx - w * 0.26, nt + h * 0.115, w * 0.52, 1.2); }
+    // mouth, lower lip, the shadow under it, the chin
+    const my = nt + h * (o.stache ? 0.15 : 0.13);
+    g.strokeStyle = Dk(0.8); g.lineWidth = 1.3; g.beginPath(); g.moveTo(fx - w * 0.2, my); g.quadraticCurveTo(fx, my + h * 0.008, fx + w * 0.2, my - h * 0.004); g.stroke();
+    g.fillStyle = L(0.3); g.fillRect(fx - w * 0.14, my + h * 0.014, w * 0.24, h * 0.02);
+    g.fillStyle = Dk(0.45); g.beginPath(); g.ellipse(fx + w * 0.02, my + h * 0.055, w * 0.13, h * 0.016, 0, 0, PI * 2); g.fill();
+    if (o.beard) {
+      // Lincoln's chin beard along the jaw, no mustache
+      g.save(); g.beginPath(); g.moveTo(fx - w * 0.64, y + h * 0.12); g.quadraticCurveTo(fx - w * 0.5, chin + h * 0.04, fx + w * 0.06, chin + h * 0.06); g.quadraticCurveTo(fx + w * 0.5, chin + h * 0.02, fx + w * 0.66, y + h * 0.12);
+      g.quadraticCurveTo(fx + w * 0.4, chin - h * 0.1, fx, my + h * 0.08); g.quadraticCurveTo(fx - w * 0.4, chin - h * 0.1, fx - w * 0.64, y + h * 0.12); g.closePath();
+      const bg = g.createLinearGradient(fx - w * 0.6, 0, fx + w * 0.6, 0); bg.addColorStop(0, shade(c, -0.06)); bg.addColorStop(1, shade(c, -0.42)); g.fillStyle = bg; g.fill();
+      g.clip(); for (let i = 0; i < 70; i++) { g.strokeStyle = rand() < 0.55 ? Dk(0.35) : L(0.18); g.lineWidth = 0.8; const bx = fx + rr(-w * 0.66, w * 0.66), by = rr(y + h * 0.1, chin + h * 0.06); g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + rr(-1, 1), by + rr(2, 5)); g.stroke(); } g.restore();
+    } else { g.fillStyle = L(0.28); g.beginPath(); g.ellipse(fx - w * 0.03, chin - h * 0.06, w * 0.15, h * 0.035, 0, 0, PI * 2); g.fill(); }
+    // under the jaw the stone falls into shadow
+    { const ng = g.createLinearGradient(0, chin - h * 0.02, 0, chin + h * 0.22); ng.addColorStop(0, Dk(0.42)); ng.addColorStop(1, Dk(0)); g.fillStyle = ng; g.beginPath(); g.moveTo(fx - w * 0.42, chin - h * 0.06); g.quadraticCurveTo(fx, chin + h * 0.06, fx + w * 0.5, chin - h * 0.08); g.lineTo(fx + w * 0.5, chin + h * 0.22); g.lineTo(fx - w * 0.42, chin + h * 0.22); g.closePath(); g.fill(); }
+    g.restore();
+  }
   function rushmore(B, F) {
     setSeed(31);
-    vg(B, 0, 0, BW, FY, ['#1a1430', '#4a2a4a', '#a8503a', '#e8904a']);
-    clouds(B, 10, 70, 9, 'rgba(80,40,60,0.5)', 'rgba(255,160,100,0.35)', -1);
-    // the mountain
-    B.fillStyle = '#6a625a'; B.beginPath(); B.moveTo(0, FY); B.lineTo(0, 120); B.quadraticCurveTo(200, 80, 380, 56); B.quadraticCurveTo(640, 34, 900, 52); B.quadraticCurveTo(1100, 70, 1280, 110); B.lineTo(1280, FY); B.fill();
-    for (let i = 0; i < 260; i++) { B.fillStyle = rand() < 0.5 ? 'rgba(0,0,0,0.12)' : 'rgba(255,220,190,0.08)'; B.beginPath(); B.ellipse(rr(0, BW), rr(30, FY), rr(4, 20), rr(2, 8), rr(-1, 1), 0, PI * 2); B.fill(); }
-    // four generic granite faces (stylized, not portraits)
-    const faces = [[CX - 150, 96, 0.62], [CX - 55, 90, 0.68], [CX + 35, 100, 0.56], [CX + 125, 96, 0.64]];
-    for (const [fx, fy, s] of faces) {
-      const w = 46 * s, h = 70 * s;
-      B.fillStyle = '#8a8278'; B.beginPath(); B.ellipse(fx, fy, w, h, 0, 0, PI * 2); B.fill();
-      hgf(B, fx - w, fy - h, w * 2, h * 2, ['rgba(0,0,0,0.35)', 'rgba(255,220,180,0.12)', 'rgba(0,0,0,0.4)']);
-      B.fillStyle = 'rgba(30,24,20,0.6)'; B.fillRect(fx - w * 0.45, fy - h * 0.18, w * 0.3, h * 0.08); B.fillRect(fx + w * 0.15, fy - h * 0.18, w * 0.3, h * 0.08);
-      B.fillStyle = 'rgba(30,24,20,0.35)'; B.beginPath(); B.moveTo(fx, fy - h * 0.12); B.lineTo(fx - w * 0.12, fy + h * 0.18); B.lineTo(fx + w * 0.1, fy + h * 0.2); B.fill();
-      B.fillStyle = 'rgba(30,24,20,0.5)'; B.fillRect(fx - w * 0.25, fy + h * 0.35, w * 0.5, h * 0.04);
-      B.fillStyle = 'rgba(255,200,150,0.15)'; B.beginPath(); B.ellipse(fx + w * 0.4, fy - h * 0.3, w * 0.3, h * 0.4, 0, 0, PI * 2); B.fill();
-      B.fillStyle = 'rgba(40,32,26,0.4)'; B.fillRect(fx - w * 0.5, fy - h * 0.3, w * 0.35, h * 0.05); B.fillRect(fx + w * 0.15, fy - h * 0.3, w * 0.35, h * 0.05);
-      B.strokeStyle = 'rgba(40,32,26,0.3)'; B.lineWidth = 1; for (let i = 0; i < 5; i++) { B.beginPath(); B.moveTo(fx - w * 0.8 + i * w * 0.3, fy - h * 0.95); B.lineTo(fx - w * 0.7 + i * w * 0.3, fy - h * 0.62); B.stroke(); }
-    }
-    // talus and pines below
-    for (let i = 0; i < 80; i++) { B.fillStyle = shade('#5a524a', rr(-0.2, 0.15)); B.beginPath(); B.ellipse(rr(0, BW), rr(150, FY), rr(6, 18), rr(3, 7), 0, 0, PI * 2); B.fill(); }
-    treeline(B, FY - 2, 50, '#142018', 20, 46);
-    fog(B, FY - 40, 40, 'rgba(255,150,100,0.18)');
+    // a bright day: blue sky and drifting cumulus
+    vg(B, 0, 0, BW, FY, ['#4a7ab8', '#6a98cc', '#9ab8dc', '#c8d8e8']);
+    clouds(B, 4, 80, 14, 'rgba(230,236,244,0.55)', 'rgba(255,255,255,0.75)', -1);
+    // the granite massif: crags on both ends, the carved face in the middle
+    B.fillStyle = shade(GRAN, -0.12); B.beginPath(); B.moveTo(0, FY); B.lineTo(0, 110); B.quadraticCurveTo(60, 70, 140, 64); B.lineTo(200, 40); B.quadraticCurveTo(250, 20, 330, 18);
+    B.quadraticCurveTo(470, 8, 560, 14); B.quadraticCurveTo(640, 20, 700, 30); B.quadraticCurveTo(820, 34, 900, 44); B.lineTo(980, 52); B.quadraticCurveTo(1100, 60, 1180, 86); B.lineTo(1280, 120); B.lineTo(1280, FY); B.closePath(); B.fill();
+    for (const [dx, dy, r] of [[180, 52, 40], [250, 30, 46], [330, 24, 34], [410, 18, 40], [700, 32, 36], [760, 34, 34], [930, 50, 44], [1010, 56, 40], [1090, 70, 46], [1180, 90, 50]]) { B.fillStyle = shade(GRAN, rr(-0.16, -0.06)); B.beginPath(); B.ellipse(dx, dy + r * 0.6, r, r * 0.8, 0, 0, PI * 2); B.fill(); B.fillStyle = 'rgba(255,248,236,0.18)'; B.beginPath(); B.ellipse(dx - r * 0.3, dy + r * 0.3, r * 0.5, r * 0.4, 0, 0, PI * 2); B.fill(); }
+    B.save(); B.beginPath(); B.rect(0, 0, BW, FY); B.clip(); granite(B, 0, 0, BW, FY, GRAN, 1.2);
+    // big jointed blocks and fractures on the flanks
+    for (let i = 0; i < 70; i++) { const x = rand() < 0.5 ? rr(0, 330) : rr(900, BW), y = rr(30, 170), w = rr(18, 60), h = rr(14, 44); B.fillStyle = `rgba(${rand() < 0.5 ? '70,60,56' : '255,246,232'},${rr(0.06, 0.18)})`; B.beginPath(); B.ellipse(x, y, w, h, rr(-0.5, 0.5), 0, PI * 2); B.fill(); }
+    for (let i = 0; i < 14; i++) { const x = rand() < 0.5 ? rr(0, 400) : rr(900, BW), y0 = rr(40, 120); B.strokeStyle = 'rgba(56,48,44,0.22)'; B.lineWidth = rr(0.8, 1.6); B.beginPath(); B.moveTo(x, y0); B.lineTo(x + rr(-10, 10), y0 + rr(30, 70)); B.stroke(); }
+    B.restore();
+    // the deep cut that sets Lincoln apart, and the recess Roosevelt sits in
+    const lx = 790, tx = 712;
+    B.fillStyle = 'rgba(40,34,30,0.22)'; B.beginPath(); B.ellipse(lx - 34, 96, 14, 70, 0.08, 0, PI * 2); B.fill();
+    B.fillStyle = 'rgba(40,34,30,0.32)'; B.beginPath(); B.ellipse(tx, 92, 34, 52, 0, 0, PI * 2); B.fill();
+    // the four heads, back to front: Lincoln, Roosevelt in his recess, Jefferson, Washington out front
+    carved(B, 840, 98, 74, { turn: -0.25, beard: 1, deep: 1 });
+    carved(B, tx, 100, 64, { turn: -0.15, stache: 1, specs: 1, dark: 1.3, deep: 1 });
+    carved(B, 646, 80, 72, { turn: 0.45, tilt: -0.14, hair: 'swept' });
+    // Washington's coat collar and lapel carved into the stone below his chin
+    B.fillStyle = shade(GRAN, -0.04); B.beginPath(); B.moveTo(470, 182); B.quadraticCurveTo(480, 126, 540, 118); B.lineTo(612, 122); B.quadraticCurveTo(640, 140, 650, 184); B.closePath(); B.fill();
+    B.strokeStyle = 'rgba(56,48,44,0.45)'; B.lineWidth = 1.6; B.beginPath(); B.moveTo(552, 122); B.quadraticCurveTo(560, 146, 588, 176); B.moveTo(600, 124); B.quadraticCurveTo(598, 146, 610, 170); B.moveTo(514, 132); B.quadraticCurveTo(530, 150, 540, 178); B.stroke();
+    carved(B, 568, 80, 84, { turn: 0.1, hair: 'wig' });
+    // a light wash of distance haze
+    B.fillStyle = 'rgba(200,214,232,0.10)'; B.fillRect(0, 0, BW, FY);
+    // the talus slope of blasted rubble below the faces
+    B.fillStyle = '#9a948c'; B.beginPath(); B.moveTo(470, FY); B.quadraticCurveTo(600, 128, 700, 140); B.quadraticCurveTo(800, 150, 900, FY); B.closePath(); B.fill();
+    for (let i = 0; i < 700; i++) { const x = rr(470, 900), y = rr(130, FY); B.fillStyle = shade('#a8a298', rr(-0.3, 0.15)); B.fillRect(x, y, rr(1, 3), rr(1, 2)); }
+    // ponderosa pines scattered up the slopes and in front
+    const pine = (x, y, h) => { B.fillStyle = '#3a2a1a'; B.fillRect(x - 0.8, y - h * 0.3, 1.6, h * 0.3); for (let i = 0; i < 4; i++) { const t = i / 4, ww = h * (0.34 - t * 0.06); B.fillStyle = shade('#2a4a24', rr(-0.15, 0.08)); B.beginPath(); B.moveTo(x - ww, y - h * (0.2 + t * 0.22)); B.lineTo(x, y - h * (0.5 + t * 0.2)); B.lineTo(x + ww, y - h * (0.2 + t * 0.22)); B.fill(); } };
+    for (let i = 0; i < 60; i++) { const x = rr(0, BW); if (x > 520 && x < 860 && rand() < 0.6) continue; pine(x, rr(130, FY - 4), rr(10, 22)); }
+    for (let i = 0; i < 90; i++) pine(rr(0, BW), FY - rr(0, 14), rr(16, 30));
+    for (let i = 0; i < 18; i++) pine(rr(0, BW), FY - rr(0, 4), rr(30, 48));
     vignette(B, BW);
-    // granite ledge floor
-    vg(F, 0, FY, AWX, H - FY, ['#6a625a', '#4a443e']);
-    for (let i = 0; i < 60; i++) { F.strokeStyle = 'rgba(0,0,0,0.3)'; F.lineWidth = 0.7; F.beginPath(); let x = rand() * AWX, y = FY + rand() * 50; F.moveTo(x, y); for (let j = 0; j < 4; j++) { x += rr(-14, 14); y += rr(0, 6); F.lineTo(x, y); } F.stroke(); }
-    speckle(F, 0, FY, AWX, H - FY, 2400, 0.3, 0.15);
-    const dg = F.createLinearGradient(0, FY, 0, FY + 20); dg.addColorStop(0, 'rgba(0,0,0,0.45)'); dg.addColorStop(1, 'rgba(0,0,0,0)'); F.fillStyle = dg; F.fillRect(0, FY, AWX, 20);
+    // the viewing terrace: pale granite pavers
+    pfloor(F, 'stone', '#bcb4a6', '#7a7468', { rows: 7, span: 54 });
   }
 
   // =====================================================================================
