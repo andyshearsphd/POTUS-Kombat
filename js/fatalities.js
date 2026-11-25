@@ -654,6 +654,8 @@ FATAL.add(K => {
     s.at(2.4, () => { stage = 2; api.sfx('crunch'); api.sfx('splat'); api.shake(8); const c = J(V, 'chest'); FX.burst(c[0], c[1], 8, ['chunk', 'guts'], 1); out = { t: 0 }; });
     s.at(2.8, () => { V.scriptPose = PS.down(V); V.snapPose = true; api.sfx('thud'); FX.blood(V.x, F - 6, 30, 0, 1); });
     s.at(3.2, () => api.bubble('ALL THE WAY WITH LBJ.', A.x, F - 175, { size: 12, life: 1.8, fill: 'gold' }));
+    // he tosses the spine over his shoulder; it lands on the floor and stays there
+    s.at(4.3, () => { const h = J(A, 'handFx'); out = { x: h[0], y: h[1] - 4, vx: -A.face * 110, vy: -240, rot: A.face * 0.15 + PI, landed: false }; stage = 3; api.sfx('whoosh'); });
     s.at(5.0, () => { s.done = true; });
     prop({ layer: 'front', draw(g) {
       const vk = V.d.k;
@@ -665,11 +667,19 @@ FATAL.add(K => {
         RIG.ball(g, bx + A.face * 6, by, 4.4 * k, A.def.col.hand);
       }
       if (stage === 2) { const h = J(A, 'handFx'); spine(g, h[0], h[1] - 4, A.face * 0.15 + PI, 9, vk); }
+      if (stage === 3 && out) spine(g, out.x, out.y, out.rot, 9, vk);
     } });
     s.tick = (t, dt) => {
       if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 28 * k, dt, api, 110); return; }
       if (t < 1.3) { A.scriptPose = P({ hy: 6, lean: -0.15, head: -0.1, aF: [0.6, 2.2], aB: [0.8, 1.2], fF: [14, 0], fB: [-15, 0] }); V.scriptPose = PS.dizzy(V.t); return; }
       if (stage === 1) { A.scriptPose = P({ hy: 8, lean: 0.4, head: 0.15, aF: [1.6, 0.0], aB: [0.6, 1.4], fF: [18, 0], fB: [-16, 0] }); V.scriptPose = P({ hy: 6, lean: 0.5, head: 0.6, aF: [0.8, 0.4], aB: [0.6, 0.4], fF: [8, 0], fB: [-8, 0] }); V.ro.dx = rnd(-1, 1); if (Math.random() < 0.6) { const c = J(V, 'chest'); FX.blood(c[0] + A.face * 20, c[1], 2, A.face, 0.6); } return; }
+      if (stage === 3) {
+        out.vy += 900 * dt; out.x += out.vx * dt; out.y += out.vy * dt;
+        if (!out.landed) out.rot += -A.face * 9 * dt;
+        if (out.y > F - 4) { out.y = F - 4; out.vx = 0; out.vy = 0; out.rot = -PI / 2; if (!out.landed) { out.landed = true; api.sfx('thud'); FX.blood(out.x, F - 3, 6, 0, 0.4); } }
+        A.scriptPose = P({ hy: 3, lean: -0.1, head: -0.2, aF: [0.5, 0.3], aB: [0.5, 1.9], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
+        return;
+      }
       A.scriptPose = P({ hy: 3, lean: -0.15, head: -0.25, aF: [2.85, 0.15], aB: [0.5, 1.9], fF: [12, 0], fB: [-12, 0], jaw: 0.2 });
       if (t < 2.8) V.scriptPose = PS.dizzy(V.t * 0.3);
       if (Math.random() < 0.3) { const h = J(A, 'handFx'); FX.blood(h[0], h[1] - 4 + 36 * V.d.k, 1, 0, 0.2); }

@@ -141,14 +141,17 @@ window.GAME = {
       // sweeps the hair back, flashes the smile, points at you
       jfk: { fp: t => t < 0.9 ? { aR: [2.6, 1.2], aL: [0.3, 0.2], head: -0.08 } : { aR: [1.55, 0.05], aL: [0.3, 0.2], head: 0.05, jaw: 0.15 },
         fx(f, t) { f.st2.sweep = t < 0.9 ? Math.sin(t * 7) * 2 : 0; if (once(f, 'p', t, 1.1)) bubble(f, 'ASK NOT.'); } },
-      // Stetson on, he leans in until his face fills the screen
-      lbj: { fp: t => ({ aL: [0.5, 0.4], aR: [0.5, 0.4], head: 0.1, squat: Math.min(1, t / 2) * 6 }),
-        fx(f, t) { if (once(f, 'y', t, 2.2)) { bubble(f, 'COME HERE, SON.', 'white'); } },
+      // twirls a lasso overhead, then tips the Stetson: "All the way with LBJ"
+      lbj: { fp: t => t < 2.2 ? { aR: [2.15, 0.35 + Math.sin(t * 12) * 0.1], aL: [0.4, 1.9], head: 0.1, spread: 6 } : { aR: [2.2, 2.0], aL: [0.4, 1.9], head: -0.05, spread: 6, jaw: 0.1 },
+        fx(f, t) { f.st2.tip = t > 2.3 && t < 3.4 ? Math.sin(Math.min(1, (t - 2.3) / 0.5) * PI * 0.5) : 0; if (t < 2.2 && Math.floor(t * 2.6) !== f.st2.lw) { f.st2.lw = Math.floor(t * 2.6); SFX.whoosh(); } if (once(f, 'a', t, 2.5)) bubble(f, 'ALL THE WAY WITH LBJ!'); },
         draw(g, f, t) {
-          const u = Math.max(0, Math.min(1, (t - 0.8) / 1.6)); if (u <= 0) return;
-          const h = fj(f, 'neck'), def = ROSTER.ALL.lbj;
-          g.save(); g.translate(h[0], h[1] + 6 * u); const sc = f.d.k * (1 + u * u * 2.4); g.scale(sc, sc); g.globalAlpha = Math.min(1, u * 3);
-          def.front.head(g, { t, jaw: 0 }); g.restore();
+          if (t >= 2.2) return;
+          // the loop spins flat over his head, the rope runs down to his fist
+          const h = fj(f, 'handR'), a = t * 16, cx = h[0] + 8, cy = h[1] - 8, rx = 20, ry = 7;
+          g.strokeStyle = '#e0c088'; g.lineWidth = 2.4; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, PI * 2); g.stroke();
+          g.strokeStyle = 'rgba(120,90,50,0.6)'; g.lineWidth = 0.8; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, a, a + 1.2); g.stroke();
+          const px = cx + Math.cos(a) * rx, py = cy + Math.sin(a) * ry; RIG.line(g, h[0], h[1], px, py, '#e0c088', 2);
+          RIG.line(g, h[0], h[1] + 2, h[0] + 6, h[1] + 26, '#c8a870', 1.2);
         } },
       // both arms up in the double V, jowls shaking
       nixon: { fp: t => ({ aL: [2.55, 0.12], aR: [2.55, 0.12], head: -0.05 }),

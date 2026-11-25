@@ -1209,10 +1209,12 @@ const ROSTER = (() => {
           g.fillStyle = 'rgba(70,25,15,0.25)'; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(sd * 5.6, -4, 2.4, 3.6, 0, 0, PI * 2); g.fill(); }
           g.fillStyle = 'rgba(60,20,10,0.3)'; g.fillRect(-1, -12, 2, 6);
           if (!st.dead) { g.strokeStyle = 'rgba(90,30,25,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(-3, -3.2); g.quadraticCurveTo(0, -4.6 - jaw, 3, -3.2); g.stroke(); }
-          // the Stetson
+          // the Stetson (lifts and tilts when he tips it)
+          g.save(); const tp = st.tip || 0; g.translate(tp * 2, -tp * 6); g.rotate(-tp * 0.3);
           g.fillStyle = '#c8b48a'; g.beginPath(); g.ellipse(0, -23, 17, 3.4, 0, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(0, -22.4, 15, 2.4, 0, 0, PI); g.fill();
           g.fillStyle = '#d4c098'; g.beginPath(); g.moveTo(-9, -23); g.quadraticCurveTo(-10, -34, -4, -35); g.quadraticCurveTo(0, -32, 4, -35); g.quadraticCurveTo(10, -34, 9, -23); g.closePath(); g.fill();
           g.fillStyle = '#4a3018'; g.fillRect(-9.2, -26, 18.4, 2.6);
+          g.restore();
         }, mouth() {} });
     },
   };
