@@ -1019,26 +1019,29 @@ const ROSTER = (() => {
   };
 
   // =====================================================================================
-  // WILLIAM HENRY HARRISON: sixty-eight, long face, grey hair combed forward, black frock coat,
-  // high white collar and black stock. No overcoat, no hat, exactly as on that cold March day.
+  // WILLIAM HENRY HARRISON: the hero of Tippecanoe and the Thames in his War of 1812 general's
+  // uniform: dark blue coat with gold epaulettes and buttons, high collar, buff sash, white breeches, tall boots
   // =====================================================================================
-  const SK_WH = '#e2b09a', WHCOAT = '#1c1c22', WHHAIR = '#a8a49c';
+  const SK_WH = '#e2b09a', WHCOAT = '#1c2a4c', WHHAIR = '#a8a49c';
   const harrison = {
     id: 'harrison', name: 'WILLIAM HENRY HARRISON', short: 'HARRISON', him: 'HIM', k: 1.02, term: '1841',
-    bio: 'Gave the longest inaugural address ever, then served thirty-one days. Hits hard. Does not last long.',
-    d: dims({ shW: 15, chest: 14.5, belly: 11, back: 11, thighR: 6.8, shR: 5.4 }),
-    col: { torso: WHCOAT, armU: WHCOAT, armL: WHCOAT, cuff: SHIRT, hand: SK_WH, legU: '#2a2a32', legL: '#2a2a32', foot: BLACK, neck: '#f0ece4' },
-    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'suit', legL: 'suit', neck: 'cloth' },
+    bio: 'The hero of Tippecanoe. Rode a giant rolling campaign ball into office, then served thirty-one days. Hits hard. Does not last long.',
+    d: dims({ shW: 15.5, chest: 15, belly: 11.5, back: 11, thighR: 7, shR: 5.6 }),
+    col: { torso: WHCOAT, armU: WHCOAT, armL: WHCOAT, cuff: GOLD, hand: SK_WH, legU: '#ece6d4', legL: '#141418', foot: BLACK, neck: '#f0ece4' },
+    mat: { torso: 'suit', armU: 'suit', armL: 'suit', legU: 'cloth', legL: 'suit', neck: 'cloth' },
     stats: { speed: 0.96, power: 1.12, weight: 1.0, frail: 1.15 },
     torsoDetail(g, d, st, L) {
-      R.poly(g, [[d.chest * 0.2, -L * 1.05], [d.chest * 0.9, -L * 1.05], [d.chest * 0.6, -L * 0.7]], SHIRT);
-      R.poly(g, [[d.chest * 0.3, -L * 1.06], [d.chest * 0.92, -L * 1.06], [d.chest * 0.86, -L * 0.95], [d.chest * 0.36, -L * 0.95]], '#101014');
-      R.poly(g, [[d.chest * 0.1, -L * 1.03], [d.chest * 0.5, -L * 0.62], [d.chest * 0.24, -L * 0.78]], '#2a2a32');
-      buttons(g, d.chest * 0.6, -L * 0.6, 4, L * 0.13, '#3a3a44', 1);
+      // the high gold-laced collar, two rows of gilt buttons, the sash, an epaulette on the shoulder
+      R.poly(g, [[d.chest * 0.2, -L * 1.08], [d.chest * 0.9, -L * 1.06], [d.chest * 0.86, -L * 0.96], [d.chest * 0.3, -L * 0.96]], sh(WHCOAT, -0.1));
+      g.strokeStyle = GOLD; g.lineWidth = 0.8; g.beginPath(); g.moveTo(d.chest * 0.24, -L * 1.0); g.lineTo(d.chest * 0.88, -L * 1.0); g.stroke();
+      buttons(g, d.chest * 0.5, -L * 0.86, 6, L * 0.12, BRASS, 1); buttons(g, d.chest * 0.84, -L * 0.86, 6, L * 0.12, BRASS, 1);
+      g.fillStyle = '#d6be86'; g.fillRect(-d.back * 1.1, -L * 0.2, d.back * 1.1 + d.chest * 1.15, L * 0.1); R.poly(g, [[-d.back * 0.9, -L * 0.15], [-d.back * 1.2, L * 0.15], [-d.back * 0.7, L * 0.15]], '#d6be86');
+      g.fillStyle = GOLD; g.beginPath(); g.ellipse(-d.back * 0.1, -L * 1.0, 6, 2.6, 0.1, 0, PI * 2); g.fill();
+      g.strokeStyle = '#e8c860'; g.lineWidth = 0.8; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(-d.back * 0.1 - 5 + i * 2, -L * 0.98); g.lineTo(-d.back * 0.1 - 5.4 + i * 2, -L * 0.86); g.stroke(); }
     },
     skirt(g, d, J) {
       const h = J.hip, kn = J.LB.knee, b = d.back;
-      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.1, h[1] - 4], [kn[0] - b * 0.2, kn[1] - 2], [kn[0] - b * 1.2, kn[1] + 2]], sh(WHCOAT, -0.1));
+      R.poly(g, [[h[0] - b * 0.95, h[1] - 6], [h[0] - b * 0.1, h[1] - 4], [kn[0] - b * 0.2, kn[1] - 10], [kn[0] - b * 1.1, kn[1] - 8]], sh(WHCOAT, -0.1));
     },
     frontHand(g, d, J, st) {
       if (st.move !== 'blow') return;
@@ -1067,7 +1070,7 @@ const ROSTER = (() => {
     },
     sp1: { kind: 'blow', name: 'INAUGURAL ADDRESS', mod: { fx: 'daze', dmg: 6, t: [0.22, 0.4, 0.34] } },
     sp2: { kind: 'proj', name: 'HARD CIDER BARREL', proj: { kind: 'cider' } },
-    fatals: [{ id: 'harrison', name: 'TWO-HOUR SPEECH' }],
+    fatals: [{ id: 'harrison', name: 'KEEP THE BALL ROLLING' }],
   };
 
   // =====================================================================================
@@ -1699,11 +1702,13 @@ const ROSTER = (() => {
   };
   FRONT.harrison = {
     detail: (g, d, G) => {
-      R.poly(g, [[-4.4, G.sY - 3], [4.4, G.sY - 3], [0, G.sY + 13]], SHIRT); g.fillStyle = '#101014'; g.fillRect(-4.4, G.sY - 3, 8.8, 4);
-      for (const sd of [-1, 1]) R.poly(g, [[sd * 4.4, G.sY], [sd * G.shx * 0.72, G.sY + 2], [sd * 2.2, G.sY + 16]], '#2a2a32');
-      buttons(g, 0, G.sY + 18, 3, 4.4, '#3a3a44', 0.9);
+      R.poly(g, [[-4.4, G.sY - 3], [4.4, G.sY - 3], [0, G.sY + 6]], '#f0ece4');
+      g.fillStyle = sh(WHCOAT, -0.1); for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(sd * 2, G.sY - 4); g.lineTo(sd * 7, G.sY - 4); g.lineTo(sd * 6, G.sY + 2); g.lineTo(sd * 3, G.sY + 1); g.fill(); }
+      for (const sd of [-1, 1]) buttons(g, sd * 3.4, G.sY + 6, 6, 4, BRASS, 1);
+      for (const sd of [-1, 1]) { g.fillStyle = GOLD; g.beginPath(); g.ellipse(sd * G.shx * 0.95, G.sY, 5, 2.4, 0, 0, PI * 2); g.fill(); g.strokeStyle = '#e8c860'; g.lineWidth = 0.8; for (let i = 0; i < 5; i++) { g.beginPath(); g.moveTo(sd * G.shx * 0.95 - 4 + i * 2, G.sY + 1.6); g.lineTo(sd * G.shx * 0.95 - 4 + i * 2, G.sY + 6); g.stroke(); } }
+      g.fillStyle = '#d6be86'; g.fillRect(-G.shx * 0.9, G.hipY - 8, G.shx * 1.8, 4);
     },
-    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.1, G.hipY - 4], [G.hx * 2.1, G.hipY - 4], [G.hx * 2.4, G.hipY + 14 * G.k], [-G.hx * 2.4, G.hipY + 14 * G.k]], '#18181e'),
+    skirt: (g, d, G) => R.poly(g, [[-G.hx * 2.1, G.hipY - 4], [G.hx * 2.1, G.hipY - 4], [G.hx * 2.3, G.hipY + 10 * G.k], [-G.hx * 2.3, G.hipY + 10 * G.k]], sh(WHCOAT, -0.1)),
     head(g, st) {
       humanFront(g, st, { skin: SK_WH, w: 8, chin: 2.8, eyeC: '#4a5a6a', browC: 'rgba(130,125,118,0.95)',
         back(g) { g.beginPath(); g.ellipse(0, -17, 11, 11, 0, 0, PI * 2); fillLit(g, WHHAIR, 0, -17, 11, 0.2, -0.5); },

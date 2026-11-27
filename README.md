@@ -1,6 +1,6 @@
 # POTUS Kombat
 
-An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.5.0 in `engine/`), with this game's content in `js/`.
+An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.6.0 in `engine/`), with this game's content in `js/`.
 
 ## Progress
 
@@ -27,7 +27,7 @@ The select screen is four rows of six, in chronological order. The ladder draws 
 | Ronald Reagan | Star Wars Laser, Jelly Bean Spray | Tear Down This Wall | Done |
 | Jimmy Carter | Peanut Barrage, Habitat Hammer | Peanut Grinder | Done |
 | John Adams | Old Ironsides Broadside, Sedition Act (no specials for 3.5 seconds) | Midnight Judges | Done |
-| William Henry Harrison | Inaugural Address, Hard Cider Barrel | Two-Hour Speech | Done |
+| William Henry Harrison | Inaugural Address, Hard Cider Barrel | Keep the Ball Rolling | Done |
 | Dwight D. Eisenhower | D-Day Ramp, Interstate Charge | Interstate | Done |
 | George H. W. Bush | Broccoli Bomb, Read My Lips | Birthday Jump | Done |
 | James Madison | Bill of Rights, Dolley's Rescue | Checks and Balances | Done |
@@ -37,7 +37,7 @@ The select screen is four rows of six, in chronological order. The ladder draws 
 
 ### Arenas (12, plus the boss stage to do)
 
-Done: The Oval Office, Mount Rushmore (sculpted as a height map and lit by a low morning sun, so the carving casts real shadows), Valley Forge, Gettysburg, the Reflecting Pool, White House Bowling Alley, the Capitol Rotunda, Joint Session of Congress (the three-tier rostrum, the Mace, and the members rising to clap and cheer as the fight heats up), the Smithsonian, the Tidal Basin, the Staten Island Ferry (Lower Manhattan on one side, the Statue of Liberty on the other, at dusk), and Yosemite Valley from Tunnel View. To do: the boss-only Liberty Bell Chamber.
+Done: The Oval Office, Mount Rushmore (sculpted as a height map and lit by a low morning sun, so the carving casts real shadows), Valley Forge, Gettysburg, the Reflecting Pool, the Situation Room (generals and officials at the table, a wall of screens and world clocks), the Capitol Rotunda, Joint Session of Congress (the three-tier rostrum, the Mace, and the members rising to clap and cheer as the fight heats up), the Smithsonian, the Tidal Basin, the Staten Island Ferry (Lower Manhattan on one side, the Statue of Liberty on the other, at dusk), and Yosemite Valley from Tunnel View. To do: the boss-only Liberty Bell Chamber.
 
 ### Bosses (0 of 3)
 

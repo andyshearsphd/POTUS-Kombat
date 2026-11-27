@@ -11,6 +11,7 @@ window.GAME = {
   ladder: { mirror: true, endurance: 2, opponents: 15 },   // 15 random opponents, so the ladder stays 21 matches as the roster grows
   comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },   // no single combo takes more than a quarter of the bar
   selectCols: 6,                                              // four rows of six
+  selectLayout: 'wide',                                       // big portraits filling the right side
 
   // ---------- the announcer: an old newsreel narrator, crackling over the radio ----------
   calls: { flawless: 'LANDSLIDE VICTORY', choose: 'choose your president' },
@@ -230,17 +231,17 @@ window.GAME = {
       madison: { fp: t => ({ aR: [2.7, 0.4], aL: [2.6, 0.5], head: -0.15 }),
         fx(f, t) { if (once(f, 'w', t, 0.5)) bubble(f, 'WE THE PEOPLE.'); },
         draw(g, f) { const a = fj(f, 'handL'), b = fj(f, 'handR'), x = (a[0] + b[0]) / 2, y = Math.min(a[1], b[1]) - 6; g.fillStyle = '#ecdfba'; g.fillRect(x - 14, y - 10, 28, 20); g.fillStyle = '#d8c89a'; g.fillRect(x - 15, y - 11, 30, 2.4); g.fillRect(x - 15, y + 9, 30, 2.4); g.fillStyle = '#2a1a0a'; g.font = '5px Georgia, serif'; g.textAlign = 'center'; g.fillText('We the People', x, y - 3); g.textAlign = 'left'; g.fillStyle = 'rgba(70,45,20,0.5)'; for (let i = 0; i < 3; i++) g.fillRect(x - 10, y + i * 2.4, 20, 0.6); } },
-      // adjusts the pince-nez while a sheep wanders up beside him
+      // adjusts the pince-nez while a sheep wanders up beside him (he says nothing)
       wilson: { fp: t => ({ aR: t < 1.0 ? [2.2, 2.6] : [0.3, 0.2], aL: [0.3, 0.2], head: -0.05 }),
-        fx(f, t) { if (once(f, 'b', t, 1.2)) { SFX.chirp(); bubble(f, 'THE WORLD MUST BE MADE SAFE FOR DEMOCRACY.', 'gold'); } },
+        fx(f, t) { if (once(f, 'b', t, 1.2)) SFX.chirp(); },
         draw(g, f, t) { const u = Math.min(1, t / 1.4), x = f.x - f.face * lerp(100, 40, u), y = FLOOR - 21; g.save(); g.translate(x, y); g.scale(f.face * 1.6, 1.6); g.fillStyle = '#2a2420'; for (const lx of [-8, -4, 4, 8]) g.fillRect(lx, 4, 2, 9); g.fillStyle = '#eeeae0'; for (const [cx, cy, r] of [[-8, -1, 6], [-2, -3, 7], [5, -1, 6], [-4, 3, 6], [3, 3, 6]]) { g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); } g.fillStyle = '#2a2420'; g.beginPath(); g.ellipse(13, -2 + Math.sin(t * 3) * 1, 4.4, 3.4, 0.2, 0, PI * 2); g.fill(); g.restore(); } },
       // tosses the medicine ball up and catches it
       hoover: { fp: t => { const ph = t % 1.4, up = ph < 0.3; return { aR: up ? [2.6, 0.6] : [1.3, 1.4], aL: up ? [2.6, 0.6] : [1.3, 1.4], head: -0.12, spread: 6 }; },
         fx(f, t) { if (once(f, 'h', t, 0.5)) bubble(f, 'HOOVER-BALL!'); if (Math.floor(t / 1.4) !== f.st2.hb) { f.st2.hb = Math.floor(t / 1.4); SFX.thud(); } },
         draw(g, f, t) { const ph = t % 1.4, hd = fj(f, 'head'), x = hd[0], y0 = hd[1] - 22, y = y0 - Math.sin(Math.min(1, ph / 1.1) * PI) * 50; g.fillStyle = '#6a4024'; g.beginPath(); g.arc(x, y, 8, 0, PI * 2); g.fill(); g.strokeStyle = '#3a2010'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 8, y); g.lineTo(x + 8, y); g.stroke(); } },
-      // lights the pipe, a puff of smoke: "Our long national nightmare is over."
+      // lights the pipe and puffs on it
       ford: { fp: t => ({ aR: t < 0.9 ? [1.6, 2.4] : [0.3, 0.2], aL: [0.3, 0.2], head: 0.05 }),
-        fx(f, t) { f.st2.pipe = 1; if (once(f, 'l', t, 0.5)) SFX.fire(); if (once(f, 'q', t, 1.2)) bubble(f, 'OUR LONG NATIONAL NIGHTMARE IS OVER.'); if (t > 0.8 && Math.random() < 0.2) { const h = fj(f, 'head'); FX.puff(h[0] + 8, h[1] - 4, 'rgba(220,220,225,0.55)', 1, 1); } } },
+        fx(f, t) { f.st2.pipe = 1; if (once(f, 'l', t, 0.5)) SFX.fire(); if (t > 0.8 && Math.random() < 0.2) { const h = fj(f, 'head'); FX.puff(h[0] + 8, h[1] - 4, 'rgba(220,220,225,0.55)', 1, 1); } } },
       // chin up, cigarette holder high, the big grin
       fdr: { fp: t => ({ aR: [2.0, 1.4], aL: [0.4, 0.6], head: -0.12, jaw: 0.2 }),
         fx(f, t) { if (Math.random() < 0.25) { const h = fj(f, 'head'); FX.puff(h[0] + 16, h[1] - 8, 'rgba(220,220,225,0.6)', 1, 1); } } },

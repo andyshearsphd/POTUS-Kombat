@@ -452,35 +452,63 @@
     // marble plaza
     pfloor(F, 'stone', '#b8b4a8', '#6a6860', { rows: 7, span: 60 });
   }
-
   // =====================================================================================
-  // WHITE HOUSE BOWLING ALLEY: the two-lane alley in the basement, wood paneling, pins at the back
+  // THE SITUATION ROOM: walnut paneling, a wall of screens and world clocks, the long conference table
+  // with generals and officials around it, laptops open, coffee going cold
   // =====================================================================================
-  function bowling(B, F) {
-    setSeed(71);
-    vg(B, 0, 0, BW, FY, ['#140c08', '#2a1a10', '#3a2416']);
-    // wood-paneled walls
-    for (let x = 0; x < BW; x += 18) { hgf(B, x, 20, 18, FY - 40, [shade('#6a4428', rr(-0.2, 0.05)), shade('#7a5030', rr(-0.1, 0.1)), shade('#5a3a20', rr(-0.2, 0))]); B.fillStyle = 'rgba(0,0,0,0.35)'; B.fillRect(x, 20, 1, FY - 40); }
-    B.fillStyle = '#2a1a0c'; B.fillRect(0, 14, BW, 8); B.fillStyle = '#c8a040'; B.fillRect(0, 21, BW, 1.4);
-    // presidential seal and a framed photo row
-    R.ball(B, CX, 54, 18, '#c8a050'); R.ball(B, CX, 54, 14, '#1e2a5a'); B.fillStyle = '#c8a050'; B.beginPath(); B.moveTo(CX, 44); B.lineTo(CX + 8, 58); B.lineTo(CX - 8, 58); B.fill();
-    for (const x of [CX - 300, CX - 240, CX + 240, CX + 300]) { B.fillStyle = '#1a1208'; B.fillRect(x - 16, 40, 32, 24); B.fillStyle = '#5a5248'; B.fillRect(x - 13, 43, 26, 18); B.fillStyle = 'rgba(255,255,255,0.12)'; B.fillRect(x - 13, 43, 26, 5); }
-    // the two lanes running back to the pin decks
-    for (const lx of [CX - 150, CX + 150]) {
-      B.fillStyle = '#0a0604'; B.fillRect(lx - 70, 78, 140, FY - 78);
-      B.fillStyle = '#c8a070'; B.beginPath(); B.moveTo(lx - 30, 86); B.lineTo(lx + 30, 86); B.lineTo(lx + 64, FY); B.lineTo(lx - 64, FY); B.fill();
-      for (let i = 0; i < 12; i++) { B.fillStyle = 'rgba(90,50,20,0.25)'; B.beginPath(); B.moveTo(lx - 30 + i * 5, 86); B.lineTo(lx - 29 + i * 5, 86); B.lineTo(lx - 62 + i * 10.6, FY); B.lineTo(lx - 64 + i * 10.6, FY); B.fill(); }
-      B.fillStyle = 'rgba(255,240,210,0.25)'; B.beginPath(); B.moveTo(lx - 6, 86); B.lineTo(lx + 6, 86); B.lineTo(lx + 16, FY); B.lineTo(lx - 16, FY); B.fill();
-      for (let i = 0; i < 7; i++) R.poly(B, [[lx - 9 + i * 3, 140 + (i % 2) * 6], [lx - 7.6 + i * 3, 134 + (i % 2) * 6], [lx - 6.2 + i * 3, 140 + (i % 2) * 6]], '#2a3a6a');
-      B.fillStyle = '#1a1008'; B.fillRect(lx - 42, 74, 84, 16); glow(B, lx, 90, 60, 'rgba(255,230,180,0.4)');
-      B.fillStyle = '#e8d070'; B.font = '7px Anton, Impact, sans-serif'; B.textAlign = 'center'; B.fillText('THE PRESIDENT\'S LANE', lx, 85); B.textAlign = 'left';
+  const SIT_ROW = { rail: FY - 30, Hs: 104 };
+  const SIT_SEATS = (() => {
+    const rnd = prng(207), pick = a => a[(rnd() * a.length) | 0], out = [];
+    // [coat, shirt, tie] for Army, Air Force, Navy, Marines, and civilians in suits
+    const KIT2 = [['#2a3a2c', '#d8d0b0', '#1a1a14', 4], ['#2c3a5a', '#a8c0e0', '#1a2040', 3], ['#141a2c', '#f0ece4', '#101018', 4], ['#4a4834', '#c8b890', '#2a2820', 3]];
+    const SUITS = [['#1a1c24', '#f0ece4', '#8a1a24'], ['#2e3240', '#f0ece4', '#1a2a6a'], ['#34383e', '#a8c0e0', '#2a5a3a'], ['#22283a', '#f0ece4', '#6a1a2a']];
+    const HAIR = ['#1a1208', '#3a2a1a', '#8a8680', '#c8c4bc', '#6a4428', '#2a1a10'];
+    for (let x = CX - 342; x <= CX + 342; x += 36) {
+      const mil = rnd() < 0.55, woman = rnd() < 0.25, k2 = mil ? pick(KIT2) : pick(SUITS);
+      out.push({ x: x + (rnd() - 0.5) * 4, coat: k2[0], shirt: k2[1], tie: woman && !mil ? null : k2[2], mil: mil ? 1 + ((rnd() * k2[3]) | 0) : 0,
+        skin: pick(SKINS), hair: pick(HAIR), style: woman ? (rnd() < 0.6 ? 2 : 3) : rnd() < 0.25 ? 1 : 0, pin: !mil && rnd() < 0.5, ph: rnd() * 6, eager: rnd(), cheer: rnd() < 0.6 ? 'clap' : 'wave', item: pick(['laptop', 'laptop', 'mug', 'papers', 'phone', 'none']) });
     }
+    return out;
+  })();
+  // the table, the leather chair backs behind each seat, and what's on the table
+  function sitChair(g, x) { const r = SIT_ROW, w = 16, top = r.rail - 46; g.fillStyle = '#121214'; g.beginPath(); g.moveTo(x - w, r.rail); g.lineTo(x - w, top + 8); g.quadraticCurveTo(x - w, top, x, top); g.quadraticCurveTo(x + w, top, x + w, top + 8); g.lineTo(x + w, r.rail); g.fill(); g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(x - w + 3, top + 6, 3, r.rail - top - 8); }
+  function sitTable(g) {
+    const r = SIT_ROW, x0 = CX - 380, x1 = CX + 380;
+    vg(g, x0, r.rail - 2, x1 - x0, 8, ['#8a5a32', '#6a4024']); g.fillStyle = 'rgba(255,230,190,0.25)'; g.fillRect(x0, r.rail - 2, x1 - x0, 1.2);
+    vg(g, x0 + 6, r.rail + 6, x1 - x0 - 12, FY - r.rail - 6, ['#3a2414', '#24160c']);
+    for (const p of SIT_SEATS) {
+      const x = p.x, y = r.rail - 1;
+      if (p.item === 'laptop') { g.fillStyle = '#8a8e96'; g.beginPath(); g.moveTo(x - 9, y); g.lineTo(x - 8, y - 12); g.lineTo(x + 8, y - 12); g.lineTo(x + 9, y); g.closePath(); g.fill(); g.fillStyle = '#b8bcc4'; g.fillRect(x - 10, y - 1, 20, 2); g.fillStyle = 'rgba(160,200,255,0.25)'; g.fillRect(x - 8, y - 12, 16, 1); }
+      else if (p.item === 'mug') { g.fillStyle = '#f0ece4'; g.fillRect(x + 6, y - 6, 5, 6); g.strokeStyle = '#f0ece4'; g.lineWidth = 1; g.beginPath(); g.arc(x + 12, y - 3, 2, -PI / 2, PI / 2); g.stroke(); g.fillStyle = '#1e2a6a'; g.fillRect(x + 6, y - 4, 5, 1.2); }
+      else if (p.item === 'papers') { g.fillStyle = '#ece8dc'; g.fillRect(x - 8, y - 2, 14, 2); g.fillStyle = '#c82a2a'; g.fillRect(x - 6, y - 3, 10, 1.2); }
+      else if (p.item === 'phone') { g.fillStyle = '#1a1a1e'; g.fillRect(x + 4, y - 2, 6, 2); }
+    }
+  }
+  function situation(B, F) {
+    setSeed(207);
+    // walnut paneling, a dark ceiling with downlights
+    vg(B, 0, 0, BW, FY, ['#3a2414', '#4a2e18', '#2a180c']);
+    for (let x = 0; x < BW; x += 44) { B.fillStyle = 'rgba(0,0,0,0.35)'; B.fillRect(x, 18, 2, FY - 18); B.fillStyle = 'rgba(255,220,170,0.06)'; B.fillRect(x + 2, 18, 1, FY - 18); B.strokeStyle = 'rgba(0,0,0,0.25)'; B.lineWidth = 1; B.strokeRect(x + 7, 26, 30, 60); B.strokeRect(x + 7, 96, 30, 50); }
+    vg(B, 0, 0, BW, 18, ['#141010', '#241a14']);
+    for (let x = 30; x < BW; x += 80) { glow(B, x, 20, 40, 'rgba(255,230,190,0.25)'); B.fillStyle = '#f4ecd8'; B.beginPath(); B.ellipse(x, 17, 6, 1.6, 0, 0, PI * 2); B.fill(); }
+    // the world clocks
+    const CLK = [['WASHINGTON', '14:32'], ['ZULU', '19:32'], ['LONDON', '19:32'], ['MOSCOW', '22:32'], ['BEIJING', '03:32']];
+    CLK.forEach(([nm, tm], i) => { const x = CX - 150 + i * 75; B.fillStyle = '#0a0a0c'; B.fillRect(x - 24, 20, 48, 13); B.fillStyle = '#ff3a2a'; B.font = '9px Anton, Impact, sans-serif'; B.textAlign = 'center'; B.fillText(tm, x, 31); B.fillStyle = '#c8b898'; B.font = '5px Anton, Impact, sans-serif'; B.fillText(nm, x, 39); B.textAlign = 'left'; });
+    // the wall of screens: a drone feed in the middle, radar and a video call either side
+    const screen = (x, y, w, h) => { B.fillStyle = '#0c0c10'; B.fillRect(x - 3, y - 3, w + 6, h + 6); B.fillStyle = '#05070c'; B.fillRect(x, y, w, h); };
+    screen(CX - 110, 44, 220, 72);
+    { const x = CX - 110, y = 44; vg(B, x, y, 220, 72, ['#4a5048', '#3a4038', '#4a5040']); for (let i = 0; i < 60; i++) { B.fillStyle = `rgba(${rand() < 0.5 ? '30,34,28' : '120,124,110'},${rr(0.2, 0.5)})`; B.fillRect(x + rr(0, 216), y + rr(0, 68), rr(4, 18), rr(3, 10)); }
+      B.strokeStyle = 'rgba(210,214,200,0.5)'; B.lineWidth = 1; B.strokeRect(x + 92, y + 22, 30, 22); B.strokeRect(x + 70, y + 30, 18, 14); R.line(B, x, y + 52, x + 220, y + 38, 'rgba(180,170,150,0.45)', 2);
+      B.fillStyle = 'rgba(230,240,230,0.75)'; B.font = '5px Anton, Impact, sans-serif'; B.fillText('LIVE  FEED 2', x + 4, y + 8); B.fillText('ALT 18,000 FT', x + 170, y + 8); }
+    screen(CX - 210, 50, 86, 60); vg(B, CX - 210, 50, 86, 60, ['#04140a', '#062010']); for (const r of [10, 20, 28]) { B.strokeStyle = 'rgba(60,220,110,0.4)'; B.lineWidth = 0.8; B.beginPath(); B.arc(CX - 167, 80, r, 0, PI * 2); B.stroke(); } R.line(B, CX - 210, 80, CX - 124, 80, 'rgba(60,220,110,0.3)', 0.6); R.line(B, CX - 167, 50, CX - 167, 110, 'rgba(60,220,110,0.3)', 0.6);
+    screen(CX + 124, 50, 86, 60);
+    for (let i = 0; i < 4; i++) { const x = CX + 124 + (i % 2) * 43, y = 50 + ((i / 2) | 0) * 30; vg(B, x + 1, y + 1, 41, 28, [['#3a4a5a', '#2a3440'], ['#4a3a3a', '#302424'], ['#3a4a3a', '#283428'], ['#4a4a5a', '#30303e']][i]); const sk = SKINS[i + 1]; B.fillStyle = ['#1a1c24', '#2a3a2c', '#141a2c', '#2e3240'][i]; B.beginPath(); B.ellipse(x + 21, y + 29, 12, 7, 0, PI, 0); B.fill(); B.fillStyle = sk; B.beginPath(); B.ellipse(x + 21, y + 14, 5, 6, 0, 0, PI * 2); B.fill(); B.fillStyle = ['#8a8680', '#1a1208', '#c8c4bc', '#3a2a1a'][i]; B.beginPath(); B.ellipse(x + 21, y + 10, 5.4, 3, 0, PI, 0); B.fill(); }
+    // the seal and the flag
+    { const x = CX - 300, y = 80; R.ball(B, x, y, 22, '#c8a040'); R.ball(B, x, y, 19, '#1e2a5a'); B.fillStyle = '#e8d090'; B.beginPath(); B.moveTo(x, y - 10); B.lineTo(x - 12, y - 2); B.lineTo(x - 4, y - 2); B.lineTo(x, y + 12); B.lineTo(x + 4, y - 2); B.lineTo(x + 12, y - 2); B.closePath(); B.fill(); for (let i = 0; i < 13; i++) { const a = -PI / 2 + (i - 6) * 0.18; B.fillStyle = '#f0ece4'; B.fillRect(x + Math.cos(a) * 15 - 0.6, y + Math.sin(a) * 15 - 0.6, 1.2, 1.2); } }
+    { const x = CX + 290; B.fillStyle = '#c8a040'; B.fillRect(x, 30, 2, 130); R.ball(B, x + 1, 29, 2.4, '#d8b048'); for (let i = 0; i < 7; i++) { B.fillStyle = i % 2 ? '#f0ece4' : '#b81c28'; B.fillRect(x - 18, 34 + i * 5, 18, 5); } B.fillStyle = '#1e2a5a'; B.fillRect(x - 18, 34, 9, 15); B.fillStyle = 'rgba(0,0,0,0.25)'; B.fillRect(x - 12, 34, 3, 35); }
     vignette(B, BW);
-    // polished maple approach
-    vg(F, 0, FY, AWX, H - FY, ['#8a5e34', '#b8844c']);
-    for (let x = 0; x < AWX; x += 6) { F.fillStyle = `rgba(60,30,10,${rr(0.05, 0.2)})`; F.fillRect(x, FY, 1, H - FY); }
-    for (const dx of [-300, -150, 0, 150, 300]) for (let i = 0; i < 3; i++) { F.fillStyle = '#2a3a6a'; F.beginPath(); F.moveTo(AWX / 2 + dx + i * 8 - 8, FY + 30); F.lineTo(AWX / 2 + dx + i * 8 - 4, FY + 24); F.lineTo(AWX / 2 + dx + i * 8, FY + 30); F.fill(); }
-    F.fillStyle = 'rgba(255,240,200,0.12)'; F.fillRect(0, FY + 8, AWX, 4);
+    // carpet
+    vg(F, 0, FY, AWX, H - FY, ['#2e3444', '#1c2030']); speckle(F, 0, FY, AWX, H - FY, 2400, 0.25, 0.12);
     const dg = F.createLinearGradient(0, FY, 0, FY + 20); dg.addColorStop(0, 'rgba(0,0,0,0.4)'); dg.addColorStop(1, 'rgba(0,0,0,0)'); F.fillStyle = dg; F.fillRect(0, FY, AWX, 20);
   }
 
@@ -536,6 +564,12 @@
     g.fillStyle = p.shirt; g.beginPath(); g.moveTo(x - sw * 0.3, sh - Hs * 0.01); g.lineTo(x + sw * 0.3, sh - Hs * 0.01); g.lineTo(x, sh + Hs * 0.12); g.fill();
     if (p.tie) { g.fillStyle = p.tie; g.beginPath(); g.moveTo(x - Hs * 0.012, sh); g.lineTo(x + Hs * 0.012, sh); g.lineTo(x + Hs * 0.017, sh + Hs * 0.1); g.lineTo(x, sh + Hs * 0.12); g.lineTo(x - Hs * 0.017, sh + Hs * 0.1); g.fill(); }
     g.strokeStyle = shade(p.coat, -0.35); g.lineWidth = Math.max(0.6, Hs * 0.01); g.beginPath(); g.moveTo(x - sw * 0.32, sh - Hs * 0.01); g.lineTo(x - Hs * 0.01, sh + Hs * 0.16); g.moveTo(x + sw * 0.32, sh - Hs * 0.01); g.lineTo(x + Hs * 0.01, sh + Hs * 0.16); g.stroke();
+    if (p.mil) {
+      // ribbon rack on the chest, stars on the shoulders
+      const rc = ['#a8202a', '#2a4a8a', '#e8c040', '#3a7a4a', '#e8e4dc', '#7a2a6a'], rw = Math.max(1.4, Hs * 0.03), rh = Math.max(1, Hs * 0.016);
+      for (let i = 0; i < 6; i++) { g.fillStyle = rc[(i + p.mil) % 6]; g.fillRect(x + sw * 0.25 + (i % 3) * rw, sh + Hs * 0.05 + ((i / 3) | 0) * rh, rw - 0.3, rh - 0.2); }
+      for (const sd of [-1, 1]) for (let i = 0; i < p.mil; i++) { g.fillStyle = '#f0e8b0'; g.fillRect(x + sd * (sw * 0.55 + i * Hs * 0.022), sh - Hs * 0.004, Math.max(1, Hs * 0.014), Math.max(1, Hs * 0.014)); }
+    }
     if (p.pin) { g.fillStyle = '#e8c860'; g.fillRect(x - sw * 0.55, sh + Hs * 0.04, Math.max(1, Hs * 0.012), Math.max(1, Hs * 0.012)); }
     // neck, head, face, hair
     g.fillStyle = shade(p.skin, -0.18); g.fillRect(x - hr * 0.45, hc + hr * 0.6, hr * 0.9, sh - hc - hr * 0.5);
@@ -963,12 +997,21 @@
       const ox = CX + 170; for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(220,225,240,0.25)'; g.fillRect(ox - 8 + Math.sin(t * 2 + i) * 3, 138 + i * 5, 16 - i * 2, 0.8); }
       if (Math.floor(t * 1.5) % 2) for (const y of [50, 52]) glow(g, ox + (y === 50 ? -2 : 2), y, 4, 'rgba(255,40,30,1)');
     }
-    if (id === 'bowling') {
-      for (const lx of [CX - 150, CX + 150]) {
-        const ph = ((t + (lx > CX ? 2.3 : 0)) * 0.22) % 1;
-        if (ph < 0.3) { const u = ph / 0.3; g.fillStyle = '#16161c'; g.beginPath(); g.arc(lx + Math.sin(u * 3) * 6, lerp(FY - 4, 140, u), lerp(8, 3, u), 0, PI * 2); g.fill(); }
-        for (let i = 0; i < 6; i++) { const knocked = ph > 0.3 && ph < 0.6, px = lx - 10 + (i % 3) * 10 + (knocked ? Math.sin(i * 7) * 10 * (ph - 0.3) * 3 : 0), py = 130 - ((i / 3) | 0) * 5 - (knocked ? Math.abs(Math.sin(i * 3)) * 18 * Math.sin((ph - 0.3) * PI / 0.3) : 0);
-          g.save(); g.translate(px, py); if (knocked) g.rotate((ph - 0.3) * 10 * (i % 2 ? 1 : -1)); g.fillStyle = '#f4f0e8'; g.beginPath(); g.ellipse(0, -3, 2, 4, 0, 0, PI * 2); g.fill(); g.beginPath(); g.arc(0, -8, 1.4, 0, PI * 2); g.fill(); g.fillStyle = '#c81a24'; g.fillRect(-1.6, -6.4, 3.2, 0.8); g.restore(); }
+    if (id === 'sitroom') {
+      // the screens: crosshair and target box breathing on the feed, the radar sweeping, the ticker crawling
+      { const x = CX - 110, y = 44, u = (Math.sin(t * 3) + 1) / 2; g.strokeStyle = `rgba(255,60,40,${0.5 + u * 0.4})`; g.lineWidth = 1; g.strokeRect(x + 90 - u * 2, y + 20 - u * 2, 34 + u * 4, 26 + u * 4); R.line(g, x + 107, y, x + 107, y + 72, 'rgba(230,240,230,0.25)', 0.6); R.line(g, x, y + 33, x + 220, y + 33, 'rgba(230,240,230,0.25)', 0.6);
+        g.fillStyle = '#0a0c10'; g.fillRect(x, y + 64, 220, 8); g.fillStyle = '#e8c840'; g.font = '6px Anton, Impact, sans-serif'; const msg = 'SECURE VIDEO TELECONFERENCE  //  ALL STATIONS STAND BY  //  NATIONAL SECURITY COUNCIL IN SESSION  //  '; g.save(); g.beginPath(); g.rect(x, y + 64, 220, 8); g.clip(); const off = (t * 30) % (msg.length * 3.6); g.fillText(msg + msg, x - off, y + 70.5); g.restore(); }
+      { const cx = CX - 167, cy = 80, a = t * 2.4; g.save(); g.beginPath(); g.rect(CX - 210, 50, 86, 60); g.clip(); g.fillStyle = 'rgba(60,220,110,0.22)'; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 40, a - 0.5, a); g.closePath(); g.fill(); R.line(g, cx, cy, cx + Math.cos(a) * 40, cy + Math.sin(a) * 40, 'rgba(120,255,160,0.8)', 1); for (const [bx, by] of [[cx + 14, cy - 9], [cx - 20, cy + 6]]) { g.fillStyle = `rgba(140,255,170,${0.4 + 0.6 * Math.abs(Math.sin(t * 2 + bx))})`; g.fillRect(bx, by, 2, 2); } g.restore(); }
+      for (let i = 0; i < 5; i++) if (Math.sin(t * PI) > 0) { g.fillStyle = '#0a0a0c'; g.fillRect(CX - 150 + i * 75 - 1.2, 25, 2.4, 4); }
+      // everyone at the table; on their feet when it gets heated. A seated table is drawn from a cached picture.
+      const hype = info.hype || 0, rise = p => Math.max(0, Math.min(1, (hype * 1.15 - 0.02 - p.eager) * 5)), r = SIT_ROW;
+      if (!SIT_SEATS.some(p => rise(p) > 0)) {
+        if (!r.cache) { r.cache = STAGES.kit.mk(BW); const c = r.cache.getContext('2d'); for (const p of SIT_SEATS) sitChair(c, p.x); for (const p of SIT_SEATS) member(c, p.x, r.rail + 4, r.Hs, p, 0, 0); sitTable(c); }
+        g.drawImage(r.cache, 0, 0);
+      } else {
+        for (const p of SIT_SEATS) sitChair(g, p.x);
+        for (const p of SIT_SEATS) { const up = rise(p); member(g, p.x, r.rail + 4 - (up > 0.5 ? Math.abs(Math.sin(t * 6 + p.ph)) * 1.5 : 0), r.Hs, p, up, t); }
+        sitTable(g);
       }
     }
     if (id === 'house') {
@@ -1034,7 +1077,7 @@
     valleyforge: { name: 'VALLEY FORGE', draw: valleyforge },
     gettysburg: { name: 'GETTYSBURG', draw: gettysburg },
     reflecting: { name: 'THE REFLECTING POOL', draw: reflecting },
-    bowling: { name: 'WHITE HOUSE BOWLING ALLEY', draw: bowling },
+    sitroom: { name: 'THE SITUATION ROOM', draw: situation },
     rotunda: { name: 'THE CAPITOL ROTUNDA', draw: rotunda },
     house: { name: 'JOINT SESSION OF CONGRESS', draw: house },
     smithsonian: { name: 'THE SMITHSONIAN', draw: smithsonian },
@@ -1042,7 +1085,7 @@
     ferry: { name: 'THE STATEN ISLAND FERRY', draw: ferry },
     yosemite: { name: 'YOSEMITE VALLEY', draw: yosemite },
   };
-  const ROTATION = ['oval', 'rushmore', 'valleyforge', 'gettysburg', 'reflecting', 'bowling', 'rotunda', 'house', 'smithsonian', 'tidal', 'ferry', 'yosemite'];
+  const ROTATION = ['oval', 'rushmore', 'valleyforge', 'gettysburg', 'reflecting', 'sitroom', 'rotunda', 'house', 'smithsonian', 'tidal', 'ferry', 'yosemite'];
   STAGES.define({ defs: DEFS, fallback: 'oval', rotation: ROTATION, single: ROTATION, live });
   // Rushmore is sculpted and lit pixel by pixel (about a second); build it while the title screen is up, not at the bell
   setTimeout(() => STAGES.get('rushmore'), 2500);
