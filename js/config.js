@@ -8,7 +8,9 @@ window.GAME = {
   mascot: 'lincoln',                                     // head on the title emblem
   toasty: { fighter: 'teddy', text: 'BULLY!' },          // pops in after some uppercuts
   muteKey: 'potus_muted',
-  ladder: { mirror: true, endurance: 2 },
+  ladder: { mirror: true, endurance: 2, opponents: 15 },   // 15 random opponents, so the ladder stays 21 matches as the roster grows
+  comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },   // no single combo takes more than a quarter of the bar
+  selectCols: 6,                                              // four rows of six
 
   // ---------- the announcer: an old newsreel narrator, crackling over the radio ----------
   calls: { flawless: 'LANDSLIDE VICTORY', choose: 'choose your president' },
@@ -33,6 +35,15 @@ window.GAME = {
 
   // ---------- projectiles thrown by the presidents ----------
   projectiles: {
+    // John Adams: Old Ironsides fires a broadside, three iron balls in a row trailing smoke
+    cannonball: { speed: 440, y: 66, burst: { n: 3, gap: 0.14, jitter: 20 }, dmg: 4.5, w: 7, h: 7, fx: 'stun', cool: 1.7, sfx: 'big', hitSfx: 'thud', word: 'BROADSIDE!',
+      draw(g, p, s, t) { for (let i = 1; i < 6; i++) { g.fillStyle = `rgba(200,200,205,${0.4 - i * 0.06})`; g.beginPath(); g.arc(-s * i * 6, Math.sin(t * 20 + i) * 1.2, 3 + i * 0.9, 0, Math.PI * 2); g.fill(); } g.fillStyle = '#1a1a1e'; g.beginPath(); g.arc(0, 0, 4.6, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.3)'; g.beginPath(); g.arc(-1.4, -1.6, 1.5, 0, Math.PI * 2); g.fill(); } },
+    // W. H. Harrison: a barrel of hard cider from the log cabin campaign, rolled along the floor
+    cider: { speed: 280, y: 9, low: true, trip: true, dmg: 10, w: 11, h: 10, fx: 'trip', cool: 1.6, hitSfx: 'thud', word: 'HARD CIDER!',
+      draw(g, p, s, t) { g.rotate(t * 12 * s); g.fillStyle = '#8a5a2a'; g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#3a3a3e'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(0, 0, 5.6, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#5a3a1a'; for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.fillRect(-0.6, 2, 1.2, 6); } g.fillStyle = '#c8a060'; g.fillRect(-1.4, -1.4, 2.8, 2.8); } },
+    // G. H. W. Bush: a lobbed head of broccoli that leaves you seeing stars
+    broccoli: { speed: 250, vy: -300, grav: 720, bounce: 0.3, dmg: 9, w: 10, h: 10, fx: 'daze', life: 2, cool: 1.5, hitSfx: 'splat', word: 'NO MORE BROCCOLI!',
+      draw(g, p, s, t) { g.rotate(t * 6 * s); g.fillStyle = '#7ab04a'; g.fillRect(-2, 0, 4, 9); g.fillStyle = '#5a8a34'; g.fillRect(-2, 0, 1.4, 9); for (const [x, y, r] of [[-5, -2, 4.6], [5, -2, 4.6], [0, -5, 5.4], [-2, 1, 3.6], [3, 1, 3.6]]) { g.fillStyle = '#2e6a2a'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(160,220,110,0.35)'; g.beginPath(); g.arc(x - 1, y - 1, r * 0.5, 0, Math.PI * 2); g.fill(); } } },
     // Washington: a silver dollar skipped low across the floor, like the river legend
     dollar: { speed: 330, y: 18, vy: -150, grav: 900, bounce: 0.82, dmg: 8, w: 7, h: 6, fx: 'trip', life: 2.2, hitSfx: 'ding',
       draw(g, p, s, t) { const w = Math.abs(Math.cos(t * 22)) * 5 + 0.8; g.fillStyle = '#cfd2da'; g.beginPath(); g.ellipse(0, 0, w, 5, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#8a8e98'; g.lineWidth = 0.6; g.stroke(); if (w > 3) { g.fillStyle = '#9aa0aa'; g.fillRect(-1, -2, 2, 4); } } },
@@ -175,6 +186,20 @@ window.GAME = {
       teddy: { fp: t => ({ aR: [2.98, 0.05], aL: [0.6, -1.5], jaw: 0.3 }),
         fx(f, t) { if (once(f, 'b', t, 0.25)) { bubble(f, 'BULLY!'); } },
         draw(g, f) { const h = fj(f, 'handR'); R.line(g, h[0], h[1] + 6, h[0], h[1] - 38, '#5a3a1a', 3.6); R.ball(g, h[0], h[1] - 40, 3.6, '#4a2e14'); for (let i = 0; i < 4; i++) R.ball(g, h[0] + (i % 2 ? 1.6 : -1.6), h[1] - 6 - i * 8, 1.4, '#4a2e12'); } },
+      // arms folded, a stomp, and the scowl: "Facts are stubborn things."
+      adams: { fp: t => ({ aL: [0.95, 2.5], aR: [0.95, 2.5], head: -0.04, liftR: t > 0.5 && t < 0.7 ? 6 : 0 }),
+        fx(f, t) { if (once(f, 'st', t, 0.7)) { SFX.thud(); game.shake = 3; } if (once(f, 'q', t, 0.9)) bubble(f, 'FACTS ARE STUBBORN THINGS.'); } },
+      // unrolls the speech down to the floor and keeps reading, then sneezes
+      harrison: { fp: t => ({ aR: [1.1, 2.2], aL: [1.0, 2.3], head: 0.12 + (t > 2.2 && t < 2.5 ? -0.35 : 0) }),
+        fx(f, t) { if (once(f, 'r', t, 0.6)) bubble(f, '...AND FURTHERMORE...', 'white'); if (once(f, 'a', t, 2.3)) { bubble(f, 'ACHOO!'); SFX.splat(); } if (t > 0.3 && Math.random() < 0.12) { const h = fj(f, 'head'); FX.puff(h[0] + f.face * 10, h[1] + 4, 'rgba(240,244,250,0.6)', 1, 1); } },
+        draw(g, f, t) { const a = fj(f, 'handL'), b = fj(f, 'handR'), x = (a[0] + b[0]) / 2, y = Math.min(a[1], b[1]), u = Math.min(1, t / 0.8); g.fillStyle = '#ece4c8'; g.fillRect(x - 9, y - 2, 18, (FLOOR - y + 2) * u); g.fillStyle = 'rgba(60,40,20,0.45)'; for (let yy = y + 4; yy < y + (FLOOR - y) * u - 4; yy += 3) g.fillRect(x - 7, yy, 14, 0.6); g.fillStyle = '#c8b890'; g.fillRect(x - 10, y - 3, 20, 3); if (u >= 1) { R.ball(g, x + f.face * 12, FLOOR - 4, 4, '#d8ccac'); g.fillStyle = '#ece4c8'; g.fillRect(x, FLOOR - 1.5, f.face * 30, 1.5); } } },
+      // a salute, then both arms flung up wide with that grin: "I like Ike!"
+      ike: { fp: t => t < 0.7 ? { aR: [2.5, 1.9], aL: [0.3, 0.2], head: -0.05 } : { aL: [2.35, 0.25], aR: [2.35, 0.25], spread: 7, head: -0.1, jaw: 0.2 },
+        fx(f, t) { f.st2.grin = t > 0.7 ? 1 : 0; if (once(f, 'l', t, 0.9)) bubble(f, 'I LIKE IKE!'); } },
+      // tugs up a trouser leg to show off the socks, thumbs up
+      bush: { fp: t => ({ aL: t < 1.4 ? [0.25, 0.8] : [0.3, 0.2], aR: [1.35, 2.6], liftL: t < 1.4 ? 7 : 0, head: 0.08, jaw: 0.05 }),
+        fx(f, t) { if (once(f, 's', t, 0.5)) bubble(f, 'NICE SOCKS, HUH?', 'white'); if (once(f, 'b', t, 1.6)) bubble(f, 'NO MORE BROCCOLI!'); },
+        draw(g, f) { const h = fj(f, 'handR'); RIG.line(g, h[0], h[1] - 1, h[0] + 0.6, h[1] - 7, '#e4b298', 2); } },
       // chin up, cigarette holder high, the big grin
       fdr: { fp: t => ({ aR: [2.0, 1.4], aL: [0.4, 0.6], head: -0.12, jaw: 0.2 }),
         fx(f, t) { if (Math.random() < 0.25) { const h = fj(f, 'head'); FX.puff(h[0] + 16, h[1] - 8, 'rgba(220,220,225,0.6)', 1, 1); } } },

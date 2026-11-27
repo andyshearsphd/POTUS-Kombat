@@ -158,32 +158,33 @@
     if (o.beard && v > 0.1) w = Math.max(w, (o.a - (v - 0.1) * 0.32) * (v > o.chin - 0.08 ? Math.sqrt(Math.max(0, 1 - ((v - o.chin + 0.08) / 0.08) ** 2)) : 1));
     const au = Math.abs(u); if (au >= w) return -1;
     // the skull: an ellipsoid, deep enough to turn the corner at the cheekbones
-    const q = au / w; let z = o.D * Math.pow(1 - Math.pow(q, 2.5), 0.45);
+    const q = au / w; let z = o.D * Math.pow(1 - Math.pow(q, 2.1), 0.5);
     if (v < -0.1) { const t = (-0.1 - v) / (-0.1 - o.top); z *= Math.sqrt(Math.max(0, 1 - t * t * 0.85)); }
     // the face plane stands forward of the skull from the brow down to the chin
     z += 0.05 * Math.exp(-((au / 0.25) ** 4)) * sstep(-0.16, -0.06, v) * (1 - 0.6 * sstep(o.chin - 0.12, o.chin, v));
     // hair: a raised mass, combed in long shallow waves; a roll over each ear for the wigs
     const hairAt = o.hairline + o.hairCurve * u * u, side = o.wigSide ? sstep(o.wigSide - 0.04, o.wigSide + 0.02, au) * sstep(0.32, 0.12, v) : 0;
-    const hm = Math.max(sstep(0, 0.08, hairAt - v), side);
+    const hm = Math.max(sstep(0, o.hairEdge || 0.08, hairAt - v), side);
     z -= (o.groove ?? 0.014) * Math.exp(-(((v - hairAt) / 0.014) ** 2)) * (1 - side);
-    if (hm > 0) z += hm * (o.hairZ - 0.008 * Math.abs(Math.sin((u * o.comb[0] + v * o.comb[1]) * 26 + Math.sin(v * 12 + u * 6) * 2)));
+    if (hm > 0) z += hm * (o.hairZ * (0.75 + 0.5 * vnoise(u * 18 + 40, v * 18)) - 0.016 * Math.abs(Math.sin((u * o.comb[0] + v * o.comb[1]) * 34 + Math.sin(v * 12 + u * 6) * 2)));
+    if (o.part != null && v < hairAt) z -= 0.02 * Math.exp(-(((u - o.part) / 0.012) ** 2));
     if (o.roll) z += o.roll * (gs(au, v, o.a - 0.02, 0.04, 0.08, 0.16) + 0.8 * gs(au, v, o.a - 0.03, 0.22, 0.07, 0.07)) * (1 - 0.35 * Math.abs(Math.sin(v * 38)));
     // the brow: a heavy shelf over the eyes, a little notch between them
-    z += o.brow * 1.15 * Math.exp(-(((v + 0.075 - o.browArch * u * u) / 0.04) ** 2)) * Math.exp(-((au / 0.27) ** 4)) * (1 - 0.3 * Math.exp(-((u / 0.03) ** 2)));
+    z += o.brow * Math.exp(-(((v + 0.085 - o.browArch * u * u) / 0.04) ** 2)) * Math.exp(-((au / 0.27) ** 4)) * (1 - 0.3 * Math.exp(-((u / 0.03) ** 2)));
     // sockets, eyeballs, the upper lids, the carved iris with its peg
-    const ex = o.ex, rE = Math.hypot((au - ex) / 0.075, v / 0.055);
+    const ex = o.ex, rE = Math.hypot((au - ex) / 0.072, v / 0.06);
     z -= o.sock * 1.3 * Math.exp(-rE * rE * 0.9);
-    const rb = Math.hypot((au - ex) / 0.05, (v - 0.012) / 0.028); if (rb < 1) z += o.sock * 0.7 * Math.sqrt(1 - rb * rb);
+    const rb = Math.hypot((au - ex) / 0.056, (v - 0.014) / 0.032); if (rb < 1) z += o.sock * 0.7 * Math.sqrt(1 - rb * rb);
     z += 0.016 * gs(au, v, ex, -0.012, 0.05, 0.011);
     const ix = ex + (u < 0 ? -o.look : o.look); z -= 0.006 * gs(au, v, ix, 0.012, 0.012, 0.011);
     // the nose: planed sides from the bridge to a broad base, a bulb at the tip, nostril wings, undercut
     if (v > -0.08 && v < o.nose + 0.1) {
       const nt = Math.max(0, Math.min(1, (v + 0.05) / (o.nose + 0.05)));
-      let hn = o.nz * (0.25 + 0.75 * nt), nw = 0.022 + o.nb * Math.pow(nt, 1.6);
+      let hn = o.nz * 1.2 * (0.5 + 0.5 * nt), nw = 0.026 + (o.nb + 0.016) * Math.pow(nt, 1.5);
       if (v > o.nose) { const f = Math.exp(-(((v - o.nose) / 0.022) ** 2)); hn *= f; }
       z += hn * Math.pow(Math.max(0, 1 - au / nw), 1.15);
       z += o.nz * 0.22 * gs(u, v, 0, o.nose - 0.025, 0.04, 0.035);
-      z += o.nz * 0.3 * gs(au, v, o.nb * 0.95, o.nose - 0.015, 0.026, 0.024);
+      z += o.nz * 0.36 * gs(au, v, o.nb + 0.012, o.nose - 0.015, 0.03, 0.026);
     }
     // cheekbones and hollows, the muzzle, soft cheek masses beside the mouth
     z += o.cheek * gs(au, v, 0.19, 0.1, 0.08, 0.07) - o.hollow * gs(au, v, 0.17, 0.3, 0.07, 0.1);
@@ -191,9 +192,9 @@
     z += o.fold * gs(au, v, 0.15, o.mouth - 0.02, 0.05, 0.07);
     // lips, the mouth line and the chin
     const mv = o.mouth + o.smile * u * u;
-    z += 0.022 * gs(u, v, 0, mv - 0.022, 0.09, 0.02);
-    z -= 0.032 * Math.exp(-(((v - mv) / 0.009) ** 2)) * Math.exp(-((u / o.mw) ** 6));
-    z += 0.026 * gs(u, v, 0, mv + 0.028, 0.075, 0.02) - 0.02 * gs(u, v, 0, mv + 0.065, 0.06, 0.018);
+    z += 0.028 * gs(u, v, 0, mv - 0.024, 0.11, 0.022);
+    z -= 0.036 * Math.exp(-(((v - mv) / 0.01) ** 2)) * Math.exp(-((u / (o.mw + 0.02)) ** 6));
+    z += 0.032 * gs(u, v, 0, mv + 0.03, 0.09, 0.022) - 0.022 * gs(u, v, 0, mv + 0.07, 0.07, 0.02);
     z += o.chinB * gs(u, v, 0, o.chin - 0.08, 0.09, 0.055);
     z -= 0.02 * gs(au, v, 0.31, -0.12, 0.05, 0.08);
     // Roosevelt's mustache and pince-nez; Lincoln's beard along the jaw and chin
@@ -207,13 +208,13 @@
   }
   const RUSH_HEADS = [
     // Lincoln, set apart on the right, turned a little to his right; long face, deep eyes, the jaw beard
-    { x: 746, y: 76, H: 80, yaw: -0.3, pitch: 0.02, roll: 0.02, z0: -4, o: { top: -0.42, chin: 0.62, sk: -0.12, jaw: 0.22, a: 0.37, chinW: 0.18, D: 0.6, nb: 0.07, hairline: -0.25, hairCurve: 0.9, hairZ: 0.035, comb: [0.4, 1], ex: 0.125, look: 0.01, brow: 0.075, browArch: 0.4, sock: 0.085, nose: 0.23, nz: 0.14, cheek: 0.03, hollow: 0.04, fold: 0.02, mouth: 0.36, mw: 0.09, smile: 0.15, chinB: 0.02, beard: 0.04 } },
+    { x: 746, y: 76, H: 80, yaw: -0.3, pitch: 0.02, roll: 0.02, z0: -4, o: { top: -0.42, chin: 0.62, sk: -0.12, jaw: 0.22, a: 0.37, chinW: 0.18, D: 0.6, nb: 0.07, hairline: -0.22, hairCurve: 0.7, hairZ: 0.09, hairEdge: 0.03, comb: [0.4, 1], part: -0.12, ex: 0.125, look: 0.01, brow: 0.075, browArch: 0.4, sock: 0.085, nose: 0.23, nz: 0.14, cheek: 0.03, hollow: 0.04, fold: 0.02, mouth: 0.36, mw: 0.09, smile: 0.15, chinB: 0.02, beard: 0.04 } },
     // Roosevelt, deep in his recess: glasses, the big mustache
     { x: 662, y: 88, H: 66, yaw: -0.1, pitch: 0.04, roll: -0.02, z0: -15, o: { top: -0.4, chin: 0.6, sk: -0.12, jaw: 0.22, a: 0.4, chinW: 0.22, D: 0.58, nb: 0.075, hairline: -0.26, hairCurve: 0.5, hairZ: 0.02, comb: [1, 0.2], ex: 0.135, look: -0.005, brow: 0.065, browArch: 0.3, sock: 0.07, nose: 0.21, nz: 0.13, cheek: 0.035, hollow: 0.01, fold: 0.012, mouth: 0.38, mw: 0.09, smile: 0, chinB: 0.045, stache: 0.07, specs: 1 } },
     // Jefferson, behind Washington's right shoulder, turned to his left and lifting his chin
     { x: 604, y: 66, H: 72, yaw: 0.34, pitch: -0.2, roll: -0.1, z0: -5, o: { top: -0.42, chin: 0.58, sk: -0.12, jaw: 0.22, a: 0.39, chinW: 0.2, D: 0.6, nb: 0.07, hairline: -0.24, hairCurve: 0.8, hairZ: 0.03, groove: 0.004, comb: [1, 0.5], ex: 0.125, look: 0.01, brow: 0.05, browArch: 0.3, sock: 0.065, nose: 0.21, nz: 0.14, cheek: 0.03, hollow: 0.01, fold: 0.012, mouth: 0.35, mw: 0.085, smile: -0.1, chinB: 0.04, roll: 0.05, wigSide: 0.31, wig: 0.03 } },
     // Washington out front: broad face, strong brow, straight nose, firm mouth, the wig with its side roll
-    { x: 532, y: 46, H: 84, yaw: 0.05, pitch: 0, roll: 0, z0: 5, o: { top: -0.39, chin: 0.61, sk: -0.12, jaw: 0.24, a: 0.44, chinW: 0.3, jp: 2, D: 0.62, nb: 0.08, hairline: -0.24, hairCurve: 0.5, hairZ: 0.04, comb: [1, 0.35], ex: 0.135, look: 0, brow: 0.07, browArch: 0.3, sock: 0.075, nose: 0.21, nz: 0.15, cheek: 0.03, hollow: 0.01, fold: 0.014, mouth: 0.37, mw: 0.1, smile: 0.1, chinB: 0.05, roll: 0.1, wigSide: 0.36, wig: 0.05 } },
+    { x: 532, y: 46, H: 84, yaw: 0.05, pitch: 0, roll: 0, z0: 5, o: { top: -0.39, chin: 0.61, sk: -0.12, jaw: 0.26, a: 0.385, chinW: 0.27, jp: 2, D: 0.62, nb: 0.08, hairline: -0.24, hairCurve: 0.5, hairZ: 0.04, comb: [1, 0.35], ex: 0.135, look: 0, brow: 0.07, browArch: 0.3, sock: 0.075, nose: 0.21, nz: 0.15, cheek: 0.03, hollow: 0.01, fold: 0.014, mouth: 0.37, mw: 0.1, smile: 0.1, chinB: 0.05, roll: 0.1, wigSide: 0.31, wig: 0.07 } },
   ];
   function rushmoreRelief(B, flat) {
     const S = 2, W2 = BW * S, H2 = FY * S, N = W2 * H2;

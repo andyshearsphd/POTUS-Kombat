@@ -1,10 +1,12 @@
 # POTUS Kombat
 
-An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.3.2 in `engine/`), with this game's content in `js/`.
+An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.5.0 in `engine/`), with this game's content in `js/`.
 
 ## Progress
 
-### Fighters (16 of 16 playable)
+### Fighters (20 of 24 playable)
+
+The select screen is four rows of six, in chronological order. The ladder draws 15 random opponents each run, and no single combo takes more than a quarter of the health bar.
 
 | President | Specials | Fatality | Status |
 | --- | --- | --- | --- |
@@ -24,6 +26,14 @@ An early-90s arcade fighting game for phones in landscape, starring deceased US 
 | Richard Nixon | Tape Reel Whip, White House Bowling | I Am Not a Crook | Done |
 | Ronald Reagan | Star Wars Laser, Jelly Bean Spray | Tear Down This Wall | Done |
 | Jimmy Carter | Peanut Barrage, Habitat Hammer | Peanut Grinder | Done |
+| John Adams | Old Ironsides Broadside, Sedition Act (no specials for 3.5 seconds) | Midnight Judges | Done |
+| William Henry Harrison | Inaugural Address, Hard Cider Barrel | Two-Hour Speech | Done |
+| Dwight D. Eisenhower | D-Day Ramp, Interstate Charge | Interstate | Done |
+| George H. W. Bush | Broccoli Bomb, Read My Lips | Birthday Jump | Done |
+| James Madison | Bill of Rights, Dolley's Rescue | Checks and Balances | To do (batch 2) |
+| Woodrow Wilson | Fourteen Points, Lawn Flock | Fleeced | To do (batch 2) |
+| Herbert Hoover | Hoover-Ball, Engineer's Pick | Hoover Dam | To do (batch 2) |
+| Gerald Ford | Wolverine Block, Pratfall | Airstair Tumble | To do (batch 2) |
 
 ### Arenas (12, plus the boss stage to do)
 

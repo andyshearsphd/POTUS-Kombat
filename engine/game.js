@@ -212,7 +212,7 @@
     if (['hit', 'air', 'held'].includes(v.state)) return;
     const n = f.comboN; f.comboN = 0; f.comboOn = null;
     if (n < 3) return;
-    const heal = Math.min(100 - f.hp, n * 2);
+    const CD = G.comboDamage, heal = Math.min(100 - f.hp, n * 2, CD && CD.healCap != null ? CD.healCap : 1e9);
     if (f.hp > 0 && game.phase === 'fight') f.hp += heal;
     banner(n + ' HIT COMBO', { size: 17, fill: 'gold', life: 1.4, y: 52, x: f === p1 ? W * 0.27 : W * 0.73 });
     if (heal > 0.5) banner('+' + Math.round(heal) + ' HEALTH', { size: 10, fill: 'green', life: 1.4, y: 70, x: f === p1 ? W * 0.27 : W * 0.73 });
@@ -259,6 +259,15 @@
     const chain = ['hit', 'air', 'held'].includes(v.state);
     a.comboN = chain ? (a.comboN || 1) + 1 : 1; a.comboOn = v;
     if (v.state === 'air') dmg *= Math.pow(0.75, v.juggle);
+    // 1.4: GAME.comboDamage = { from, scale, cap } shrinks each hit after the first few of a combo and caps a combo's total
+    const CD = G.comboDamage;
+    if (CD && game.phase === 'fight') {
+      if (!chain) { v.comboDmg = 0; v.comboHits = 0; }
+      v.comboHits = (v.comboHits || 0) + 1;
+      if (v.comboHits > (CD.from || 3)) dmg *= Math.pow(CD.scale || 0.85, v.comboHits - (CD.from || 3));
+      if (CD.cap != null) dmg = Math.max(0, Math.min(dmg, CD.cap - (v.comboDmg || 0)));
+      v.comboDmg = (v.comboDmg || 0) + dmg;
+    }
     if (v.state === 'dizzy' && game.phase === 'finish') { finishBlow(a, v, mv); return; }
     damage(v, dmg, a);
     game.hype = Math.min(1, (game.hype || 0) + dmg * 0.025 + (mv.upper ? 0.3 : 0));
@@ -356,7 +365,7 @@
     if (game.pairDef) { if (p2.def !== game.firstDef) { const nf = newFighter(game.firstDef, 1); nf.wins = p2.wins; nf.cpu.lvl = p2.cpu.lvl; p2 = nf; } game.tagNext = game.pairDef; } else game.tagNext = null;
     FX.reset(); projs = []; game.banners = []; game.bubbles = []; game.scene = null; game.script = null;
     for (const f of [p1, p2]) {
-      Object.assign(f, { blind: 0, wad: false, alpha: 1, trail: null, matrix: 0, hangUsed: false, hp: 100, state: 'idle', st: 0, vx: 0, vy: 0, y: FLOOR, move: null, dead: false, finishing: false, juggle: 0, dmgTaken: 0, ro: {}, hidden: false, sink: 0, daze: false, projOut: 0, bossDie: false, scale: 1, airAtk: null });
+      Object.assign(f, { silenceT: 0, blind: 0, wad: false, alpha: 1, trail: null, matrix: 0, hangUsed: false, hp: 100, state: 'idle', st: 0, vx: 0, vy: 0, y: FLOOR, move: null, dead: false, finishing: false, juggle: 0, dmgTaken: 0, ro: {}, hidden: false, sink: 0, daze: false, projOut: 0, bossDie: false, scale: 1, airAtk: null });
       f.st2 = {};
     }
     p1.x = AW / 2 - 80; p2.x = AW / 2 + 80; p1.face = 1; p2.face = -1; p1.px = p1.x; p2.px = p2.x;
@@ -388,12 +397,13 @@
     if (meta.mirror || meta.pair) { const w = meta.mirror ? CALL.mirror : CALL.endurance; banner(w, { size: 16, fill: 'blood', life: 1.3, y: 112 }); }
   }
   function newLadder() {
-    const others = ROSTER.FIGHTERS.filter((f, i) => i !== ladder.pick);
-    for (let i = others.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [others[i], others[j]] = [others[j], others[i]]; }
+    const pool = ROSTER.FIGHTERS.filter((f, i) => i !== ladder.pick);
+    for (let i = pool.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
     // 1.1: GAME.ladder = { mirror: true, endurance: n } adds a mirror match and endurance rounds before the bosses
-    const LO = G.ladder || {}, mid = [], meta = others.map(() => ({}));
+    // 1.4: GAME.ladder.opponents = n fights n opponents drawn at random from the roster instead of all of them
+    const LO = G.ladder || {}, others = LO.opponents ? pool.slice(0, LO.opponents) : pool, mid = [], meta = others.map(() => ({}));
     if (LO.mirror) { mid.push(ROSTER.FIGHTERS[ladder.pick]); meta.push({ mirror: true }); }
-    for (let i = 0; i < (LO.endurance || 0) && others.length > 1; i++) { const a = others[(Math.random() * others.length) | 0]; let b = a; while (b === a) b = others[(Math.random() * others.length) | 0]; mid.push(a); meta.push({ pair: b }); }
+    for (let i = 0; i < (LO.endurance || 0) && pool.length > 1; i++) { const a = pool[(Math.random() * pool.length) | 0]; let b = a; while (b === a) b = pool[(Math.random() * pool.length) | 0]; mid.push(a); meta.push({ pair: b }); }
     for (const b of ROSTER.BOSSES) meta.push({});
     ladder.opps = others.concat(mid, ROSTER.BOSSES); ladder.meta = meta;
     const rot = STAGES.ROTATION.slice();
@@ -543,6 +553,7 @@
       for (const fs of f.def.fatalList) if (c[fs.btn] && motion(f, fs.motion, fs.win || 0.75)) { f.hist = []; startFatality(f, o, fs.id); return; }
     }
     for (const sp of f.def.specials) {
+      if (f.silenceT > 0) break;   // 1.5: silenced fighters can't use specials
       if (c[sp.btn] && (sp.kind !== 'proj' || f.projOut <= 0) && motion(f, sp.motion, sp.win || 0.75)) { f.hist = []; startSpecial(f, sp); return; }
     }
     if (c.P) {
@@ -569,6 +580,7 @@
   // ---------- AI ----------
   // the CPU picks a special that suits the distance and loads its motion into the input history
   function aiSpecial(f, dist, out, onlyProj) {
+    if (f.silenceT > 0) return false;
     const ok = f.def.specials.filter(s => (s.kind !== 'proj' || f.projOut <= 0) && (!onlyProj || s.kind === 'proj') && s.kind !== 'parry').filter(s => {
       const r = s.ai || (s.kind === 'cgrab' ? (s.mod && s.mod.hold === 'pull' ? [60, (s.mod.range || 46) + 30] : [0, ((s.mod && s.mod.range) || 46) + 22]) : AI_RANGE[s.kind] || [0, 999]);
       return dist >= r[0] && dist <= r[1];
@@ -968,7 +980,7 @@
       } else if (m.hold === 'stun') {
         o.x = near; o.y = FLOOR; o.ro.scale = lerp(1, 0.84, ease(t / 0.6));
         if (Math.random() < 0.3) FX.puff(lerp(f.x, o.x, 0.5), FLOOR - hurtH(f) * 0.85, 'rgba(255,255,255,0.4)', 1, 1);
-        if (t >= 0.85) end(() => { damage(o, dmg * 0.6, f); o.state = 'hit'; o.st = 0; o.daze = true; o.vx = f.face * 40; o.snapPose = true; SFX.squeak(); banner(m.word || 'STUNNED', { size: 12, fill: 'gold', life: 1.1, y: 96, x: o === p1 ? W * 0.27 : W * 0.73 }); });
+        if (t >= 0.85) end(() => { damage(o, dmg * 0.6, f); if (m.silence) o.silenceT = m.silence; o.state = 'hit'; o.st = 0; o.daze = true; o.vx = f.face * 40; o.snapPose = true; SFX.squeak(); banner(m.word || 'STUNNED', { size: 12, fill: 'gold', life: 1.1, y: 96, x: o === p1 ? W * 0.27 : W * 0.73 }); });
       } else {
         o.x = near; o.y = FLOOR;
         const per = dmg / 0.9 * dt; damage(o, per, f); if (f.hp > 0) f.hp = Math.min(100, f.hp + per * 0.8);
@@ -1333,7 +1345,7 @@
       const w = game.winner;
       if (w && actionable(w) && game.pt > 1.0) setWin(w);
     }
-    for (const f of [p1, p2]) if (f.state !== 'script') { if (f.slowT > 0) f.slowT -= dt; updateFighter(f, f === p1 ? p2 : p1, f.slowT > 0 ? dt * 0.55 : dt); }
+    for (const f of [p1, p2]) if (f.state !== 'script') { if (f.slowT > 0) f.slowT -= dt; if (f.silenceT > 0) f.silenceT -= dt; updateFighter(f, f === p1 ? p2 : p1, f.slowT > 0 ? dt * 0.55 : dt); }
     game.hype = Math.max(0, (game.hype || 0) - dt * 0.35);
     comboCheck(p1); comboCheck(p2);
     separate();
@@ -1429,6 +1441,14 @@
       const hp = R.jointWorld(f, f.pose, 'head');
       g.fillStyle = 'rgba(255,255,255,0.9)'; for (let i = 0; i < 10; i++) g.fillRect(hp[0] + f.face * (2 + (i * 3.7) % 10) * f.d.k, hp[1] - 12 + (i * 5.3) % 9, 1.4, 1.4);
       g.fillStyle = 'rgba(200,0,20,0.8)'; g.fillRect(hp[0] + f.face * 8 * f.d.k, hp[1] - 9, 1.2, 4 + Math.sin(f.t * 6) * 2);
+    }
+    // 1.5: a silenced fighter wears a strip of tape over the mouth
+    if (f.silenceT > 0 && !f.dead && f.state !== 'script') {
+      const hp = R.jointWorld(f, f.pose, 'head'), k = f.d.k;
+      g.save(); g.translate(hp[0] + f.face * 5 * k, hp[1] + 5 * k); g.rotate(f.face * 0.25);
+      g.fillStyle = '#d8d0b8'; g.fillRect(-6 * k, -2 * k, 12 * k, 4 * k); g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(-6 * k, 1.2 * k, 12 * k, 0.8 * k);
+      g.strokeStyle = '#8a1a1a'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(-3 * k, -1.4 * k); g.lineTo(3 * k, 1.4 * k); g.moveTo(3 * k, -1.4 * k); g.lineTo(-3 * k, 1.4 * k); g.stroke();
+      g.restore();
     }
     if (f.state === 'win' && f.fj && WIN[f.def.id] && WIN[f.def.id].draw) WIN[f.def.id].draw(g, f, winT(f) - 0.3);
     if (f.state === 'dizzy' || (f.state === 'hit' && f.daze)) {
@@ -1581,7 +1601,7 @@
     bgDark(); ui = [];
     const t = game.time, g = ctx;
     // 4 by 4 up to 16 fighters; bigger rosters get more, smaller cells (1.1)
-    const NF = ROSTER.FIGHTERS.length, NC = NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7)), GP = NF <= 16 ? 3 : 2;
+    const NF = ROSTER.FIGHTERS.length, NC = G.selectCols || (NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7))), GP = NF <= 16 ? 3 : 2;   // 1.4: GAME.selectCols fixes the column count
     const cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)), chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
     const gw = NC * (cw + GP) - GP, gx = Math.round(Math.min(150 + (W - 150 - gw) / 2, W - 94 - gw)), gy = 31, cx = gx + gw / 2, rows = Math.ceil(NF / NC);
     TXT.draw(g, 'CHOOSE YOUR FIGHTER', cx, 4, { size: 20, align: 'center', fill: 'gold' });
@@ -1871,7 +1891,7 @@
   TXT.ready.then(() => { last = performance.now(); requestAnimationFrame(frame); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && screen === 'play') paused = true; });
 
-  window.MK = { game, ladder, sel, get p1() { return p1; }, get p2() { return p2; }, get screen() { return screen; }, set screen(v) { screen = v; }, startMatch, newLadder, startFatality, PS, MV,
+  window.MK = { game, ladder, sel, get p1() { return p1; }, get p2() { return p2; }, get screen() { return screen; }, set screen(v) { screen = v; }, startMatch, newLadder, startFatality, startSpecial, PS, MV,
     set paused(v) { paused = v; }, get cam() { return cam; }, set cam(v) { cam = v; }, act, applyHit, contact, tryHit, projs: () => projs };
   if (AUTO) setTimeout(() => { const q = new URLSearchParams(location.search); ladder.pick = +(q.get('p') || 0); newLadder(); if (q.get('o')) { const o = ROSTER.ALL[q.get('o')]; ladder.opps[0] = o; } if (q.get('s')) ladder.stages[0] = q.get('s'); startMatch(); }, 600);
 })();
