@@ -1,6 +1,6 @@
 # POTUS Kombat
 
-An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.7.0 in `engine/`), with this game's content in `js/`.
+An early-90s arcade fighting game for phones in landscape, starring deceased US presidents. Built on the [Kombat Engine](https://github.com/andyshearsphd/kombat-engine) (pinned to 1.8.0 in `engine/`), with this game's content in `js/`.
 
 ## Progress
 

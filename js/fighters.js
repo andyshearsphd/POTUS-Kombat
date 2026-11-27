@@ -450,13 +450,21 @@ const ROSTER = (() => {
   }
   // ---- hats: side-view painters work in head space (face toward +x, crown near y -28) ----
   function cowboyHatSide(g, c) {
-    // the crown with its center crease comes down over the whole skull; the band; the brim curled up at both ends
-    g.beginPath(); g.moveTo(-14.8, -20); g.lineTo(-13.6, -32.8); g.quadraticCurveTo(-7, -37.8, -1.4, -35.2); g.quadraticCurveTo(4.4, -37.8, 9.8, -33); g.lineTo(10.8, -20); g.closePath();
-    const gr = g.createLinearGradient(-15, 0, 11, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.6, c); gr.addColorStop(0.8, sh(c, 0.06)); gr.addColorStop(1, sh(c, -0.22)); g.fillStyle = gr; g.fill();
-    R.line(g, -3.4, -36, 0.4, -34, 'rgba(0,0,0,0.25)', 0.8);
-    g.fillStyle = '#3a2a1a'; g.fillRect(-14.6, -23.8, 25.2, 2.6);
-    g.beginPath(); g.moveTo(-21.4, -24.6); g.quadraticCurveTo(-19, -20.2, -2, -20.4); g.quadraticCurveTo(15, -20, 18.8, -24.8); g.quadraticCurveTo(17.6, -18.4, -2, -18.2); g.quadraticCurveTo(-19.6, -18.2, -21.4, -24.6); g.closePath();
-    g.fillStyle = sh(c, -0.12); g.fill(); g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-7, -20.2, 12, 0.7);
+    // a cattleman Stetson in profile: the crown pinched and sloping down at the front, a crease dipping along
+    // the top; the near side of the brim curls up in the middle and the front tip dips a little
+    g.beginPath(); g.moveTo(-14.6, -21); g.lineTo(-13.8, -35.4); g.quadraticCurveTo(-11.2, -40.6, -6, -40);
+    g.quadraticCurveTo(-2.4, -37.4, 1, -38.8); g.quadraticCurveTo(6.2, -38.8, 9.8, -32.6); g.lineTo(10.6, -21); g.closePath();
+    const gr = g.createLinearGradient(-15, 0, 11, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.55, c); gr.addColorStop(0.8, sh(c, 0.06)); gr.addColorStop(1, sh(c, -0.2)); g.fillStyle = gr; g.fill();
+    // the pinch dent at the front and the crease along the top
+    g.fillStyle = 'rgba(0,0,0,0.16)'; g.beginPath(); g.moveTo(4.6, -37.6); g.quadraticCurveTo(7.6, -33, 6.8, -29); g.quadraticCurveTo(8.8, -32, 9.6, -32.8); g.quadraticCurveTo(7.2, -36.8, 4.6, -37.6); g.closePath(); g.fill();
+    R.line(g, -9, -39.2, 3.4, -38.2, 'rgba(0,0,0,0.22)', 0.8);
+    g.fillStyle = '#3a2a1a'; g.fillRect(-14.2, -30.4, 24.4, 2.8);
+    // the brim: flat underneath, the curled side rising in the middle, the back tip up a touch, the front tip down
+    g.beginPath(); g.moveTo(-23.8, -24.4); g.quadraticCurveTo(-4, -18.8, 21, -21.6);
+    g.quadraticCurveTo(12.4, -22.6, 6.6, -26.8); g.quadraticCurveTo(-3, -31, -12.6, -27.8); g.quadraticCurveTo(-18.6, -25.8, -23.8, -24.4); g.closePath();
+    g.fillStyle = sh(c, -0.1); g.fill();
+    g.strokeStyle = sh(c, 0.14); g.lineWidth = 0.8; g.beginPath(); g.moveTo(19.8, -21.8); g.quadraticCurveTo(12.4, -22.8, 6.6, -26.6); g.quadraticCurveTo(-3, -30.6, -12.6, -27.6); g.quadraticCurveTo(-18.6, -25.6, -23, -24.4); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-23.2, -24); g.quadraticCurveTo(-4, -18.6, 20.6, -21.4); g.stroke();
   }
 
   function cowboyHatFront(g, c) {

@@ -6,11 +6,12 @@ window.GAME = {
   ladderGoal: 'THE CAPITOL',
   endingLine: 'The Republic stands. Its enemies do not.',
   mascot: 'lincoln',                                     // head on the title emblem
+  // the title screen: the White House at night (js/whitehouse.js)
+  titleScene(g, W, H, t) { WHITEHOUSE.scene(g, W, H, t, { cx: W / 2, base: 192, s: Math.min(0.97, W * 0.62 / 288) }); },
   toasty: { fighter: 'teddy', text: 'BULLY!' },          // pops in after some uppercuts
   muteKey: 'potus_muted',
   ladder: { mirror: true, endurance: 2, opponents: 15 },   // 15 random opponents, so the ladder stays 21 matches as the roster grows
   comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },   // no single combo takes more than a quarter of the bar
-  selectCols: 6,                                              // four rows of six
 
   // ---------- the announcer: an old newsreel narrator, crackling over the radio ----------
   calls: { flawless: 'LANDSLIDE VICTORY', choose: 'choose your president' },
