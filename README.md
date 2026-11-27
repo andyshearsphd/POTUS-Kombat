@@ -4,7 +4,7 @@ An early-90s arcade fighting game for phones in landscape, starring deceased US 
 
 ## Progress
 
-### Fighters (20 of 24 playable)
+### Fighters (24 of 24 playable)
 
 The select screen is four rows of six, in chronological order. The ladder draws 15 random opponents each run, and no single combo takes more than a quarter of the health bar.
 
@@ -30,10 +30,10 @@ The select screen is four rows of six, in chronological order. The ladder draws 
 | William Henry Harrison | Inaugural Address, Hard Cider Barrel | Two-Hour Speech | Done |
 | Dwight D. Eisenhower | D-Day Ramp, Interstate Charge | Interstate | Done |
 | George H. W. Bush | Broccoli Bomb, Read My Lips | Birthday Jump | Done |
-| James Madison | Bill of Rights, Dolley's Rescue | Checks and Balances | To do (batch 2) |
-| Woodrow Wilson | Fourteen Points, Lawn Flock | Fleeced | To do (batch 2) |
-| Herbert Hoover | Hoover-Ball, Engineer's Pick | Hoover Dam | To do (batch 2) |
-| Gerald Ford | Wolverine Block, Pratfall | Airstair Tumble | To do (batch 2) |
+| James Madison | Bill of Rights, Dolley's Rescue | Checks and Balances | Done |
+| Woodrow Wilson | Fourteen Points, Lawn Flock | Fleeced | Done |
+| Herbert Hoover | Hoover-Ball, Engineer's Pick | Hoover Dam | Done |
+| Gerald Ford | Wolverine Block, Pratfall | Airstair Tumble (against Nixon: a full pardon) | Done |
 
 ### Arenas (12, plus the boss stage to do)
 

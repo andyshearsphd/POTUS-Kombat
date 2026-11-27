@@ -974,57 +974,90 @@ FATAL.add(K => {
   };
 
   // ---------- WILLIAM HENRY HARRISON: Two-Hour Speech ----------
-  // He reads the whole inaugural address. The loser grows a beard, then grows old, then turns to dust.
-  // "...and in conclusion." Then he sneezes.
+  // He steps up to the inaugural lectern and reads the whole address. The hours go by on a big clock.
+  // The loser nods off, grows a white beard to the floor, gathers cobwebs, turns to bone, and crumbles.
+  // "...and in conclusion." Then he sneezes the dust away.
   S.harrison = (s, A, V, api) => {
     const PS = api.PS, k = A.d.k, F = api.FLOOR;
-    let scroll = 0, spin = 0, beard = 0, pile = null, sneeze = 0, hh = 120;
-    const flakes = Array.from({ length: 70 }, () => ({ x: rnd(0, 1), y: rnd(0, 1), v: rnd(0.5, 1.2) }));
-    // the speech, unrolling from his hands across the floor toward the loser
+    let lect = 0, scroll = 0, hours = 0, beard = 0, web = 0, pile = null, sneeze = 0, hh = 120, zz = [];
+    const LX = () => A.x + A.face * 22 * k;
+    // the lectern with its bunting, the speech spilling over the front and looping across the floor
     prop({ layer: 'front', draw(g) {
-      if (scroll <= 0) return;
-      const a = J(A, 'handFx'), x0 = a[0], y0 = a[1], x1 = lerp(x0, V.x - A.face * 4, scroll);
-      g.fillStyle = '#ece4c8'; g.beginPath(); g.moveTo(x0 - 2.5, y0); g.lineTo(x0 + 2.5, y0); g.lineTo(x0 + A.face * 7, F - 2); g.lineTo(x1, F - 2); g.lineTo(x1, F); g.lineTo(x0 - A.face * 2, F); g.closePath(); g.fill();
-      g.fillStyle = 'rgba(60,40,20,0.4)'; for (let x = x0 + A.face * 12; (x1 - x) * A.face > 2; x += A.face * 4) g.fillRect(x, F - 1.6, A.face * 2.4, 0.5);
-      R.ball(g, x1, F - 3.4, 3.4, '#d8ccac');
+      if (lect <= 0) return;
+      const x = LX(), top = F - 74 * k, w = 16 * k, sd = A.face;
+      g.globalAlpha = Math.min(1, lect);
+      if (scroll > 0) {
+        const end = lerp(x, V.x - sd * 6, scroll);
+        g.fillStyle = '#f2ead2'; g.fillRect(x + sd * w - 3, top + 2, 6 * sd, F - top - 2);
+        g.strokeStyle = '#f2ead2'; g.lineWidth = 5;
+        g.beginPath(); g.moveTo(x + sd * w, F - 3);
+        for (let xx = x + sd * w, n = 0; (end - xx) * sd > 0; xx += sd * 12, n++) g.quadraticCurveTo(xx + sd * 6, F - 3 - (n % 2 ? 14 : 4), xx + sd * 12, F - 3);
+        g.stroke();
+        g.strokeStyle = 'rgba(60,40,20,0.5)'; g.lineWidth = 0.6; for (let yy = top + 8; yy < F - 6; yy += 4) { g.beginPath(); g.moveTo(x + sd * (w - 2), yy); g.lineTo(x + sd * (w + 2), yy); g.stroke(); }
+        R.ball(g, end, F - 5, 5, '#e0d4b0'); R.ball(g, end, F - 5, 2, '#b8a880');
+      }
+      g.fillStyle = '#5a3418'; g.beginPath(); g.moveTo(x - w, F); g.lineTo(x - w * 0.8, top + 6); g.lineTo(x + w * 0.8, top + 6); g.lineTo(x + w, F); g.closePath(); g.fill();
+      g.fillStyle = '#7a4a24'; g.fillRect(x - w * 1.15, top, w * 2.3, 7); g.fillStyle = '#9a6a3a'; g.fillRect(x - w * 1.15, top, w * 2.3, 1.6);
+      // red, white and blue bunting
+      for (let i = 0; i < 3; i++) { g.fillStyle = ['#b81c28', '#f0ece4', '#1e2a6a'][i]; g.beginPath(); g.moveTo(x - w * 0.8, top + 10 + i * 4); g.quadraticCurveTo(x, top + 22 + i * 4, x + w * 0.8, top + 10 + i * 4); g.lineTo(x + w * 0.8, top + 14 + i * 4); g.quadraticCurveTo(x, top + 26 + i * 4, x - w * 0.8, top + 14 + i * 4); g.closePath(); g.fill(); }
+      R.ball(g, x, top + 30, 3, '#c8a040');
+      g.globalAlpha = 1;
     } });
-    // a cold wet March day: snow, and a clock racing round
+    // the clock racing round, big at the top of the screen
     prop({ layer: 'front', draw(g) {
-      if (spin <= 0) return;
-      const x0 = api.cam - 20, w = api.W + 40;
-      for (const fl of flakes) { const x = x0 + ((fl.x * w + s.t * 30 * fl.v) % w), y = ((fl.y * 260 + s.t * 60 * fl.v) % 260) - 20; g.fillStyle = 'rgba(240,244,252,0.8)'; g.fillRect(x, y, 1.6, 1.6); }
-      const cx = api.cam + api.W / 2, cy = 44, r = 16;
-      R.ball(g, cx, cy, r + 2.5, '#5a4a3a'); R.ball(g, cx, cy, r, '#f0ead8');
-      R.line(g, cx, cy, cx + Math.cos(spin * 0.083 - PI / 2) * 8, cy + Math.sin(spin * 0.083 - PI / 2) * 8, '#1a1008', 1.8);
-      R.line(g, cx, cy, cx + Math.cos(spin - PI / 2) * 13, cy + Math.sin(spin - PI / 2) * 13, '#1a1008', 1.1);
+      if (hours <= 0) return;
+      const cx = api.cam + api.W / 2, cy = 52, r = 26, a = hours * PI * 2;
+      R.ball(g, cx, cy, r + 4, '#6a4a2a'); R.ball(g, cx, cy, r + 2, '#c8a040'); R.ball(g, cx, cy, r, '#f4eedc');
+      g.fillStyle = '#2a1a0a'; for (let i = 0; i < 12; i++) { const b = i * PI / 6; g.fillRect(cx + Math.cos(b) * (r - 4) - 1, cy + Math.sin(b) * (r - 4) - 1, i % 3 ? 1.4 : 2.6, i % 3 ? 1.4 : 2.6); }
+      R.line(g, cx, cy, cx + Math.cos(a / 12 - PI / 2) * 13, cy + Math.sin(a / 12 - PI / 2) * 13, '#1a1008', 2.6);
+      R.line(g, cx, cy, cx + Math.cos(a - PI / 2) * 21, cy + Math.sin(a - PI / 2) * 21, '#1a1008', 1.6); R.ball(g, cx, cy, 2, '#1a1008');
     } });
-    // the beard the loser grows while listening
+    // the loser's long white beard and the cobwebs, and the Z's while they sleep
     prop({ layer: 'front', draw(g) {
-      if (beard <= 0 || V.hidden || V.ro.skeleton) return;
-      const h = J(V, 'head'), L = 30 * beard * V.d.k;
-      g.fillStyle = '#ece8e0'; g.beginPath(); g.moveTo(h[0] - 2 * V.face, h[1] + 2); g.lineTo(h[0] + 9 * V.face, h[1] + 2); g.quadraticCurveTo(h[0] + 8 * V.face, h[1] + L * 0.7, h[0] + 4 * V.face, h[1] + L); g.quadraticCurveTo(h[0] - 1 * V.face, h[1] + L * 0.6, h[0] - 2 * V.face, h[1] + 2); g.fill();
-      g.strokeStyle = 'rgba(150,150,150,0.5)'; g.lineWidth = 0.5; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(h[0] + (i * 2) * V.face, h[1] + 4); g.lineTo(h[0] + (i * 1.6 + 1) * V.face, h[1] + L * 0.8); g.stroke(); }
+      if (V.hidden) return;
+      const h = J(V, 'head'), sd = V.face;
+      if (beard > 0) {
+        const bx = h[0] + sd * 6 * V.d.k, by = h[1] + 4, L = (F - by - 2) * beard;
+        g.fillStyle = '#f2f0ea'; g.beginPath(); g.moveTo(bx - sd * 6, by - 2); g.lineTo(bx + sd * 6, by - 2); g.quadraticCurveTo(bx + sd * 9, by + L * 0.6, bx + sd * 3, by + L); g.lineTo(bx - sd * 1, by + L * 0.9); g.quadraticCurveTo(bx - sd * 7, by + L * 0.5, bx - sd * 6, by - 2); g.fill();
+        g.strokeStyle = 'rgba(160,160,160,0.6)'; g.lineWidth = 0.6; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(bx + i * 1.6, by); g.quadraticCurveTo(bx + i * 2.4, by + L * 0.5, bx + sd * 2 + i, by + L * 0.92); g.stroke(); }
+        g.fillStyle = 'rgba(245,245,240,0.85)'; g.beginPath(); g.ellipse(h[0] - sd * 2, h[1] - 8 * V.d.k, 9 * V.d.k, 6 * V.d.k, 0, PI, 0); g.fill();
+      }
+      if (web > 0) {
+        g.strokeStyle = `rgba(235,235,240,${0.75 * web})`; g.lineWidth = 0.6;
+        const anchors = [[h[0] - 28, h[1] - 30], [h[0] + 30, h[1] - 24], [V.x - 30, F], [V.x + 32, F]];
+        for (const [ax, ay] of anchors) { g.beginPath(); g.moveTo(h[0], h[1] - 4); g.lineTo(lerp(h[0], ax, web), lerp(h[1] - 4, ay, web)); g.stroke(); }
+        for (let r = 6; r < 26 * web; r += 6) { g.beginPath(); g.arc(h[0], h[1] - 4, r, 0, PI * 2); g.stroke(); }
+      }
+      for (const z of zz) { const u = (s.t - z.t) / 1.6; if (u < 0 || u > 1) continue; g.fillStyle = `rgba(255,255,255,${1 - u})`; g.font = `${8 + u * 8}px Anton, Impact, sans-serif`; g.fillText('Z', h[0] + sd * (6 + u * 14), h[1] - 14 - u * 30); }
     } });
-    s.at(0.5, () => { api.bubble('FELLOW CITIZENS...', A.x, F - 170, { size: 11, fill: 'white' }); api.sfx('whoosh'); });
-    s.at(1.6, () => api.bubble('...AND FURTHERMORE...', A.x, F - 170, { size: 10, fill: 'white' }));
-    s.at(2.6, () => { api.bubble('...SECTION FORTY-ONE...', A.x, F - 170, { size: 10, fill: 'white' }); V.ro.skeleton = true; api.sfx('crunch'); hh = api.hurtH(V); });
-    s.at(3.6, () => {
-      api.sfx('thud'); V.hidden = true; FX.burst(V.x, F - hh * 0.5, 10, ['bone', 'bone', 'bone'], 0.5); FX.dust(V.x, F, 26);
-      pile = prop({ layer: 'back', a: 1, draw(g, p) { g.globalAlpha = p.a; g.fillStyle = '#a8a090'; g.beginPath(); g.ellipse(V.x, F, 22, 7, 0, PI, 0); g.fill(); g.fillStyle = '#c8c0ae'; g.beginPath(); g.ellipse(V.x - 4, F - 2, 12, 4, 0, PI, 0); g.fill(); g.globalAlpha = 1; } });
+    s.at(0.4, () => { lect = 0.01; api.sfx('thud'); });
+    s.at(0.8, () => { api.bubble('FELLOW CITIZENS...', A.x, F - 175, { size: 12, fill: 'white' }); api.sfx('whoosh'); });
+    s.at(1.4, () => api.bubble('HOUR ONE', api.cam + api.W / 2, 100, { size: 16, life: 1.0, fill: 'gold' }));
+    s.at(2.5, () => api.bubble('HOUR TWO', api.cam + api.W / 2, 100, { size: 16, life: 1.0, fill: 'gold' }));
+    s.at(3.4, () => { V.ro.ash = true; api.sfx('crunch'); });
+    s.at(3.9, () => { V.ro.skeleton = true; api.sfx('crunch'); hh = api.hurtH(V); });
+    s.at(4.5, () => {
+      api.sfx('thud'); api.shake(4); V.hidden = true; FX.burst(V.x, F - hh * 0.5, 12, ['bone', 'bone', 'bone', 'chunk'], 0.5); FX.dust(V.x, F, 30);
+      pile = prop({ layer: 'back', a: 1, draw(g, p) { g.globalAlpha = p.a; g.fillStyle = '#a8a090'; g.beginPath(); g.ellipse(V.x, F, 26, 9, 0, PI, 0); g.fill(); g.fillStyle = '#c8c0ae'; g.beginPath(); g.ellipse(V.x - 4, F - 3, 14, 5, 0, PI, 0); g.fill(); g.fillStyle = '#f2f0ea'; g.beginPath(); g.ellipse(V.x + 8, F - 2, 10, 3, 0.2, 0, PI * 2); g.fill(); g.globalAlpha = 1; } });
     });
-    s.at(4.3, () => api.bubble('...AND IN CONCLUSION.', A.x, F - 170, { size: 11, life: 1.4, fill: 'gold' }));
-    s.at(5.4, () => {
-      api.bubble('ACHOO!', A.x, F - 160, { size: 14, life: 1.2, fill: 'white' }); api.sfx('splat'); api.shake(5); sneeze = 1;
-      for (let i = 0; i < 30; i++) FX.puff(V.x + A.face * rnd(0, 40), F - rnd(2, 20), 'rgba(190,182,166,0.8)', 1, 4);
+    s.at(4.9, () => api.bubble('...AND IN CONCLUSION.', A.x, F - 175, { size: 12, life: 1.3, fill: 'white' }));
+    s.at(5.9, () => {
+      api.bubble('ACHOO!', A.x, F - 160, { size: 18, life: 1.2, fill: 'white' }); api.sfx('splat'); api.shake(6); sneeze = 1;
+      for (let i = 0; i < 40; i++) FX.puff(V.x + A.face * rnd(-10, 50), F - rnd(2, 24), 'rgba(190,182,166,0.85)', 1, 4);
     });
-    s.at(6.6, () => { s.done = true; });
+    s.at(6.6, () => api.bubble('I FEEL A COLD COMING ON.', A.x, F - 175, { size: 11, life: 1.5, fill: 'gold' }));
+    s.at(7.8, () => { s.done = true; });
     s.tick = (t, dt) => {
-      if (t < 0.5) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 90 * k, dt, api, 110); return; }
-      scroll = Math.min(1, (t - 0.5) / 1.0) * (t > 5.3 ? Math.max(0, 1 - (t - 5.3) / 0.3) : 1);
-      spin = t < 4.3 ? (t - 0.5) * 9 : spin;
-      beard = Math.min(1, Math.max(0, (t - 1.2) / 1.4));
-      if (!V.hidden) V.scriptPose = t < 2.6 ? PS.dizzy(V.t * 0.4) : P({ hy: 10 + (t - 2.6) * 18, lean: 0.5, head: 0.5, aF: [0.2, 0.3], aB: [0.15, 0.3], fF: [6, 0], fB: [-6, 0] });
-      A.scriptPose = t < 5.35 ? P({ hy: 2, lean: -0.05, head: 0.15, aF: [1.1, 2.1], aB: [1.0, 2.2], fF: [8, 0], fB: [-8, 0] }) : t < 5.6 ? P({ hy: 6, lean: 0.4, head: 0.5, aF: [1.4, 2.4], aB: [1.4, 2.4], fF: [8, 0], fB: [-8, 0] }) : PS.stance(A.t);
+      if (t < 0.4) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 100 * k, dt, api, 110); return; }
+      lect = Math.min(1, lect + dt * 4) * (t > 7.1 ? Math.max(0, 1 - (t - 7.1) / 0.5) : 1);
+      scroll = Math.min(1, Math.max(0, (t - 0.8) / 1.2)) * (t > 7.1 ? 0 : 1);
+      hours = t < 4.9 ? Math.max(0, (t - 1.0) * 0.55) : t < 5.6 ? hours : 0;
+      beard = Math.min(1, Math.max(0, (t - 1.8) / 1.0));
+      web = Math.min(1, Math.max(0, (t - 2.6) / 0.8));
+      if (t > 1.0 && t < 3.4 && Math.floor(t * 1.6) !== s.zn) { s.zn = Math.floor(t * 1.6); zz.push({ t }); }
+      if (!V.hidden) V.scriptPose = t < 1.0 ? PS.dizzy(V.t) : t < 3.9 ? P({ hy: 4, lean: 0.25, head: 0.7, aF: [0.15, 0.2], aB: [0.1, 0.2], fF: [5, 0], fB: [-5, 0] }) : P({ hy: 10 + (t - 3.9) * 50, lean: 0.6, head: 0.8, aF: [0.1, 0.3], aB: [0.05, 0.3], fF: [6, 0], fB: [-6, 0] });
+      // reading, page after page; a sneeze doubles him over; then a shiver
+      A.scriptPose = t < 5.85 ? P({ hy: 2, lean: 0.05, head: 0.25 + Math.sin(t * 3) * 0.05, aF: [1.25, 1.6], aB: [1.15, 1.7], fF: [8, 0], fB: [-8, 0] }) : t < 6.2 ? P({ hy: 8, lean: 0.55, head: 0.6, aF: [1.6, 2.6], aB: [1.5, 2.6], fF: [8, 0], fB: [-8, 0] }) : P({ hy: 2, lean: 0, head: 0.1, aF: [0.9 + Math.sin(t * 40) * 0.05, 2.7], aB: [0.9, 2.7], fF: [6, 0], fB: [-6, 0] });
       if (pile && sneeze) { pile.a = Math.max(0, pile.a - dt * 1.4); if (pile.a <= 0) pile.dead = true; }
     };
   };
@@ -1107,21 +1140,38 @@ FATAL.add(K => {
       g.fillStyle = '#3a4048'; g.fillRect(x - 22, y - 3, 44, 7); g.beginPath(); g.moveTo(x + 22, y - 3); g.lineTo(x + 30, y + 1); g.lineTo(x + 22, y + 4); g.fill();
       g.fillRect(x - 6, y - 1, 12, 2); g.fillRect(x - 4, y - 12, 8, 26); g.beginPath(); g.moveTo(x - 22, y - 3); g.lineTo(x - 26, y - 11); g.lineTo(x - 18, y - 3); g.fill();
     } });
-    // the parachute: red, white and blue panels
+    // the parachute: a round canopy of red and white gores with a blue crown, scalloped hem, lines to the risers
     prop({ layer: 'back', draw(g) {
       if (chute <= 0) return;
-      const sh0 = J(A, 'chest'), x = A.x, top = A.y - 118 * k * chute, w = 50 * k * chute;
-      if (landed) { g.fillStyle = 'rgba(180,30,40,0.9)'; g.beginPath(); g.ellipse(x - A.face * 40, F - 4, 34 * chute, 6, 0, PI, 0); g.fill(); return; }
-      const cols = ['#c8202a', '#f0ece4', '#1e3a8a', '#f0ece4', '#c8202a', '#f0ece4', '#1e3a8a'];
-      for (let i = 0; i < 7; i++) { const a0 = PI + i * PI / 7, a1 = a0 + PI / 7; g.fillStyle = cols[i]; g.beginPath(); g.moveTo(x, top + 18); g.lineTo(x + Math.cos(a0) * w, top + 18 + Math.sin(a0) * 32); g.lineTo(x + Math.cos(a1) * w, top + 18 + Math.sin(a1) * 32); g.closePath(); g.fill(); }
-      g.strokeStyle = 'rgba(40,40,40,0.6)'; g.lineWidth = 0.5; for (const sd of [-1, -0.4, 0.4, 1]) { g.beginPath(); g.moveTo(x + sd * w, top + 18); g.lineTo(sh0[0], sh0[1]); g.stroke(); }
+      const sc = A.ro.scale || 1, H0 = api.hurtH(A) * sc, x = A.x, w = 48 * sc, hgt = 36 * sc, yb = A.y - H0 - 30 * sc, shY = A.y - H0 * 0.74;
+      if (landed) {
+        // collapsed on the ground behind him
+        const u = chute, cx = x - A.face * 50, ww = 52 * (1.2 - u * 0.2);
+        g.fillStyle = '#b81c28'; g.beginPath(); g.moveTo(cx - ww, F); g.quadraticCurveTo(cx - ww * 0.4, F - 18 * u - 4, cx, F - 8 * u - 2); g.quadraticCurveTo(cx + ww * 0.5, F - 20 * u - 4, cx + ww, F); g.closePath(); g.fill();
+        g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.moveTo(cx - ww * 0.3, F); g.quadraticCurveTo(cx - ww * 0.1, F - 14 * u - 3, cx + ww * 0.2, F); g.fill();
+        g.strokeStyle = 'rgba(60,60,60,0.6)'; g.lineWidth = 0.5; for (const d0 of [-0.6, 0, 0.6]) { g.beginPath(); g.moveTo(cx + d0 * ww, F - 2); g.lineTo(x, F - 70); g.stroke(); }
+        return;
+      }
+      // suspension lines first, from the hem to the shoulders
+      g.strokeStyle = 'rgba(40,40,40,0.75)'; g.lineWidth = 0.6;
+      for (let i = 0; i <= 8; i++) { const hx = x - w + i * w / 4; g.beginPath(); g.moveTo(hx, yb); g.lineTo(x + (i < 4 ? -5 : i > 4 ? 5 : 0) * sc, shY); g.stroke(); }
+      // the dome, in gores
+      g.save(); g.beginPath(); g.moveTo(x - w, yb); g.bezierCurveTo(x - w, yb - hgt * 1.3, x + w, yb - hgt * 1.3, x + w, yb);
+      for (let i = 8; i > 0; i--) { const x1 = x - w + (i - 1) * w / 4, xm = x - w + (i - 0.5) * w / 4; g.quadraticCurveTo(xm, yb - 4 * sc, x1, yb); }
+      g.closePath(); g.clip();
+      for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#f2eee6' : '#c8202a'; g.beginPath(); g.moveTo(x, yb - hgt * 1.05); g.lineTo(x - w * 1.2 + i * w * 0.3, yb + 2); g.lineTo(x - w * 1.2 + (i + 1) * w * 0.3, yb + 2); g.closePath(); g.fill(); }
+      g.fillStyle = '#1e3a8a'; g.beginPath(); g.ellipse(x, yb - hgt * 0.98, w * 0.42, hgt * 0.3, 0, 0, PI * 2); g.fill();
+      for (let i = 0; i < 5; i++) { const a = i * PI * 2 / 5 - PI / 2; g.fillStyle = '#f2eee6'; g.fillRect(x + Math.cos(a) * w * 0.24 - 1, yb - hgt * 0.98 + Math.sin(a) * hgt * 0.15 - 1, 2, 2); }
+      const sh2 = g.createLinearGradient(x - w, 0, x + w, 0); sh2.addColorStop(0, 'rgba(255,255,255,0.18)'); sh2.addColorStop(0.5, 'rgba(0,0,0,0)'); sh2.addColorStop(1, 'rgba(0,0,0,0.35)'); g.fillStyle = sh2; g.fillRect(x - w, yb - hgt * 1.5, w * 2, hgt * 1.6);
+      g.restore();
+      g.fillStyle = 'rgba(0,0,0,0.3)'; for (let i = 0; i < 8; i++) { const xm = x - w + (i + 0.5) * w / 4; g.beginPath(); g.ellipse(xm, yb - 1.5 * sc, w / 8, 2 * sc, 0, 0, PI); g.fill(); }
     } });
     s.at(0.5, () => { api.bubble('HAPPY BIRTHDAY TO ME!', A.x, F - 175, { size: 11, fill: 'white' }); });
     s.at(0.9, () => { api.sfx('whoosh'); api.sfx('big'); api.shake(6); FX.dust(A.x, F, 20); hh = api.hurtH(V); A.ro.noShadow = true; V.ro.noShadow = true; });
     s.at(1.6, () => { plane = 0; api.sfx('horn'); });
     s.at(2.6, () => { V.y = -260; vy = 200; api.sfx('whoosh'); });
-    s.at(3.5, () => { A.y = 30; chute = 1; api.sfx('whoosh'); });
-    s.at(7.6, () => { s.done = true; });
+    s.at(3.5, () => { A.y = 126; A.ro.scale = 0.5; chute = 1; api.sfx('whoosh'); });
+    s.at(8.0, () => { s.done = true; });
     s.tick = (t, dt) => {
       if (t < 0.5) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - A.face * 34 * k, dt, api, 110); return; }
       if (plane >= 0 && plane <= 1) plane += dt / 1.4;
@@ -1145,16 +1195,255 @@ FATAL.add(K => {
       }
       // and Bush floats down under the canopy, waving
       if (t >= 3.5 && !landed) {
-        A.y = Math.min(F, A.y + 85 * dt);
+        A.y = Math.min(F, A.y + 38 * dt); A.ro.scale = lerp(0.5, 1, (A.y - 126) / (F - 126));
         A.scriptPose = P({ hy: 0, lean: 0, head: -0.1, aF: [2.9, 0.2], aB: [2.4 + Math.sin(t * 6) * 0.3, 0.3], fF: [4, -2], fB: [-4, -2] });
-        if (A.y >= F) { landed = true; A.ro.noShadow = false; api.sfx('thud'); FX.dust(A.x, F, 12); }
+        if (A.y >= F) { landed = true; A.ro.scale = null; A.ro.noShadow = false; api.sfx('thud'); FX.dust(A.x, F, 12); }
       }
       if (landed) {
         A.y = F; const lt = t;
         A.scriptPose = P({ hy: 0, lean: 0, head: 0.08, aF: [1.35, 2.6], aB: [0.25, 0.8], fF: [6, 0], fB: [-6, -7], jaw: 0.1 });
         if (!s.said) { s.said = 1; api.bubble('NOT BAD FOR NINETY.', A.x, F - 175, { size: 11, life: 1.8, fill: 'gold' }); }
-        chute = Math.max(0.01, chute - dt * 0.8);
+        chute = Math.max(0.15, chute - dt * 1.2);
       }
+    };
+  };
+
+  // ---------- JAMES MADISON: Checks and Balances ----------
+  // A giant scale comes down. The loser stands in one pan; Madison drops the Constitution in the other.
+  S.madison = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, sd = A.face;
+    let drop = -260, tilt = 0, doc = 0, docX = 0, docY = 0, vy = 0, flown = false, landed = false, sc0 = null;
+    const PA = () => V.x0, PB = () => V.x0 - sd * 64, PV = () => V.x0 - sd * 32;
+    prop({ layer: 'back', draw(g) {
+      if (drop <= -259) return;
+      const px = PV(), py = F - 104 + drop, L = 32, ax = px + sd * L * Math.cos(tilt), ay = py + L * Math.sin(tilt) * sd * -1, bx = px - sd * L * Math.cos(tilt), by = py - L * Math.sin(tilt) * sd * -1;
+      // the post and the base
+      g.fillStyle = '#b8902c'; g.fillRect(px - 3, py, 6, F - py); g.fillStyle = '#e8c860'; g.fillRect(px - 1, py, 2, F - py); g.fillStyle = '#b8902c'; g.fillRect(px - 16, F - 6, 32, 6); R.ball(g, px, py - 6, 5, '#e8c860');
+      R.line(g, ax, ay, bx, by, '#c8a040', 4); R.line(g, ax, ay - 1.4, bx, by - 1.4, '#f0d880', 1);
+      // chains and pans; pan A carries the loser, pan B the Constitution
+      for (const [x, y] of [[ax, ay], [bx, by]]) { const pyy = y + 98; R.line(g, x, y, x - 14, pyy, '#a8882c', 0.8); R.line(g, x, y, x + 14, pyy, '#a8882c', 0.8); g.fillStyle = '#c8a040'; g.beginPath(); g.ellipse(x, pyy, 20, 4, 0, 0, PI); g.fill(); g.fillStyle = '#f0d880'; g.fillRect(x - 20, pyy - 1, 40, 1.6); }
+      s.panA = ay + 98; s.panB = by + 98; s.panBx = bx;
+    } });
+    // the Constitution, rolled up as tall as he is
+    prop({ layer: 'front', draw(g) {
+      if (!doc) return;
+      g.save(); g.translate(docX, docY); g.rotate(PI / 2); g.fillStyle = '#ecdfba'; g.fillRect(-24, -8, 48, 16); g.fillStyle = '#c8b890'; g.fillRect(-24, -8, 4, 16); g.fillRect(20, -8, 4, 16); g.fillStyle = '#8a1a1a'; g.fillRect(-2, -8.6, 4, 17.2); g.restore();
+      g.fillStyle = '#2a1a0a'; g.font = '6px Georgia, serif'; g.textAlign = 'center'; g.fillText('WE THE PEOPLE', docX, docY - 30); g.textAlign = 'left';
+    } });
+    s.at(0.5, () => { V.x0 = V.x; api.sfx('whoosh'); api.bubble('CHECKS...', A.x, F - 150, { size: 12, fill: 'white' }); });
+    s.at(1.15, () => { api.sfx('clang'); api.shake(5); });
+    s.at(1.4, () => { doc = 1; api.sfx('whoosh'); });
+    s.at(2.2, () => { api.sfx('thud'); api.sfx('clang'); api.shake(10); });
+    s.at(2.3, () => { flown = true; vy = -1150; api.sfx('big'); V.ro.noShadow = true; });
+    s.at(3.5, () => { V.y = -200; vy = 300; });
+    s.at(4.4, () => api.bubble('...AND BALANCES.', A.x, F - 150, { size: 12, life: 1.6, fill: 'gold' }));
+    s.at(6.0, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.5) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - sd * 112 * k, dt, api, 110); return; }
+      drop = Math.min(0, -260 + ease(Math.min(1, (t - 0.5) / 0.65)) * 260);
+      // the loser rides in pan A once it's down
+      if (!flown) { V.scriptPose = PS.dizzy(V.t); if (t > 1.15) { V.y = Math.min(F, (s.panA || F) - 2); V.ro.noShadow = true; } }
+      // Madison lifts the scroll and drops it in pan B
+      if (t >= 1.4 && t < 2.2) { const h = J(A, 'handFx'); docX = lerp(h[0], s.panBx || PB(), Math.max(0, (t - 1.8) / 0.4)); docY = lerp(h[1] - 26, (s.panB || F) - 24, Math.max(0, (t - 1.8) / 0.4) ** 2); A.scriptPose = P({ hy: 2, lean: -0.1, head: -0.15, aF: [2.7, 0.3], aB: [2.6, 0.4], fF: [8, 0], fB: [-8, 0] }); }
+      else if (t >= 2.2) { docX = s.panBx || PB(); docY = (s.panB || F) - 24; A.scriptPose = PS.stance(A.t); }
+      tilt = t < 2.2 ? 0 : -ease(Math.min(1, (t - 2.2) / 0.12)) * 0.55;
+      if (flown && !landed) {
+        vy += 1500 * dt; V.y += vy * dt; V.scriptPose = P({ hy: 0, lean: -0.3, head: -0.4, aF: [2.8 + Math.sin(t * 30) * 0.4, 0.3], aB: [2.6, 0.3], fF: [8, -10], fB: [-8, -6] });
+        if (t > 3.5 && V.y >= F) {
+          landed = true; V.y = F; V.hidden = true; api.sfx('splat'); api.sfx('crunch'); api.shake(14); api.flash();
+          FX.burst(V.x, F - 10, 14, ['guts', 'chunk', 'brain', 'bone', 'kidney'], 1.4); FX.drops(5); FX.blood(V.x, F - 2, 40, 0, 1.4);
+          prop({ layer: 'back', draw(g) { g.fillStyle = 'rgba(130,0,12,0.9)'; g.beginPath(); g.ellipse(V.x, F, 34, 5, 0, 0, PI * 2); g.fill(); } });
+        }
+      }
+    };
+  };
+
+  // ---------- WOODROW WILSON: Fleeced ----------
+  // The White House flock tramples the loser flat; then he shears them down to the bone and bags it
+  // all up for the Red Cross.
+  S.wilson = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, sd = A.face;
+    let shears = 0, sack = 0, snip = 0;
+    const flock = Array.from({ length: 6 }, (_, i) => ({ x: 0, y: F - 24 - (i % 2) * 5, d: i * 0.2, hit: false }));
+    const sheep = (g, x, y, f, t) => {
+      g.save(); g.translate(x, y); g.scale(f * 1.8, 1.8); const st = Math.sin(t * 26);
+      g.fillStyle = '#2a2420'; for (const lx of [-8, -4, 4, 8]) g.fillRect(lx + st * (lx > 0 ? 1.4 : -1.4), 4, 2, 9);
+      g.fillStyle = '#eeeae0'; for (const [cx, cy, r] of [[-8, -1, 6], [-2, -3, 7], [5, -1, 6], [-4, 3, 6], [3, 3, 6]]) { g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); }
+      g.fillStyle = '#2a2420'; g.beginPath(); g.ellipse(13, -2, 4.4, 3.4, 0.2, 0, PI * 2); g.fill(); g.restore();
+    };
+    prop({ layer: 'front', draw(g) {
+      for (const sp of flock) if (sp.x) sheep(g, sp.x, sp.y, sd, s.t + sp.d);
+      if (shears) {
+        const h = J(A, 'handFx'), o = Math.abs(Math.sin(snip * 18)) * 0.5;
+        g.save(); g.translate(h[0], h[1]); g.scale(sd, 1); g.rotate(0.9);
+        for (const a of [-o, o]) { g.save(); g.rotate(a); g.fillStyle = '#c8ccd4'; g.beginPath(); g.moveTo(0, -1.4); g.lineTo(26, -0.6); g.lineTo(26, 0.6); g.lineTo(0, 1.4); g.fill(); g.restore(); }
+        g.strokeStyle = '#2a2a2e'; g.lineWidth = 1.6; g.beginPath(); g.arc(-4, -3, 3, 0, PI * 2); g.stroke(); g.beginPath(); g.arc(-4, 3, 3, 0, PI * 2); g.stroke(); g.restore();
+      }
+      if (sack) {
+        const h = J(A, 'handBx'); g.fillStyle = '#c8b48a'; g.beginPath(); g.moveTo(h[0] - 10, h[1] + 4); g.quadraticCurveTo(h[0] - 14, h[1] + 30, h[0], h[1] + 32); g.quadraticCurveTo(h[0] + 14, h[1] + 30, h[0] + 10, h[1] + 4); g.closePath(); g.fill();
+        g.fillStyle = '#c8202a'; g.fillRect(h[0] - 2, h[1] + 12, 4, 12); g.fillRect(h[0] - 6, h[1] + 16, 12, 4); g.fillStyle = '#7a6a48'; g.fillRect(h[0] - 6, h[1] + 2, 12, 3);
+      }
+    } });
+    s.at(0.5, () => { api.bubble('SHEEP!', A.x, F - 165, { size: 12, fill: 'white' }); api.sfx('chirp'); });
+    s.at(3.0, () => { api.bubble('FLEECED.', A.x, F - 165, { size: 12, fill: 'white' }); });
+    s.at(3.9, () => { V.ro.skeleton = true; api.sfx('crunch'); FX.burst(V.x, F - 10, 8, ['guts', 'chunk'], 0.8); });
+    s.at(4.4, () => { shears = 0; sack = 1; api.bubble('FOR THE RED CROSS.', A.x, F - 165, { size: 12, life: 1.8, fill: 'gold' }); });
+    s.at(6.2, () => { sack = 0; s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.5) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - sd * 70 * k, dt, api, 110); return; }
+      // the flock charges in from behind Wilson and straight over the loser
+      for (const sp of flock) {
+        const u = t - 0.7 - sp.d; sp.x = u < 0 ? 0 : A.x - sd * 140 + sd * u * 300;
+        if (!sp.hit && u > 0 && (sp.x - V.x) * sd > -6) { sp.hit = true; api.sfx('thud'); api.shake(4); FX.blood(V.x, F - 20, 10, sd, 0.9); if (V.state !== 'down') { V.scriptPose = PS.down(V); V.snapPose = true; } }
+      }
+      if (t < 1.3) V.scriptPose = PS.dizzy(V.t);
+      if (t < 1.0) { A.scriptPose = P({ hy: 0, lean: -0.05, head: -0.1, aF: [2.6, 0.3], aB: [0.3, 0.2], fF: [6, 0], fB: [-6, 0] }); return; }
+      if (t < 2.4) { A.scriptPose = PS.stance(A.t); return; }
+      if (t < 2.9) { walkTo(A, V.x - sd * 22 * k, dt, api, 120); return; }
+      if (t < 4.4) {
+        shears = 1; snip += dt;
+        A.scriptPose = P({ hy: 16, lean: 0.7, head: 0.5, aF: [1.0 + Math.sin(t * 14) * 0.3, 0.4], aB: [0.9, 0.6], fF: [10, 0], fB: [-12, 0] });
+        if (Math.random() < 0.5) FX.puff(V.x + rnd(-20, 20), F - rnd(4, 18), 'rgba(250,250,245,0.95)', 1, 4);
+        if (Math.random() < 0.2) { api.sfx('slash'); FX.blood(V.x + rnd(-14, 14), F - 8, 4, rnd(-1, 1), 0.8); }
+        return;
+      }
+      A.scriptPose = P({ hy: 0, lean: -0.05, head: -0.05, aF: [0.3, 0.2], aB: [2.2, 1.0], fF: [6, 0], fB: [-6, 0] });
+    };
+  };
+
+  // ---------- HERBERT HOOVER: Hoover Dam ----------
+  // A dam rises behind the loser. Hoover spins the wheel, the spillway opens, and the flood takes
+  // everything but the shoes.
+  S.hoover = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, sd = A.face;
+    let rise = 0, wheel = 0, flood = 0, shoes = null, swept = false, sx = 0, dx = 0;
+    const DW = 200, DH = 170;
+    prop({ layer: 'back', draw(g) {
+      if (rise <= 0) return;
+      const x = dx, top = F - DH * rise;
+      // the curved concrete face, its spillway gates, the name along the crest
+      const gr = g.createLinearGradient(x - DW / 2, 0, x + DW / 2, 0); gr.addColorStop(0, '#8a857a'); gr.addColorStop(0.5, '#d8d0c0'); gr.addColorStop(1, '#7a756a');
+      g.fillStyle = gr; g.beginPath(); g.moveTo(x - DW / 2, F); g.lineTo(x - DW / 2 + 16, top + 8); g.quadraticCurveTo(x, top - 6, x + DW / 2 - 16, top + 8); g.lineTo(x + DW / 2, F); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(0,0,0,0.12)'; for (let i = 1; i < 8; i++) g.fillRect(x - DW / 2 + 10, top + i * DH * rise / 8, DW - 20, 1);
+      g.fillStyle = '#5a564e'; g.fillRect(x - DW / 2 + 12, top - 2, DW - 24, 6);
+      for (const gx of [-40, 0, 40]) { g.fillStyle = flood > 0 ? '#1a1a1e' : '#4a4a52'; g.fillRect(x + gx - 9, top + 34, 18, 22); }
+      g.fillStyle = '#3a362e'; g.font = '9px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText('HOOVER DAM', x, top + 16); g.textAlign = 'left';
+    } });
+    // the valve wheel and the flood
+    prop({ layer: 'front', draw(g) {
+      if (rise > 0.5) {
+        const wx = A.x + sd * 26 * k, wy = F - 54 * k;
+        g.fillStyle = '#4a4a52'; g.fillRect(wx - 3, wy, 6, F - wy); g.fillStyle = '#6a6a72'; g.fillRect(wx - 1, wy, 2, F - wy);
+        g.save(); g.translate(wx, wy); g.rotate(wheel); g.strokeStyle = '#b82020'; g.lineWidth = 2.6; g.beginPath(); g.arc(0, 0, 11, 0, PI * 2); g.stroke();
+        for (let i = 0; i < 4; i++) { g.rotate(PI / 4); R.line(g, -11, 0, 11, 0, '#b82020', 1.6); } R.ball(g, 0, 0, 2.6, '#8a1a1a'); g.restore();
+      }
+      if (flood > 0) {
+        const top = F - DH + 34, x0 = dx - 50, x1 = api.cam + api.W + 40, x2 = api.cam - 40, depth = 70 * flood;
+        // three jets out of the gates, then a wall of water across the floor
+        for (const gx of [-40, 0, 40]) { const wg = g.createLinearGradient(0, top + 34, 0, F); wg.addColorStop(0, 'rgba(200,230,255,0.95)'); wg.addColorStop(1, 'rgba(90,150,210,0.9)'); g.fillStyle = wg; g.beginPath(); g.moveTo(dx + gx - 9, top + 22); g.lineTo(dx + gx + 9, top + 22); g.quadraticCurveTo(dx + gx + 10 - sd * 30, F - 40, dx + gx + 12 - sd * 60, F); g.lineTo(dx + gx - 12 - sd * 50, F); g.quadraticCurveTo(dx + gx - 10 - sd * 20, F - 40, dx + gx - 9, top + 22); g.fill(); }
+        const fg = g.createLinearGradient(0, F - depth, 0, F); fg.addColorStop(0, 'rgba(170,210,240,0.92)'); fg.addColorStop(1, 'rgba(40,90,150,0.95)'); g.fillStyle = fg;
+        g.beginPath(); g.moveTo(x2, F); for (let x = x2; x <= x1; x += 8) g.lineTo(x, F - depth + Math.sin(x * 0.08 + s.t * 10) * 4); g.lineTo(x1, F); g.closePath(); g.fill();
+        g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 1.2; g.beginPath(); for (let x = x2; x <= x1; x += 8) g.lineTo(x, F - depth + Math.sin(x * 0.08 + s.t * 10) * 4 + 1); g.stroke();
+      }
+    } });
+    s.at(0.5, () => { dx = V.x + sd * 70; api.bubble('OPEN THE SPILLWAY.', A.x, F - 165, { size: 12, fill: 'white' }); });
+    for (const at of [0.6, 0.9, 1.2]) s.at(at, () => { api.sfx('thud'); api.shake(6); });
+    s.at(1.5, () => api.sfx('creak'));
+    s.at(2.2, () => {
+      api.sfx('splat'); api.sfx('big'); api.shake(12); swept = true; sx = V.x;
+      shoes = prop({ layer: 'back', draw(g) { for (const o of [-6, 5]) { g.fillStyle = '#141414'; g.beginPath(); g.ellipse(sx + o, F - 2, 6, 3, 0, PI, 0); g.fill(); g.fillRect(sx + o - 6, F - 2, 12, 2); } } });
+      for (let i = 0; i < 30; i++) FX.puff(V.x + rnd(-30, 30), F - rnd(10, 60), 'rgba(230,245,255,0.9)', 1, 4);
+    });
+    s.at(4.6, () => api.bubble("THAT'S MY DAM.", A.x, F - 165, { size: 12, life: 1.6, fill: 'gold' }));
+    s.at(6.2, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.5) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - sd * 120 * k, dt, api, 110); return; }
+      rise = ease(Math.min(1, (t - 0.5) / 0.8));
+      if (t > 1.4 && t < 2.2) { wheel += dt * 9; A.scriptPose = P({ hy: 4, lean: 0.15, head: 0.05, aF: [1.6 + Math.sin(t * 9) * 0.5, 0.4], aB: [1.4 - Math.sin(t * 9) * 0.5, 0.4], fF: [10, 0], fB: [-10, 0] }); }
+      else A.scriptPose = PS.stance(A.t);
+      flood = t < 2.2 ? 0 : t < 3.6 ? Math.min(1, (t - 2.2) / 0.25) : Math.max(0, 1 - (t - 3.6) / 0.8);
+      if (!swept) V.scriptPose = PS.dizzy(V.t);
+      else if (!V.hidden) {
+        V.x += sd * 300 * dt; V.y = F - 30 - Math.abs(Math.sin(t * 6)) * 12; V.ro.noShadow = true; V.ro.noFeet = true;
+        V.scriptPose = P({ rot: sd * t * 6, hy: 0, aF: [2.6, 0.3], aB: [2.4, 0.3], fF: [8, -6], fB: [-8, -4] });
+        if (Math.random() < 0.3) FX.blood(V.x, V.y - 20, 3, sd, 0.6);
+        if ((V.x - (api.cam + api.W / 2)) * sd > api.W / 2 + 60) V.hidden = true;
+      }
+    };
+  };
+
+  // ---------- GERALD FORD: Airstair Tumble ----------
+  // At the top of Air Force One's stairs he waves, slips, and rides the whole flight down onto the
+  // loser. He's fine. Against Nixon, he pardons him instead.
+  S.ford = (s, A, V, api) => {
+    const PS = api.PS, k = A.d.k, F = api.FLOOR, sd = A.face;
+    if (V.def.id === 'nixon') {
+      // a full, free and absolute pardon
+      let paper = 0;
+      prop({ layer: 'front', draw(g) {
+        if (!paper) return;
+        const h = paper === 1 ? J(A, 'handFx') : J(V, 'handFx');
+        g.fillStyle = '#f2ead2'; g.fillRect(h[0] - 8, h[1] - 14, 16, 20); g.fillStyle = '#2a1a0a'; g.font = '4px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.fillText('PARDON', h[0], h[1] - 8); g.textAlign = 'left';
+        g.fillStyle = 'rgba(40,40,40,0.4)'; for (let i = 0; i < 3; i++) g.fillRect(h[0] - 6, h[1] - 5 + i * 3, 12, 0.6); g.fillStyle = '#c8a040'; g.beginPath(); g.arc(h[0] + 4, h[1] + 3, 2, 0, PI * 2); g.fill();
+      } });
+      s.at(0.6, () => { paper = 1; api.sfx('slash'); api.bubble('A FULL, FREE AND ABSOLUTE PARDON.', A.x, F - 175, { size: 10, life: 1.8, fill: 'white' }); });
+      s.at(2.0, () => { paper = 2; api.sfx('ding'); });
+      s.at(2.4, () => api.bubble('I AM NOT A CROOK!', V.x, F - 175, { size: 11, life: 1.4, fill: 'gold' }));
+      s.at(4.2, () => api.bubble("I'M A FORD, NOT A LINCOLN.", A.x, F - 175, { size: 10, life: 1.6, fill: 'gold' }));
+      s.at(5.8, () => { V.hidden = true; s.done = true; });
+      s.tick = (t, dt) => {
+        if (t < 0.6) { V.scriptPose = PS.dizzy(V.t); walkTo(A, V.x - sd * 46 * k, dt, api, 110); return; }
+        A.scriptPose = t < 2.0 ? P({ hy: 0, lean: 0.05, head: 0, aF: [1.5, 0.2], aB: [0.3, 0.2], fF: [6, 0], fB: [-6, 0] }) : PS.stance(A.t);
+        if (t < 2.0) V.scriptPose = PS.dizzy(V.t);
+        else if (t < 3.2) V.scriptPose = P({ hy: 0, lean: 0, head: -0.05, aF: [2.55, 0.12], aB: [2.55, 0.12], fF: [5, 0], fB: [-5, 0] });
+        else { V.face = sd; walkTo(V, V.x + sd * 400, dt, api, 120); }
+      };
+      return;
+    }
+    let stairs = 0, flat = null, tumbling = false;
+    const H0 = 52, bx = () => V.x - sd * 26, tx = () => V.x - sd * 106;
+    prop({ layer: 'back', draw(g) {
+      if (stairs <= 0) return;
+      g.globalAlpha = Math.min(1, stairs);
+      const b = bx(), tp = tx(), n = 8;
+      // the truck under the platform
+      g.fillStyle = '#e8e8ec'; g.fillRect(Math.min(tp, tp - sd * 46), F - H0 - 4, 46, 8); g.fillStyle = '#1e3a8a'; g.fillRect(Math.min(tp, tp - sd * 46), F - H0 + 2, 46, 2);
+      g.fillStyle = '#d8d8dc'; g.fillRect(Math.min(tp, tp - sd * 46) + 4, F - 30, 40, 18); R.ball(g, tp - sd * 8, F - 8, 7, '#1a1a1e'); R.ball(g, tp - sd * 38, F - 8, 7, '#1a1a1e');
+      R.line(g, tp - sd * 23, F - H0, tp - sd * 23, F - 30, '#8a8a90', 3);
+      // the steps
+      for (let i = 0; i < n; i++) { const x0 = lerp(b, tp, i / n), x1 = lerp(b, tp, (i + 1) / n), y = F - H0 * (i + 1) / n; g.fillStyle = '#c8c8cc'; g.fillRect(Math.min(x0, x1), y, Math.abs(x1 - x0) + 0.5, 3); g.fillStyle = '#8a8a90'; g.fillRect(Math.min(x0, x1), y + 3, Math.abs(x1 - x0), F - y - 3 > 0 ? 1 : 0); }
+      g.fillStyle = 'rgba(200,200,204,0.5)'; g.beginPath(); g.moveTo(b, F); g.lineTo(tp, F - H0); g.lineTo(tp, F - H0 + 8); g.lineTo(b + sd * 2, F); g.fill();
+      // handrails
+      R.line(g, b, F - 26, tp, F - H0 - 26, '#e8e8ec', 1.6); R.line(g, tp, F - H0 - 26, tp - sd * 46, F - H0 - 26, '#e8e8ec', 1.6);
+      for (let i = 0; i <= 4; i++) { const x = lerp(b, tp, i / 4), y = F - H0 * i / 4; R.line(g, x, y, x, y - 26, '#c8c8cc', 0.8); }
+      g.globalAlpha = 1;
+    } });
+    s.at(0.3, () => { api.sfx('whoosh'); api.flash(); stairs = 0.01; A.x = tx() - sd * 18; A.y = F - H0; A.face = sd; A.ro.noShadow = true; });
+    s.at(0.7, () => api.bubble('HELLO, SALZBURG!', A.x, 34, { size: 11, fill: 'white' }));
+    s.at(1.6, () => { api.bubble('WHOOPS!', A.x, 34, { size: 13, fill: 'gold' }); api.sfx('squeak'); });
+    s.at(2.75, () => {
+      tumbling = false; api.sfx('splat'); api.sfx('crunch'); api.sfx('big'); api.shake(14); api.flash();
+      const f = still(V), pose = R.resolve(V.d, PS.dizzy(V.t)); V.hidden = true;
+      FX.burst(V.x, F - 10, 12, ['guts', 'chunk', 'bone', 'brain'], 1.2); FX.drops(4); FX.blood(V.x, F - 2, 40, 0, 1.4);
+      flat = prop({ layer: 'back', draw(g) { g.save(); g.translate(V.x, F); g.scale(1.6, 0.1); g.translate(-V.x, -F); drawStill(g, f, pose); g.restore(); g.fillStyle = 'rgba(130,0,12,0.85)'; g.beginPath(); g.ellipse(V.x, F - 1, 40, 4, 0, 0, PI * 2); g.fill(); } });
+    });
+    s.at(3.8, () => { api.bubble("I'M OKAY!", A.x, F - 175, { size: 13, life: 1.8, fill: 'gold' }); A.ro.noShadow = false; });
+    s.at(5.6, () => { s.done = true; });
+    s.tick = (t, dt) => {
+      if (t < 0.3) { V.scriptPose = PS.dizzy(V.t); return; }
+      stairs = Math.min(1, stairs + dt * 4);
+      V.scriptPose = PS.dizzy(V.t);
+      if (t < 1.6) { A.y = F - H0; A.scriptPose = P({ hy: 0, lean: -0.05, head: -0.1, aF: [2.7, 0.2 + Math.sin(t * 10) * 0.35], aB: [0.3, 0.2], fF: [6, 0], fB: [-6, 0] }); return; }
+      if (t < 2.75) {
+        // one step forward, then head over heels all the way down
+        const u = Math.min(1, Math.max(0, (t - 1.75) / 1.0));
+        A.x = lerp(tx() - sd * 18, bx() + sd * 6, u); A.y = F - H0 * (1 - u) - Math.abs(Math.sin(u * PI * 8)) * 8 + (u > 0 ? 20 : 0) * Math.min(1, u * 8);
+        A.scriptPose = u <= 0 ? P({ hy: 0, lean: 0.4, head: 0.3, aF: [2.2, 0.4], aB: [2.4, 0.4], fF: [14, -6], fB: [-4, 0] }) : P({ rot: sd * u * PI * 5, hy: 0, aF: [2.6, 0.6], aB: [2.4, 0.5], fF: [6, -10], fB: [-6, -8] });
+        if (u > 0 && Math.floor(u * 8) !== s.step) { s.step = Math.floor(u * 8); api.sfx('thud'); api.shake(3); }
+        return;
+      }
+      if (t < 3.5) { A.x = V.x; A.y = F - 26 + (A.d.thigh + A.d.shin) * 0.9; A.scriptPose = P({ rot: -PI / 2, hyA: 4, aF: [0.2, 1.6], aB: [0.1, 0.3], lF: [0.05, 0.05], lB: [0.0, 0.05], head: -0.2 }); return; }
+      A.y = F; A.scriptPose = t > 3.8 ? P({ hy: 0, lean: 0, head: 0.05, aF: [1.35, 2.6], aB: [0.3, 0.2], fF: [6, 0], fB: [-6, 0] }) : PS.stance(A.t);
     };
   };
 

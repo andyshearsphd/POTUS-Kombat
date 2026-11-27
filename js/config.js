@@ -35,6 +35,32 @@ window.GAME = {
 
   // ---------- projectiles thrown by the presidents ----------
   projectiles: {
+    // Madison: Dolley sprints across with Washington's portrait under her arm and bowls you over
+    dolley: { speed: 300, y: 54, dmg: 10, w: 12, h: 46, fx: 'knock', launch: [240, -320], cool: 1.8, sfx: 'whoosh', hitSfx: 'big', word: "DOLLEY!",
+      draw(g, p, s, t) {
+        g.scale(s, 1); const st = Math.sin(t * 24);
+        g.fillStyle = '#6a2a4a'; g.beginPath(); g.moveTo(-10, 48); g.lineTo(10, 48); g.lineTo(4, 6); g.lineTo(-4, 6); g.closePath(); g.fill();
+        g.fillStyle = '#7a3a5a'; g.fillRect(-5, -10, 10, 18); g.fillStyle = '#f0e8dc'; g.fillRect(-4, -12, 8, 4);
+        g.fillStyle = '#e6b49c'; g.beginPath(); g.arc(1, -18, 6, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#3a2418'; g.beginPath(); g.arc(-1, -21, 6.4, Math.PI * 0.9, Math.PI * 2.1); g.fill(); g.fillStyle = '#f0ece4'; g.beginPath(); g.ellipse(-1, -24, 7, 3.4, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#8a6a20'; g.fillRect(4, -14, 16, 20); g.fillStyle = '#3a3428'; g.fillRect(6, -12, 12, 16); g.fillStyle = '#d8d4cc'; g.beginPath(); g.arc(12, -6, 3.4, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e2b498'; g.beginPath(); g.ellipse(12, -3.4, 2.4, 3, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#141414'; g.fillRect(8, 0, 8, 4);
+        g.fillStyle = '#2a1a1a'; g.fillRect(-6 + st * 4, 46, 5, 3); g.fillRect(2 - st * 4, 46, 5, 3);
+      } },
+    // Wilson: the Fourteen Points, fired off one after another
+    points: { speed: 420, burst: { n: 14, gap: 0.035, jitter: 70 }, dmg: 1.3, w: 5, h: 5, fx: 'stun', cool: 1.6, sfx: 'blip', hitSfx: 'punch', word: 'FOURTEEN POINTS',
+      draw(g, p, s, t) { g.rotate(t * 10); g.fillStyle = '#f2ead2'; g.fillRect(-3.4, -3.4, 6.8, 6.8); g.fillStyle = '#2a1a0a'; g.fillRect(-1.2, -1.2, 2.4, 2.4); } },
+    // Wilson: a sheep from the White House lawn charges along the floor
+    sheep: { speed: 270, y: 20, low: true, trip: true, dmg: 9, w: 20, h: 18, fx: 'trip', cool: 1.6, sfx: 'whoosh', hitSfx: 'thud', word: 'BAAA!',
+      draw(g, p, s, t) {
+        g.scale(s * 1.6, 1.6); const st = Math.sin(t * 26);
+        g.fillStyle = '#2a2420'; for (const lx of [-8, -4, 4, 8]) g.fillRect(lx + st * (lx > 0 ? 1.4 : -1.4), 4, 2, 9);
+        g.fillStyle = '#eeeae0'; for (const [x, y, r] of [[-8, -1, 6], [-2, -3, 7], [5, -1, 6], [-4, 3, 6], [3, 3, 6]]) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+        g.fillStyle = '#2a2420'; g.beginPath(); g.ellipse(13, -2, 4.4, 3.4, 0.2, 0, Math.PI * 2); g.fill(); g.fillRect(9, -6, 3, 2);
+        g.fillStyle = '#f0e8a0'; g.fillRect(14, -3.6, 1, 1);
+      } },
+    // Hoover: a heavy leather medicine ball, lobbed
+    hooverball: { speed: 240, vy: -280, grav: 780, bounce: 0.3, dmg: 12, w: 10, h: 10, fx: 'knock', launch: [220, -300], life: 2, cool: 1.6, hitSfx: 'thud', word: 'HOOVER-BALL!',
+      draw(g, p, s, t) { g.rotate(t * 5 * s); g.fillStyle = '#6a4024'; g.beginPath(); g.arc(0, 0, 8, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#3a2010'; g.lineWidth = 1; g.beginPath(); g.moveTo(-8, 0); g.lineTo(8, 0); g.moveTo(0, -8); g.quadraticCurveTo(4, 0, 0, 8); g.stroke(); g.fillStyle = 'rgba(255,220,180,0.25)'; g.beginPath(); g.arc(-2.6, -2.6, 2.6, 0, Math.PI * 2); g.fill(); } },
     // John Adams: Old Ironsides fires a broadside, three iron balls in a row trailing smoke
     cannonball: { speed: 440, y: 66, burst: { n: 3, gap: 0.14, jitter: 20 }, dmg: 4.5, w: 7, h: 7, fx: 'stun', cool: 1.7, sfx: 'big', hitSfx: 'thud', word: 'BROADSIDE!',
       draw(g, p, s, t) { for (let i = 1; i < 6; i++) { g.fillStyle = `rgba(200,200,205,${0.4 - i * 0.06})`; g.beginPath(); g.arc(-s * i * 6, Math.sin(t * 20 + i) * 1.2, 3 + i * 0.9, 0, Math.PI * 2); g.fill(); } g.fillStyle = '#1a1a1e'; g.beginPath(); g.arc(0, 0, 4.6, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.3)'; g.beginPath(); g.arc(-1.4, -1.6, 1.5, 0, Math.PI * 2); g.fill(); } },
@@ -200,6 +226,21 @@ window.GAME = {
       bush: { fp: t => ({ aL: t < 1.4 ? [0.25, 0.8] : [0.3, 0.2], aR: [1.35, 2.6], liftL: t < 1.4 ? 7 : 0, head: 0.08, jaw: 0.05 }),
         fx(f, t) { if (once(f, 's', t, 0.5)) bubble(f, 'NICE SOCKS, HUH?', 'white'); if (once(f, 'b', t, 1.6)) bubble(f, 'NO MORE BROCCOLI!'); },
         draw(g, f) { const h = fj(f, 'handR'); RIG.line(g, h[0], h[1] - 1, h[0] + 0.6, h[1] - 7, '#e4b298', 2); } },
+      // the Constitution held high: "We the People."
+      madison: { fp: t => ({ aR: [2.7, 0.4], aL: [2.6, 0.5], head: -0.15 }),
+        fx(f, t) { if (once(f, 'w', t, 0.5)) bubble(f, 'WE THE PEOPLE.'); },
+        draw(g, f) { const a = fj(f, 'handL'), b = fj(f, 'handR'), x = (a[0] + b[0]) / 2, y = Math.min(a[1], b[1]) - 6; g.fillStyle = '#ecdfba'; g.fillRect(x - 14, y - 10, 28, 20); g.fillStyle = '#d8c89a'; g.fillRect(x - 15, y - 11, 30, 2.4); g.fillRect(x - 15, y + 9, 30, 2.4); g.fillStyle = '#2a1a0a'; g.font = '5px Georgia, serif'; g.textAlign = 'center'; g.fillText('We the People', x, y - 3); g.textAlign = 'left'; g.fillStyle = 'rgba(70,45,20,0.5)'; for (let i = 0; i < 3; i++) g.fillRect(x - 10, y + i * 2.4, 20, 0.6); } },
+      // adjusts the pince-nez while a sheep wanders up beside him
+      wilson: { fp: t => ({ aR: t < 1.0 ? [2.2, 2.6] : [0.3, 0.2], aL: [0.3, 0.2], head: -0.05 }),
+        fx(f, t) { if (once(f, 'b', t, 1.2)) { SFX.chirp(); bubble(f, 'THE WORLD MUST BE MADE SAFE FOR DEMOCRACY.', 'gold'); } },
+        draw(g, f, t) { const u = Math.min(1, t / 1.4), x = f.x - f.face * lerp(100, 40, u), y = FLOOR - 21; g.save(); g.translate(x, y); g.scale(f.face * 1.6, 1.6); g.fillStyle = '#2a2420'; for (const lx of [-8, -4, 4, 8]) g.fillRect(lx, 4, 2, 9); g.fillStyle = '#eeeae0'; for (const [cx, cy, r] of [[-8, -1, 6], [-2, -3, 7], [5, -1, 6], [-4, 3, 6], [3, 3, 6]]) { g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); } g.fillStyle = '#2a2420'; g.beginPath(); g.ellipse(13, -2 + Math.sin(t * 3) * 1, 4.4, 3.4, 0.2, 0, PI * 2); g.fill(); g.restore(); } },
+      // tosses the medicine ball up and catches it
+      hoover: { fp: t => { const ph = t % 1.4, up = ph < 0.3; return { aR: up ? [2.6, 0.6] : [1.3, 1.4], aL: up ? [2.6, 0.6] : [1.3, 1.4], head: -0.12, spread: 6 }; },
+        fx(f, t) { if (once(f, 'h', t, 0.5)) bubble(f, 'HOOVER-BALL!'); if (Math.floor(t / 1.4) !== f.st2.hb) { f.st2.hb = Math.floor(t / 1.4); SFX.thud(); } },
+        draw(g, f, t) { const ph = t % 1.4, hd = fj(f, 'head'), x = hd[0], y0 = hd[1] - 22, y = y0 - Math.sin(Math.min(1, ph / 1.1) * PI) * 50; g.fillStyle = '#6a4024'; g.beginPath(); g.arc(x, y, 8, 0, PI * 2); g.fill(); g.strokeStyle = '#3a2010'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 8, y); g.lineTo(x + 8, y); g.stroke(); } },
+      // lights the pipe, a puff of smoke: "Our long national nightmare is over."
+      ford: { fp: t => ({ aR: t < 0.9 ? [1.6, 2.4] : [0.3, 0.2], aL: [0.3, 0.2], head: 0.05 }),
+        fx(f, t) { f.st2.pipe = 1; if (once(f, 'l', t, 0.5)) SFX.fire(); if (once(f, 'q', t, 1.2)) bubble(f, 'OUR LONG NATIONAL NIGHTMARE IS OVER.'); if (t > 0.8 && Math.random() < 0.2) { const h = fj(f, 'head'); FX.puff(h[0] + 8, h[1] - 4, 'rgba(220,220,225,0.55)', 1, 1); } } },
       // chin up, cigarette holder high, the big grin
       fdr: { fp: t => ({ aR: [2.0, 1.4], aL: [0.4, 0.6], head: -0.12, jaw: 0.2 }),
         fx(f, t) { if (Math.random() < 0.25) { const h = fj(f, 'head'); FX.puff(h[0] + 16, h[1] - 8, 'rgba(220,220,225,0.6)', 1, 1); } } },
