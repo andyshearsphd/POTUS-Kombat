@@ -406,33 +406,38 @@ const ROSTER = (() => {
 
 
   function pithHelmetSide(g) {
-    // sun helmet: long brim front and back, high dome, a band, a vent on top
+    // sun helmet: the dome comes down over the whole skull, long brim front and back, a band, a vent on top
     const c = '#e2d6b2';
-    g.beginPath(); g.ellipse(2.5, -23.4, 17.4, 3, -0.06, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill();
-    g.beginPath(); g.moveTo(-8.6, -23.4); g.quadraticCurveTo(-9.6, -37, 2.5, -37.6); g.quadraticCurveTo(14.6, -37, 13.6, -23.4); g.closePath();
-    const gr = g.createLinearGradient(-9, 0, 14, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.55, c); gr.addColorStop(1, sh(c, -0.2)); g.fillStyle = gr; g.fill();
-    g.fillStyle = '#8a7650'; g.fillRect(-8.8, -27, 22.6, 2.4); R.ball(g, 2.5, -37.8, 1.4, sh(c, -0.1));
+    g.beginPath(); g.moveTo(-15.4, -19.6); g.quadraticCurveTo(-16.4, -37.6, -2, -38.4); g.quadraticCurveTo(12.4, -37.6, 11.6, -19.6); g.closePath();
+    const gr = g.createLinearGradient(-16, 0, 12, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.6, c); gr.addColorStop(1, sh(c, -0.2)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#8a7650'; g.fillRect(-15.6, -23.8, 27.4, 2.6); R.ball(g, -2, -38.6, 1.5, sh(c, -0.1));
+    g.beginPath(); g.ellipse(-1.6, -19.8, 20.4, 3, -0.05, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill(); g.fillStyle = 'rgba(255,255,255,0.2)'; g.fillRect(-8, -21.4, 16, 0.7);
   }
+
   function pithHelmetFront(g) {
     const c = '#e2d6b2';
-    g.beginPath(); g.ellipse(0, -23.6, 16, 3.4, 0, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill();
-    g.beginPath(); g.moveTo(-10.6, -23.6); g.quadraticCurveTo(-11.4, -37.6, 0, -38.2); g.quadraticCurveTo(11.4, -37.6, 10.6, -23.6); g.closePath();
-    const gr = g.createLinearGradient(-11, 0, 11, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
-    g.fillStyle = '#8a7650'; g.fillRect(-10.8, -27.4, 21.6, 2.4); R.ball(g, 0, -38.4, 1.4, sh(c, -0.1));
+    g.beginPath(); g.ellipse(0, -20.4, 17.8, 3.6, 0, 0, PI * 2); g.fillStyle = sh(c, -0.12); g.fill();
+    g.beginPath(); g.moveTo(-12.8, -20.4); g.quadraticCurveTo(-13.6, -38, 0, -39); g.quadraticCurveTo(13.6, -38, 12.8, -20.4); g.closePath();
+    const gr = g.createLinearGradient(-13, 0, 13, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#8a7650'; g.fillRect(-13, -24.4, 26, 2.6); R.ball(g, 0, -39.2, 1.5, sh(c, -0.1));
   }
+
   function fedoraSide(g, c) {
-    g.beginPath(); g.moveTo(-6.4, -24); g.lineTo(-5.6, -32.4); g.quadraticCurveTo(-1, -35.6, 3, -33.4); g.quadraticCurveTo(7, -35.8, 10.6, -32.2); g.lineTo(11.4, -24); g.closePath();
-    const gr = g.createLinearGradient(-6.4, 0, 11.4, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.55, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
-    R.line(g, 1, -34.4, 4.6, -32.6, 'rgba(0,0,0,0.3)', 0.8);
-    g.fillStyle = '#141414'; g.fillRect(-6.2, -27, 17.4, 2.6);
-    g.beginPath(); g.moveTo(-13.4, -25.6); g.quadraticCurveTo(2.5, -27, 18.4, -23.2); g.quadraticCurveTo(17.6, -21.6, 2.5, -23.6); g.quadraticCurveTo(-10, -23.2, -13.4, -25.6); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
+    // the crown sits down over the whole skull; the brim snaps down in front
+    g.beginPath(); g.moveTo(-14.8, -20); g.lineTo(-13.8, -31.8); g.quadraticCurveTo(-6.4, -36.2, -1.2, -33.8); g.quadraticCurveTo(4, -36.6, 9.6, -32); g.lineTo(10.6, -20); g.closePath();
+    const gr = g.createLinearGradient(-15, 0, 11, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.6, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
+    R.line(g, -3, -34.6, 1.6, -32.8, 'rgba(0,0,0,0.3)', 0.8);
+    g.fillStyle = '#141414'; g.fillRect(-14.6, -23.6, 25, 2.8);
+    g.beginPath(); g.moveTo(-19.6, -21.8); g.quadraticCurveTo(-2, -23.4, 17.4, -19.2); g.quadraticCurveTo(16.8, -17.4, -2, -19.4); g.quadraticCurveTo(-17.6, -19.6, -19.6, -21.8); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
   }
+
   function fedoraFront(g, c) {
-    g.beginPath(); g.moveTo(-18, -24.6); g.quadraticCurveTo(0, -27.6, 18, -24.6); g.quadraticCurveTo(17, -22, 0, -23.6); g.quadraticCurveTo(-17, -22, -18, -24.6); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
-    g.beginPath(); g.moveTo(-9.4, -24.6); g.lineTo(-8.8, -34.6); g.quadraticCurveTo(-4.4, -37.6, 0, -35); g.quadraticCurveTo(4.4, -37.6, 8.8, -34.6); g.lineTo(9.4, -24.6); g.closePath();
-    const gr = g.createLinearGradient(-9.4, 0, 9.4, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.3)); g.fillStyle = gr; g.fill();
-    g.fillStyle = '#141414'; g.fillRect(-9.2, -27.8, 18.4, 2.6);
+    g.beginPath(); g.moveTo(-19.4, -21.4); g.quadraticCurveTo(0, -24.6, 19.4, -21.4); g.quadraticCurveTo(18.4, -18.6, 0, -20); g.quadraticCurveTo(-18.4, -18.6, -19.4, -21.4); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
+    g.beginPath(); g.moveTo(-12, -21); g.lineTo(-11.4, -33); g.quadraticCurveTo(-5.6, -36.8, 0, -33.6); g.quadraticCurveTo(5.6, -36.8, 11.4, -33); g.lineTo(12, -21); g.closePath();
+    const gr = g.createLinearGradient(-12, 0, 12, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.3)); g.fillStyle = gr; g.fill();
+    g.fillStyle = '#141414'; g.fillRect(-11.8, -24.6, 23.6, 2.8);
   }
+
   // a loud Hawaiian print: hibiscus, plumeria and palm leaves on teal
   function aloha(g, x0, y0, w, h) {
     let sd = 7; const rn = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
@@ -445,20 +450,22 @@ const ROSTER = (() => {
   }
   // ---- hats: side-view painters work in head space (face toward +x, crown near y -28) ----
   function cowboyHatSide(g, c) {
-    // crown with the center crease and pinched front, band, brim curled up at both ends
-    g.beginPath(); g.moveTo(-6.4, -24); g.lineTo(-5.4, -33.6); g.quadraticCurveTo(-1, -37.2, 3.4, -35); g.quadraticCurveTo(7.6, -37.4, 10.6, -33.4); g.lineTo(11.4, -24); g.closePath();
-    const gr = g.createLinearGradient(-6.4, 0, 11.4, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.55, c); gr.addColorStop(0.75, sh(c, 0.06)); gr.addColorStop(1, sh(c, -0.22)); g.fillStyle = gr; g.fill();
-    R.line(g, 1.2, -35.6, 4.2, -33.8, 'rgba(0,0,0,0.25)', 0.8);
-    g.fillStyle = '#3a2a1a'; g.fillRect(-6.2, -27.4, 17.4, 2.4);
-    g.beginPath(); g.moveTo(-14, -27.4); g.quadraticCurveTo(-12.4, -23.6, 2.5, -24); g.quadraticCurveTo(16.4, -23.4, 19, -27.8); g.quadraticCurveTo(18, -22.2, 2.5, -22); g.quadraticCurveTo(-12.6, -22, -14, -27.4); g.closePath();
-    g.fillStyle = sh(c, -0.12); g.fill(); g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-2, -24, 10, 0.7);
+    // the crown with its center crease comes down over the whole skull; the band; the brim curled up at both ends
+    g.beginPath(); g.moveTo(-14.8, -20); g.lineTo(-13.6, -32.8); g.quadraticCurveTo(-7, -37.8, -1.4, -35.2); g.quadraticCurveTo(4.4, -37.8, 9.8, -33); g.lineTo(10.8, -20); g.closePath();
+    const gr = g.createLinearGradient(-15, 0, 11, 0); gr.addColorStop(0, sh(c, -0.3)); gr.addColorStop(0.6, c); gr.addColorStop(0.8, sh(c, 0.06)); gr.addColorStop(1, sh(c, -0.22)); g.fillStyle = gr; g.fill();
+    R.line(g, -3.4, -36, 0.4, -34, 'rgba(0,0,0,0.25)', 0.8);
+    g.fillStyle = '#3a2a1a'; g.fillRect(-14.6, -23.8, 25.2, 2.6);
+    g.beginPath(); g.moveTo(-21.4, -24.6); g.quadraticCurveTo(-19, -20.2, -2, -20.4); g.quadraticCurveTo(15, -20, 18.8, -24.8); g.quadraticCurveTo(17.6, -18.4, -2, -18.2); g.quadraticCurveTo(-19.6, -18.2, -21.4, -24.6); g.closePath();
+    g.fillStyle = sh(c, -0.12); g.fill(); g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-7, -20.2, 12, 0.7);
   }
+
   function cowboyHatFront(g, c) {
-    g.beginPath(); g.moveTo(-21, -27); g.quadraticCurveTo(-17, -21, 0, -21.6); g.quadraticCurveTo(17, -21, 21, -27); g.quadraticCurveTo(17, -23.2, 0, -23.8); g.quadraticCurveTo(-17, -23.2, -21, -27); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
-    g.beginPath(); g.moveTo(-9.6, -23.4); g.lineTo(-9, -35); g.quadraticCurveTo(-4.4, -38.6, 0, -35.6); g.quadraticCurveTo(4.4, -38.6, 9, -35); g.lineTo(9.6, -23.4); g.closePath();
-    const gr = g.createLinearGradient(-9.6, 0, 9.6, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
-    R.line(g, 0, -35.6, 0, -31, 'rgba(0,0,0,0.25)', 0.9); g.fillStyle = '#3a2a1a'; g.fillRect(-9.4, -26.6, 18.8, 2.6);
+    g.beginPath(); g.moveTo(-22.4, -24.4); g.quadraticCurveTo(-18, -18.2, 0, -18.8); g.quadraticCurveTo(18, -18.2, 22.4, -24.4); g.quadraticCurveTo(18, -20.4, 0, -21); g.quadraticCurveTo(-18, -20.4, -22.4, -24.4); g.closePath(); g.fillStyle = sh(c, -0.14); g.fill();
+    g.beginPath(); g.moveTo(-12.2, -20.4); g.lineTo(-11.6, -33.6); g.quadraticCurveTo(-5.6, -38, 0, -34.4); g.quadraticCurveTo(5.6, -38, 11.6, -33.6); g.lineTo(12.2, -20.4); g.closePath();
+    const gr = g.createLinearGradient(-12, 0, 12, 0); gr.addColorStop(0, sh(c, -0.25)); gr.addColorStop(0.5, c); gr.addColorStop(1, sh(c, -0.25)); g.fillStyle = gr; g.fill();
+    R.line(g, 0, -34.4, 0, -29.6, 'rgba(0,0,0,0.25)', 0.9); g.fillStyle = '#3a2a1a'; g.fillRect(-12, -23.8, 24, 2.6);
   }
+
   function slouchHatSide(g) {
     // Grant's black felt slouch hat: rounded crown, gold cord with acorn tassels, wide soft brim
     g.beginPath(); g.moveTo(-6.6, -23.4); g.quadraticCurveTo(-7.6, -35.4, 2.4, -36.4); g.quadraticCurveTo(12.4, -35.6, 11.6, -23.4); g.closePath();
@@ -1618,9 +1625,7 @@ const ROSTER = (() => {
           if (!st.dead) { g.strokeStyle = 'rgba(90,30,25,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(-3, -3.2); g.quadraticCurveTo(0, -4.6 - jaw, 3, -3.2); g.stroke(); }
           // the Stetson (lifts and tilts when he tips it)
           g.save(); const tp = st.tip || 0; g.translate(tp * 2, -tp * 6); g.rotate(-tp * 0.3);
-          g.fillStyle = '#c8b48a'; g.beginPath(); g.ellipse(0, -23, 17, 3.4, 0, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(0, -22.4, 15, 2.4, 0, 0, PI); g.fill();
-          g.fillStyle = '#d4c098'; g.beginPath(); g.moveTo(-9, -23); g.quadraticCurveTo(-10, -34, -4, -35); g.quadraticCurveTo(0, -32, 4, -35); g.quadraticCurveTo(10, -34, 9, -23); g.closePath(); g.fill();
-          g.fillStyle = '#4a3018'; g.fillRect(-9.2, -26, 18.4, 2.6);
+          cowboyHatFront(g, '#cdb88f');
           g.restore();
         }, mouth() {} });
     },

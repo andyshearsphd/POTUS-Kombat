@@ -11,7 +11,6 @@ window.GAME = {
   ladder: { mirror: true, endurance: 2, opponents: 15 },   // 15 random opponents, so the ladder stays 21 matches as the roster grows
   comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },   // no single combo takes more than a quarter of the bar
   selectCols: 6,                                              // four rows of six
-  selectLayout: 'wide',                                       // big portraits filling the right side
 
   // ---------- the announcer: an old newsreel narrator, crackling over the radio ----------
   calls: { flawless: 'LANDSLIDE VICTORY', choose: 'choose your president' },
